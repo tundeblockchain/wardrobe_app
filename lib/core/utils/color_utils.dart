@@ -92,10 +92,6 @@ ColorCategory categorizeColor(RgbColor color) {
     return ColorCategory.pastel;
   }
 
-  if (brightness > 0.7 && saturation > 0.7) {
-    return ColorCategory.bright;
-  }
-
   if (r > g && r > b) {
     if (g > b * 1.5) return ColorCategory.earth;
     return ColorCategory.warm;
@@ -108,6 +104,10 @@ ColorCategory categorizeColor(RgbColor color) {
   if (g > r && g > b) {
     if (r > b) return ColorCategory.earth;
     return ColorCategory.cool;
+  }
+
+  if (brightness > 0.7 && saturation > 0.7) {
+    return ColorCategory.bright;
   }
 
   return ColorCategory.neutral;

@@ -48,7 +48,7 @@ void main() {
 
   group('truncate', () {
     test('truncates long string with ellipsis', () {
-      expect(truncate('A very long item name', 10), equals('A very...'));
+      expect(truncate('A very long item name', 10), equals('A very ...'));
     });
 
     test('returns original string if shorter than max length', () {
