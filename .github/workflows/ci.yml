@@ -29,7 +29,12 @@ jobs:
         run: flutter pub get
 
       - name: Verify formatting
-        run: dart format --output=none --set-exit-if-changed .
+        run: |
+          dart format .
+          if ! git diff --exit-code; then
+            echo "::error::Code is not formatted. Run 'dart format .' locally and commit the changes."
+            exit 1
+          fi
 
       - name: Analyze code
         run: flutter analyze --fatal-infos
