@@ -54,13 +54,18 @@ RgbColor? parseHexColor(String hex) {
 /// Returns the hex string in "#RRGGBB" format.
 /// Throws if any value is outside the 0-255 range.
 String rgbToHex(int red, int green, int blue) {
-  if (red < 0 || red > 255 || green < 0 || green > 255 || blue < 0 || blue > 255) {
+  if (red < 0 ||
+      red > 255 ||
+      green < 0 ||
+      green > 255 ||
+      blue < 0 ||
+      blue > 255) {
     throw ArgumentError('RGB values must be between 0 and 255');
   }
-  return '#${red.toRadixString(16).padLeft(2, '0')}'
-      '${green.toRadixString(16).padLeft(2, '0')}'
-      '${blue.toRadixString(16).padLeft(2, '0')}'
-      .toUpperCase();
+  final r = red.toRadixString(16).padLeft(2, '0');
+  final g = green.toRadixString(16).padLeft(2, '0');
+  final b = blue.toRadixString(16).padLeft(2, '0');
+  return '#$r$g$b'.toUpperCase();
 }
 
 /// Standard color categories for wardrobe items.
