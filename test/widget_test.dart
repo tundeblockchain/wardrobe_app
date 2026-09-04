@@ -3,9 +3,11 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:wardrobe_app/app.dart';
 import 'package:wardrobe_app/features/auth/application/auth_controller.dart';
 import 'package:wardrobe_app/features/auth/presentation/login_screen.dart';
-import 'package:wardrobe_app/features/wardrobes/presentation/wardrobes_stub_screen.dart';
+import 'package:wardrobe_app/features/wardrobes/data/dio_wardrobe_repository.dart';
+import 'package:wardrobe_app/features/wardrobes/presentation/wardrobes_screen.dart';
 
 import 'helpers/fake_auth_repository.dart';
+import 'helpers/fake_wardrobe_repository.dart';
 
 void main() {
   testWidgets('login then logout follows the auth redirect shell', (
@@ -16,7 +18,12 @@ void main() {
 
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [authRepositoryProvider.overrideWithValue(repository)],
+        overrides: [
+          authRepositoryProvider.overrideWithValue(repository),
+          wardrobeRepositoryProvider.overrideWithValue(
+            FakeWardrobeRepository(),
+          ),
+        ],
         child: const WardrobeApp(),
       ),
     );
@@ -36,11 +43,11 @@ void main() {
     await tester.tap(find.byKey(LoginScreen.submitButtonKey));
     await tester.pumpAndSettle();
 
-    expect(find.byType(WardrobesStubScreen), findsOneWidget);
-    expect(find.text('Wardrobes coming soon'), findsOneWidget);
+    expect(find.byType(WardrobesScreen), findsOneWidget);
+    expect(find.text('No wardrobes yet'), findsOneWidget);
     expect(find.text('Signed in as user@example.com'), findsOneWidget);
 
-    await tester.tap(find.byKey(WardrobesStubScreen.signOutButtonKey));
+    await tester.tap(find.byKey(WardrobesScreen.signOutButtonKey));
     await tester.pumpAndSettle();
 
     expect(find.byType(LoginScreen), findsOneWidget);
