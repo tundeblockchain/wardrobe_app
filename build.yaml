@@ -1,0 +1,8 @@
+targets:
+  $default:
+    builders:
+      freezed:
+        options:
+          # Dart 3.13 forbids `final` on ordinary constructor params, which
+          # Freezed 3 emits for unmodifiable lists.
+          make_collections_unmodifiable: false

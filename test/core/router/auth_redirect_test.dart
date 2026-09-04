@@ -58,6 +58,20 @@ void main() {
         expect(
           resolveAuthRedirect(
             status: AuthStatus.unauthenticated,
+            location: AppRoutes.createWardrobe,
+          ),
+          AppRoutes.login,
+        );
+        expect(
+          resolveAuthRedirect(
+            status: AuthStatus.unauthenticated,
+            location: AppRoutes.wardrobeDetail('wd_abc123'),
+          ),
+          AppRoutes.login,
+        );
+        expect(
+          resolveAuthRedirect(
+            status: AuthStatus.unauthenticated,
             location: AppRoutes.splash,
           ),
           AppRoutes.login,
@@ -97,11 +111,25 @@ void main() {
         );
       });
 
-      test('allows authenticated home', () {
+      test('allows authenticated wardrobe routes', () {
         expect(
           resolveAuthRedirect(
             status: AuthStatus.authenticated,
             location: AppRoutes.wardrobes,
+          ),
+          isNull,
+        );
+        expect(
+          resolveAuthRedirect(
+            status: AuthStatus.authenticated,
+            location: AppRoutes.createWardrobe,
+          ),
+          isNull,
+        );
+        expect(
+          resolveAuthRedirect(
+            status: AuthStatus.authenticated,
+            location: AppRoutes.wardrobeDetail('wd_abc123'),
           ),
           isNull,
         );

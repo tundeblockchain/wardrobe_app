@@ -7,7 +7,9 @@ import '../../features/auth/presentation/forgot_password_screen.dart';
 import '../../features/auth/presentation/login_screen.dart';
 import '../../features/auth/presentation/signup_screen.dart';
 import '../../features/auth/presentation/splash_screen.dart';
-import '../../features/wardrobes/presentation/wardrobes_stub_screen.dart';
+import '../../features/wardrobes/presentation/create_wardrobe_screen.dart';
+import '../../features/wardrobes/presentation/wardrobe_detail_screen.dart';
+import '../../features/wardrobes/presentation/wardrobes_screen.dart';
 import 'app_routes.dart';
 import 'auth_redirect.dart';
 
@@ -56,7 +58,20 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: AppRoutes.wardrobes,
-        builder: (context, state) => const WardrobesStubScreen(),
+        builder: (context, state) => const WardrobesScreen(),
+        routes: [
+          GoRoute(
+            path: 'create',
+            builder: (context, state) => const CreateWardrobeScreen(),
+          ),
+          GoRoute(
+            path: ':wardrobeId',
+            builder: (context, state) {
+              final wardrobeId = state.pathParameters['wardrobeId']!;
+              return WardrobeDetailScreen(wardrobeId: wardrobeId);
+            },
+          ),
+        ],
       ),
     ],
   );
