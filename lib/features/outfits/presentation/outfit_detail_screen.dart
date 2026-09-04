@@ -1,0 +1,186 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+
+import '../../../core/router/app_routes.dart';
+import '../../items/application/items_controller.dart';
+import '../../items/domain/item.dart';
+import '../application/outfit_detail_controller.dart';
+import '../application/outfit_detail_state.dart';
+import '../application/outfit_scope.dart';
+import '../domain/outfit.dart';
+
+/// Outfit detail with edit and delete.
+class OutfitDetailScreen extends ConsumerWidget {
+  const OutfitDetailScreen({
+    super.key,
+    required this.wardrobeId,
+    required this.outfitId,
+  });
+
+  final String wardrobeId;
+  final String outfitId;
+
+  static const editButtonKey = Key('outfit_detail_edit');
+  static const deleteButtonKey = Key('outfit_detail_delete');
+  static const retryButtonKey = Key('outfit_detail_retry');
+
+  OutfitScope get _scope =>
+      OutfitScope(wardrobeId: wardrobeId, outfitId: outfitId);
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final state = ref.watch(outfitDetailControllerProvider(_scope));
+    final itemsState = ref.watch(itemsControllerProvider(wardrobeId));
+    final outfit = state.outfit;
+
+    ref.listen(outfitDetailControllerProvider(_scope), (previous, next) {
+      if (next.isDeleted && context.mounted) {
+        context.go(AppRoutes.outfits(wardrobeId));
+      }
+    });
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(outfit?.name ?? 'Outfit'),
+        actions: [
+          if (outfit != null) ...[
+            IconButton(
+              key: editButtonKey,
+              tooltip: 'Edit',
+              onPressed: state.isSaving
+                  ? null
+                  : () => context.push(
+                      AppRoutes.editOutfit(wardrobeId, outfitId),
+                    ),
+              icon: const Icon(Icons.edit_outlined),
+            ),
+            IconButton(
+              key: deleteButtonKey,
+              tooltip: 'Delete',
+              onPressed: state.isSaving
+                  ? null
+                  : () => _confirmDelete(context, ref),
+              icon: const Icon(Icons.delete_outline),
+            ),
+          ],
+        ],
+      ),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: _buildBody(context, ref, state, itemsState.items),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBody(
+    BuildContext context,
+    WidgetRef ref,
+    OutfitDetailState state,
+    List<Item> wardrobeItems,
+  ) {
+    if (state.isLoading && state.outfit == null) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    if (state.outfit == null) {
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              state.errorMessage ?? 'Outfit not found.',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Theme.of(context).colorScheme.error),
+            ),
+            const SizedBox(height: 16),
+            FilledButton(
+              key: retryButtonKey,
+              onPressed: () => ref
+                  .read(outfitDetailControllerProvider(_scope).notifier)
+                  .refresh(),
+              child: const Text('Retry'),
+            ),
+          ],
+        ),
+      );
+    }
+
+    final outfit = state.outfit!;
+    final itemsById = {for (final item in wardrobeItems) item.id: item};
+    return ListView(
+      children: [
+        Text(outfit.name, style: Theme.of(context).textTheme.headlineSmall),
+        const SizedBox(height: 8),
+        Text('Added ${_formatTimestamp(outfit.createdAt)}'),
+        Text('Updated ${_formatTimestamp(outfit.updatedAt)}'),
+        const SizedBox(height: 24),
+        Text('Slots', style: Theme.of(context).textTheme.titleMedium),
+        const SizedBox(height: 12),
+        for (final OutfitItem assignment in outfit.items)
+          Card(
+            child: ListTile(
+              key: Key('outfit_detail_slot_${assignment.slot.wireValue}'),
+              leading: CircleAvatar(child: Text(assignment.slot.label[0])),
+              title: Text(assignment.slot.label),
+              subtitle: Text(
+                itemsById[assignment.itemId]?.name ?? 'Item in this wardrobe',
+              ),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => context.push(
+                AppRoutes.itemDetail(wardrobeId, assignment.itemId),
+              ),
+            ),
+          ),
+        if (state.errorMessage != null) ...[
+          const SizedBox(height: 16),
+          Text(
+            state.errorMessage!,
+            style: TextStyle(color: Theme.of(context).colorScheme.error),
+          ),
+        ],
+        if (state.isSaving) ...[
+          const SizedBox(height: 24),
+          const Center(child: CircularProgressIndicator()),
+        ],
+      ],
+    );
+  }
+
+  Future<void> _confirmDelete(BuildContext context, WidgetRef ref) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text('Delete outfit?'),
+          content: const Text('This cannot be undone.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: const Text('Cancel'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              child: const Text('Delete'),
+            ),
+          ],
+        );
+      },
+    );
+    if (confirmed != true) {
+      return;
+    }
+    await ref.read(outfitDetailControllerProvider(_scope).notifier).delete();
+  }
+}
+
+String _formatTimestamp(DateTime value) {
+  final local = value.toLocal();
+  final year = local.year.toString().padLeft(4, '0');
+  final month = local.month.toString().padLeft(2, '0');
+  final day = local.day.toString().padLeft(2, '0');
+  final hour = local.hour.toString().padLeft(2, '0');
+  final minute = local.minute.toString().padLeft(2, '0');
+  return '$year-$month-$day $hour:$minute';
+}
