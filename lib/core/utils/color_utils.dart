@@ -69,14 +69,7 @@ String rgbToHex(int red, int green, int blue) {
 }
 
 /// Standard color categories for wardrobe items.
-enum ColorCategory {
-  neutral,
-  warm,
-  cool,
-  earth,
-  pastel,
-  bright,
-}
+enum ColorCategory { neutral, warm, cool, earth, pastel, bright }
 
 /// Categorizes a color based on its RGB values.
 ///
