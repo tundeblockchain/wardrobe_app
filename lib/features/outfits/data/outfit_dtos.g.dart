@@ -70,7 +70,10 @@ _CreateOutfitRequest _$CreateOutfitRequestFromJson(Map<String, dynamic> json) =>
 
 Map<String, dynamic> _$CreateOutfitRequestToJson(
   _CreateOutfitRequest instance,
-) => <String, dynamic>{'name': instance.name, 'items': instance.items};
+) => <String, dynamic>{
+  'name': instance.name,
+  'items': instance.items.map((e) => e.toJson()).toList(),
+};
 
 _UpdateOutfitRequest _$UpdateOutfitRequestFromJson(Map<String, dynamic> json) =>
     _UpdateOutfitRequest(
@@ -82,4 +85,7 @@ _UpdateOutfitRequest _$UpdateOutfitRequestFromJson(Map<String, dynamic> json) =>
 
 Map<String, dynamic> _$UpdateOutfitRequestToJson(
   _UpdateOutfitRequest instance,
-) => <String, dynamic>{'name': ?instance.name, 'items': ?instance.items};
+) => <String, dynamic>{
+  'name': ?instance.name,
+  'items': ?instance.items?.map((e) => e.toJson()).toList(),
+};

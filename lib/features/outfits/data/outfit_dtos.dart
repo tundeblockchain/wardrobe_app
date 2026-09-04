@@ -95,6 +95,7 @@ abstract class OutfitListResponse with _$OutfitListResponse {
 /// `POST /wardrobes/{wardrobeId}/outfits` body.
 @freezed
 abstract class CreateOutfitRequest with _$CreateOutfitRequest {
+  @JsonSerializable(explicitToJson: true)
   const factory CreateOutfitRequest({
     required String name,
     required List<OutfitItemRequest> items,
@@ -117,6 +118,7 @@ abstract class CreateOutfitRequest with _$CreateOutfitRequest {
 /// `PATCH /wardrobes/{wardrobeId}/outfits/{outfitId}` body.
 @freezed
 abstract class UpdateOutfitRequest with _$UpdateOutfitRequest {
+  @JsonSerializable(explicitToJson: true)
   const factory UpdateOutfitRequest({
     @JsonKey(includeIfNull: false) String? name,
     @JsonKey(includeIfNull: false) List<OutfitItemRequest>? items,

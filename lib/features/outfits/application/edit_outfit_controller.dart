@@ -1,7 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/network/api_exception.dart';
-import '../../items/application/items_controller.dart';
 import '../../items/domain/item.dart';
 import '../data/dio_outfit_repository.dart';
 import '../domain/outfit.dart';
@@ -68,17 +67,6 @@ class EditOutfitController extends Notifier<EditOutfitState> {
     final itemsError = OutfitValidators.items(state.items);
     if (itemsError != null) {
       state = state.copyWith(errorMessage: itemsError);
-      return null;
-    }
-
-    final wardrobeItemIds = {
-      for (final item
-          in ref.read(itemsControllerProvider(scope.wardrobeId)).items)
-        item.id,
-    };
-    if (wardrobeItemIds.isNotEmpty &&
-        state.items.any((item) => !wardrobeItemIds.contains(item.itemId))) {
-      state = state.copyWith(errorMessage: 'Choose items from this wardrobe.');
       return null;
     }
 

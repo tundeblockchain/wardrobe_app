@@ -1280,8 +1280,8 @@ return $default(_that.name,_that.items);case _:
 }
 
 /// @nodoc
-@JsonSerializable()
 
+@JsonSerializable(explicitToJson: true)
 class _CreateOutfitRequest implements CreateOutfitRequest {
   const _CreateOutfitRequest({required this.name, required this.items});
   factory _CreateOutfitRequest.fromJson(Map<String, dynamic> json) => _$CreateOutfitRequestFromJson(json);
@@ -1546,8 +1546,8 @@ return $default(_that.name,_that.items);case _:
 }
 
 /// @nodoc
-@JsonSerializable()
 
+@JsonSerializable(explicitToJson: true)
 class _UpdateOutfitRequest implements UpdateOutfitRequest {
   const _UpdateOutfitRequest({@JsonKey(includeIfNull: false) this.name, @JsonKey(includeIfNull: false) this.items});
   factory _UpdateOutfitRequest.fromJson(Map<String, dynamic> json) => _$UpdateOutfitRequestFromJson(json);
