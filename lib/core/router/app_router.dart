@@ -7,6 +7,9 @@ import '../../features/auth/presentation/forgot_password_screen.dart';
 import '../../features/auth/presentation/login_screen.dart';
 import '../../features/auth/presentation/signup_screen.dart';
 import '../../features/auth/presentation/splash_screen.dart';
+import '../../features/items/presentation/add_item_screen.dart';
+import '../../features/items/presentation/edit_item_screen.dart';
+import '../../features/items/presentation/item_detail_screen.dart';
 import '../../features/wardrobes/presentation/create_wardrobe_screen.dart';
 import '../../features/wardrobes/presentation/wardrobe_detail_screen.dart';
 import '../../features/wardrobes/presentation/wardrobes_screen.dart';
@@ -70,6 +73,39 @@ final routerProvider = Provider<GoRouter>((ref) {
               final wardrobeId = state.pathParameters['wardrobeId']!;
               return WardrobeDetailScreen(wardrobeId: wardrobeId);
             },
+            routes: [
+              GoRoute(
+                path: 'items/create',
+                builder: (context, state) {
+                  final wardrobeId = state.pathParameters['wardrobeId']!;
+                  return AddItemScreen(wardrobeId: wardrobeId);
+                },
+              ),
+              GoRoute(
+                path: 'items/:itemId',
+                builder: (context, state) {
+                  final wardrobeId = state.pathParameters['wardrobeId']!;
+                  final itemId = state.pathParameters['itemId']!;
+                  return ItemDetailScreen(
+                    wardrobeId: wardrobeId,
+                    itemId: itemId,
+                  );
+                },
+                routes: [
+                  GoRoute(
+                    path: 'edit',
+                    builder: (context, state) {
+                      final wardrobeId = state.pathParameters['wardrobeId']!;
+                      final itemId = state.pathParameters['itemId']!;
+                      return EditItemScreen(
+                        wardrobeId: wardrobeId,
+                        itemId: itemId,
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ],
           ),
         ],
       ),

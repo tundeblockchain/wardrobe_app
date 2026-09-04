@@ -53,6 +53,12 @@
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
 	<string>Main</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Take a photo of a clothing item to add it to your wardrobe.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Choose a clothing photo from your library to add it to your wardrobe.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Save clothing photos you capture for your wardrobe.</string>
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>

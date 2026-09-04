@@ -3,20 +3,22 @@
 Digital Wardrobe mobile client (Flutter). Phase 1 currently includes repo
 bootstrap ([WARDROBE-10](https://tundetunde000.atlassian.net/browse/WARDROBE-10)),
 the Firebase auth shell
-([WARDROBE-9](https://tundetunde000.atlassian.net/browse/WARDROBE-9)), and
+([WARDROBE-9](https://tundetunde000.atlassian.net/browse/WARDROBE-9)),
 wardrobe list / create / detail
-([WARDROBE-12](https://tundetunde000.atlassian.net/browse/WARDROBE-12)).
+([WARDROBE-12](https://tundetunde000.atlassian.net/browse/WARDROBE-12)), and
+clothing items with camera/gallery upload
+([WARDROBE-13](https://tundetunde000.atlassian.net/browse/WARDROBE-13)).
 
-Items, uploads, and outfits are **not** implemented yet.
+Outfits are **not** implemented yet.
 
 ## Architecture
 
 Layers (dependencies point downward only):
 
-1. **Presentation** — screens (`login`, `signup`, `forgot-password`, splash, wardrobes list / create / detail)
-2. **Controller / Provider** — Riverpod `AuthController`, `WardrobesController`, `CreateWardrobeController`, `WardrobeDetailController`
-3. **Repository** — `AuthRepository`, `WardrobeRepository`
-4. **API client / Firebase** — `FirebaseAuthRepository`, Dio + ID-token interceptor, `DioWardrobeRepository`
+1. **Presentation** — screens (`login`, `signup`, `forgot-password`, splash, wardrobes list / create / detail, add item / item detail / edit item)
+2. **Controller / Provider** — Riverpod auth, wardrobe, and item controllers
+3. **Repository** — `AuthRepository`, `WardrobeRepository`, `ItemRepository`, `UploadRepository`
+4. **API client / Firebase** — `FirebaseAuthRepository`, Dio + ID-token interceptor, wardrobe/item/upload Dio repositories, `image_picker` behind `ItemImagePicker`
 
 ## Auth shell
 
@@ -32,7 +34,7 @@ Authenticated routes:
 
 - `/wardrobes` — list + empty state
 - `/wardrobes/create` — name form
-- `/wardrobes/:wardrobeId` — detail, rename, delete
+- `/wardrobes/:wardrobeId` — detail, rename, delete, item list
 
 The Dio client matches the backend contract (`GET/POST /wardrobes`,
 `GET/PATCH/DELETE /wardrobes/{wardrobeId}`). Response `wardrobeId` is mapped to
@@ -41,6 +43,28 @@ domain `id`. Shared API errors (`{ "code", "message" }` or
 
 Backend wardrobe CRUD (WARDROBE-5) may not be live yet; the client is scaffolded
 against that contract and covered with mocked unit tests.
+
+## Items and uploads
+
+Authenticated routes nested under a wardrobe:
+
+- `/wardrobes/:wardrobeId/items/create` — camera/gallery + metadata
+- `/wardrobes/:wardrobeId/items/:itemId` — item detail, delete
+- `/wardrobes/:wardrobeId/items/:itemId/edit` — edit metadata (optional new photo)
+
+Upload flow:
+
+1. `POST /uploads` with `{ "contentType", "purpose": "WARDROBE_ITEM" }`
+2. `PUT` file bytes to the returned `uploadUrl` with that content type (no Firebase Bearer header)
+3. `POST /wardrobes/{wardrobeId}/items` with `{ "name", "category", "imageKey" }`
+
+Response `itemId` maps to domain `id`. Image keys stay on the domain as
+`originalImageKey` / `processedImageKey`. Phase 1 `processingStatus` is `READY`
+(no SQS). Camera/gallery is abstracted as `ItemImagePicker` so unit tests never
+need a device.
+
+Backend item/upload APIs (WARDROBE-8 / WARDROBE-11) may not be live yet; the
+client is scaffolded against the contract with mocked unit tests.
 
 ## Local Firebase / API config
 

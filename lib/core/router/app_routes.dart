@@ -9,5 +9,14 @@ abstract final class AppRoutes {
 
   static String wardrobeDetail(String wardrobeId) => '/wardrobes/$wardrobeId';
 
+  static String createItem(String wardrobeId) =>
+      '/wardrobes/$wardrobeId/items/create';
+
+  static String itemDetail(String wardrobeId, String itemId) =>
+      '/wardrobes/$wardrobeId/items/$itemId';
+
+  static String editItem(String wardrobeId, String itemId) =>
+      '/wardrobes/$wardrobeId/items/$itemId/edit';
+
   static const publicRoutes = <String>{login, signup, forgotPassword};
 }

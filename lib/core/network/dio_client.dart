@@ -41,3 +41,22 @@ final dioProvider = Provider<Dio>((ref) {
   final tokenSource = ref.watch(idTokenSourceProvider);
   return createDioClient(baseUrl: config.apiBaseUrl, tokenSource: tokenSource);
 });
+
+/// Dio used only for pre-signed S3 PUTs. No base URL and no auth interceptor —
+/// extra signed headers would break the upload URL.
+Dio createUploadDio({
+  Duration connectTimeout = const Duration(seconds: 30),
+  Duration sendTimeout = const Duration(seconds: 60),
+  Duration receiveTimeout = const Duration(seconds: 30),
+}) {
+  return Dio(
+    BaseOptions(
+      connectTimeout: connectTimeout,
+      sendTimeout: sendTimeout,
+      receiveTimeout: receiveTimeout,
+    ),
+  );
+}
+
+/// Bare upload client. Override in tests with a scripted adapter.
+final uploadDioProvider = Provider<Dio>((ref) => createUploadDio());

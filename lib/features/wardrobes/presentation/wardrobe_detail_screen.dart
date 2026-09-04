@@ -3,11 +3,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/router/app_routes.dart';
+import '../../items/application/items_controller.dart';
+import '../../items/application/items_state.dart';
+import '../../items/domain/item.dart';
 import '../application/wardrobe_detail_controller.dart';
 import '../application/wardrobe_detail_state.dart';
 import '../domain/wardrobe_validators.dart';
 
-/// Wardrobe metadata screen. Items and outfits land in later tickets.
+/// Wardrobe metadata plus nested clothing items. Outfits land in a later ticket.
 class WardrobeDetailScreen extends ConsumerWidget {
   const WardrobeDetailScreen({super.key, required this.wardrobeId});
 
@@ -16,10 +19,13 @@ class WardrobeDetailScreen extends ConsumerWidget {
   static const renameButtonKey = Key('wardrobe_detail_rename');
   static const deleteButtonKey = Key('wardrobe_detail_delete');
   static const retryButtonKey = Key('wardrobe_detail_retry');
+  static const addItemButtonKey = Key('wardrobe_detail_add_item');
+  static const itemsEmptyKey = Key('wardrobe_detail_items_empty');
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(wardrobeDetailControllerProvider(wardrobeId));
+    final itemsState = ref.watch(itemsControllerProvider(wardrobeId));
     final wardrobe = state.wardrobe;
 
     ref.listen(wardrobeDetailControllerProvider(wardrobeId), (previous, next) {
@@ -52,10 +58,29 @@ class WardrobeDetailScreen extends ConsumerWidget {
           ],
         ],
       ),
+      floatingActionButton: wardrobe == null
+          ? null
+          : FloatingActionButton(
+              key: addItemButtonKey,
+              tooltip: 'Add item',
+              onPressed: () => context.push(AppRoutes.createItem(wardrobeId)),
+              child: const Icon(Icons.add_a_photo_outlined),
+            ),
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: _buildBody(context, ref, state),
+        child: RefreshIndicator(
+          onRefresh: () async {
+            await Future.wait([
+              ref
+                  .read(wardrobeDetailControllerProvider(wardrobeId).notifier)
+                  .refresh(),
+              ref.read(itemsControllerProvider(wardrobeId).notifier).refresh(),
+            ]);
+          },
+          child: ListView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.all(24),
+            children: [_buildBody(context, ref, state, itemsState)],
+          ),
         ),
       ),
     );
@@ -65,9 +90,13 @@ class WardrobeDetailScreen extends ConsumerWidget {
     BuildContext context,
     WidgetRef ref,
     WardrobeDetailState state,
+    ItemsState itemsState,
   ) {
     if (state.isLoading && state.wardrobe == null) {
-      return const Center(child: CircularProgressIndicator());
+      return const Padding(
+        padding: EdgeInsets.symmetric(vertical: 48),
+        child: Center(child: CircularProgressIndicator()),
+      );
     }
     if (state.wardrobe == null) {
       return Center(
@@ -111,6 +140,10 @@ class WardrobeDetailScreen extends ConsumerWidget {
           const SizedBox(height: 24),
           const Center(child: CircularProgressIndicator()),
         ],
+        const SizedBox(height: 32),
+        Text('Items', style: Theme.of(context).textTheme.titleMedium),
+        const SizedBox(height: 12),
+        _ItemsSection(wardrobeId: wardrobeId, state: itemsState),
       ],
     );
   }
@@ -192,6 +225,87 @@ class WardrobeDetailScreen extends ConsumerWidget {
     await ref
         .read(wardrobeDetailControllerProvider(wardrobeId).notifier)
         .delete();
+  }
+}
+
+class _ItemsSection extends ConsumerWidget {
+  const _ItemsSection({required this.wardrobeId, required this.state});
+
+  final String wardrobeId;
+  final ItemsState state;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    if (state.isLoading && state.items.isEmpty) {
+      return const Padding(
+        padding: EdgeInsets.symmetric(vertical: 24),
+        child: Center(child: CircularProgressIndicator()),
+      );
+    }
+    if (state.errorMessage != null && state.items.isEmpty) {
+      return Column(
+        children: [
+          Text(
+            state.errorMessage!,
+            style: TextStyle(color: Theme.of(context).colorScheme.error),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 16),
+          FilledButton(
+            onPressed: () => ref
+                .read(itemsControllerProvider(wardrobeId).notifier)
+                .refresh(),
+            child: const Text('Retry items'),
+          ),
+        ],
+      );
+    }
+    if (state.isEmpty) {
+      return Padding(
+        key: WardrobeDetailScreen.itemsEmptyKey,
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        child: Column(
+          children: [
+            const Text('No items yet. Add a photo of a clothing item.'),
+            const SizedBox(height: 16),
+            FilledButton(
+              onPressed: () => context.push(AppRoutes.createItem(wardrobeId)),
+              child: const Text('Add item'),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return Column(
+      children: [
+        if (state.errorMessage != null)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: Text(
+              state.errorMessage!,
+              style: TextStyle(color: Theme.of(context).colorScheme.error),
+            ),
+          ),
+        for (final Item item in state.items)
+          Card(
+            child: ListTile(
+              key: Key('item_tile_${item.id}'),
+              leading: CircleAvatar(child: Text(item.category.label[0])),
+              title: Text(item.name),
+              subtitle: Text(
+                [
+                  item.category.label,
+                  if (item.brand != null && item.brand!.isNotEmpty) item.brand,
+                ].join(' · '),
+              ),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () =>
+                  context.push(AppRoutes.itemDetail(wardrobeId, item.id)),
+            ),
+          ),
+      ],
+    );
   }
 }
 

@@ -1,0 +1,78 @@
+import 'package:freezed_annotation/freezed_annotation.dart';
+
+part 'item.freezed.dart';
+
+/// Controlled clothing categories from the backend contract.
+///
+/// Wire values stay on [wireValue]; UI uses [label].
+enum ItemCategory {
+  top('TOP', 'Top'),
+  bottom('BOTTOM', 'Bottom'),
+  dress('DRESS', 'Dress'),
+  outerwear('OUTERWEAR', 'Outerwear'),
+  shoes('SHOES', 'Shoes'),
+  accessory('ACCESSORY', 'Accessory'),
+  bag('BAG', 'Bag');
+
+  const ItemCategory(this.wireValue, this.label);
+
+  final String wireValue;
+  final String label;
+
+  static ItemCategory? tryParse(String? value) {
+    if (value == null || value.isEmpty) {
+      return null;
+    }
+    for (final category in ItemCategory.values) {
+      if (category.wireValue == value) {
+        return category;
+      }
+    }
+    return null;
+  }
+}
+
+/// Clothing-item processing states. Phase 1 is [ready] (no SQS worker).
+enum ItemProcessingStatus {
+  pending('PENDING', 'Pending'),
+  processing('PROCESSING', 'Processing'),
+  ready('READY', 'Ready'),
+  failed('FAILED', 'Failed'),
+  unknown('UNKNOWN', 'Unknown');
+
+  const ItemProcessingStatus(this.wireValue, this.label);
+
+  final String wireValue;
+  final String label;
+
+  static ItemProcessingStatus parse(String? value) {
+    if (value == null || value.isEmpty) {
+      return ItemProcessingStatus.ready;
+    }
+    for (final status in ItemProcessingStatus.values) {
+      if (status.wireValue == value) {
+        return status;
+      }
+    }
+    return ItemProcessingStatus.unknown;
+  }
+}
+
+/// Clothing item as used by controllers and UI. Backend `itemId` is [id].
+@freezed
+abstract class Item with _$Item {
+  const factory Item({
+    required String id,
+    required String wardrobeId,
+    required String name,
+    required ItemCategory category,
+    String? subcategory,
+    @Default([]) List<String> colours,
+    String? brand,
+    String? originalImageKey,
+    String? processedImageKey,
+    @Default(ItemProcessingStatus.ready) ItemProcessingStatus processingStatus,
+    required DateTime createdAt,
+    required DateTime updatedAt,
+  }) = _Item;
+}

@@ -3,10 +3,16 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:wardrobe_app/app.dart';
 import 'package:wardrobe_app/features/auth/application/auth_controller.dart';
 import 'package:wardrobe_app/features/auth/presentation/login_screen.dart';
+import 'package:wardrobe_app/features/items/data/dio_item_repository.dart';
+import 'package:wardrobe_app/features/items/data/dio_upload_repository.dart';
+import 'package:wardrobe_app/features/items/data/image_picker_item_image_picker.dart';
 import 'package:wardrobe_app/features/wardrobes/data/dio_wardrobe_repository.dart';
 import 'package:wardrobe_app/features/wardrobes/presentation/wardrobes_screen.dart';
 
 import 'helpers/fake_auth_repository.dart';
+import 'helpers/fake_item_image_picker.dart';
+import 'helpers/fake_item_repository.dart';
+import 'helpers/fake_upload_repository.dart';
 import 'helpers/fake_wardrobe_repository.dart';
 
 void main() {
@@ -23,6 +29,9 @@ void main() {
           wardrobeRepositoryProvider.overrideWithValue(
             FakeWardrobeRepository(),
           ),
+          itemRepositoryProvider.overrideWithValue(FakeItemRepository()),
+          uploadRepositoryProvider.overrideWithValue(FakeUploadRepository()),
+          itemImagePickerProvider.overrideWithValue(FakeItemImagePicker()),
         ],
         child: const WardrobeApp(),
       ),
