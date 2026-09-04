@@ -10,6 +10,10 @@ import '../../features/auth/presentation/splash_screen.dart';
 import '../../features/items/presentation/add_item_screen.dart';
 import '../../features/items/presentation/edit_item_screen.dart';
 import '../../features/items/presentation/item_detail_screen.dart';
+import '../../features/outfits/presentation/create_outfit_screen.dart';
+import '../../features/outfits/presentation/edit_outfit_screen.dart';
+import '../../features/outfits/presentation/outfit_detail_screen.dart';
+import '../../features/outfits/presentation/outfits_screen.dart';
 import '../../features/wardrobes/presentation/create_wardrobe_screen.dart';
 import '../../features/wardrobes/presentation/wardrobe_detail_screen.dart';
 import '../../features/wardrobes/presentation/wardrobes_screen.dart';
@@ -74,6 +78,47 @@ final routerProvider = Provider<GoRouter>((ref) {
               return WardrobeDetailScreen(wardrobeId: wardrobeId);
             },
             routes: [
+              GoRoute(
+                path: 'outfits',
+                builder: (context, state) {
+                  final wardrobeId = state.pathParameters['wardrobeId']!;
+                  return OutfitsScreen(wardrobeId: wardrobeId);
+                },
+                routes: [
+                  GoRoute(
+                    path: 'create',
+                    builder: (context, state) {
+                      final wardrobeId = state.pathParameters['wardrobeId']!;
+                      return CreateOutfitScreen(wardrobeId: wardrobeId);
+                    },
+                  ),
+                  GoRoute(
+                    path: ':outfitId',
+                    builder: (context, state) {
+                      final wardrobeId = state.pathParameters['wardrobeId']!;
+                      final outfitId = state.pathParameters['outfitId']!;
+                      return OutfitDetailScreen(
+                        wardrobeId: wardrobeId,
+                        outfitId: outfitId,
+                      );
+                    },
+                    routes: [
+                      GoRoute(
+                        path: 'edit',
+                        builder: (context, state) {
+                          final wardrobeId =
+                              state.pathParameters['wardrobeId']!;
+                          final outfitId = state.pathParameters['outfitId']!;
+                          return EditOutfitScreen(
+                            wardrobeId: wardrobeId,
+                            outfitId: outfitId,
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ],
+              ),
               GoRoute(
                 path: 'items/create',
                 builder: (context, state) {

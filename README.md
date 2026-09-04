@@ -7,18 +7,18 @@ the Firebase auth shell
 wardrobe list / create / detail
 ([WARDROBE-12](https://tundetunde000.atlassian.net/browse/WARDROBE-12)), and
 clothing items with camera/gallery upload
-([WARDROBE-13](https://tundetunde000.atlassian.net/browse/WARDROBE-13)).
-
-Outfits are **not** implemented yet.
+([WARDROBE-13](https://tundetunde000.atlassian.net/browse/WARDROBE-13)), and
+outfit build / save
+([WARDROBE-14](https://tundetunde000.atlassian.net/browse/WARDROBE-14)).
 
 ## Architecture
 
 Layers (dependencies point downward only):
 
-1. **Presentation** — screens (`login`, `signup`, `forgot-password`, splash, wardrobes list / create / detail, add item / item detail / edit item)
-2. **Controller / Provider** — Riverpod auth, wardrobe, and item controllers
-3. **Repository** — `AuthRepository`, `WardrobeRepository`, `ItemRepository`, `UploadRepository`
-4. **API client / Firebase** — `FirebaseAuthRepository`, Dio + ID-token interceptor, wardrobe/item/upload Dio repositories, `image_picker` behind `ItemImagePicker`
+1. **Presentation** — screens (`login`, `signup`, `forgot-password`, splash, wardrobes list / create / detail, add item / item detail / edit item, outfits list / create / detail / edit)
+2. **Controller / Provider** — Riverpod auth, wardrobe, item, and outfit controllers
+3. **Repository** — `AuthRepository`, `WardrobeRepository`, `ItemRepository`, `UploadRepository`, `OutfitRepository`
+4. **API client / Firebase** — `FirebaseAuthRepository`, Dio + ID-token interceptor, wardrobe/item/upload/outfit Dio repositories, `image_picker` behind `ItemImagePicker`
 
 ## Auth shell
 
@@ -34,7 +34,7 @@ Authenticated routes:
 
 - `/wardrobes` — list + empty state
 - `/wardrobes/create` — name form
-- `/wardrobes/:wardrobeId` — detail, rename, delete, item list
+- `/wardrobes/:wardrobeId` — detail, rename, delete, item list, outfits entry
 
 The Dio client matches the backend contract (`GET/POST /wardrobes`,
 `GET/PATCH/DELETE /wardrobes/{wardrobeId}`). Response `wardrobeId` is mapped to
@@ -65,6 +65,23 @@ need a device.
 
 Backend item/upload APIs (WARDROBE-8 / WARDROBE-11) may not be live yet; the
 client is scaffolded against the contract with mocked unit tests.
+
+## Outfits
+
+Authenticated routes nested under a wardrobe:
+
+- `/wardrobes/:wardrobeId/outfits` — list + empty state
+- `/wardrobes/:wardrobeId/outfits/create` — name + pick items into slots
+- `/wardrobes/:wardrobeId/outfits/:outfitId` — detail, delete
+- `/wardrobes/:wardrobeId/outfits/:outfitId/edit` — rename and change slots
+
+Slots use the same categories as items (`TOP`, `BOTTOM`, `DRESS`, `OUTERWEAR`,
+`SHOES`, `ACCESSORY`, `BAG`). The create/edit forms reuse the wardrobe items
+list so only items from that wardrobe can be assigned. Response `outfitId`
+maps to domain `id`.
+
+Backend outfits API (WARDROBE-7) may not be live yet; the client is scaffolded
+against the contract with mocked unit tests. No AI try-on.
 
 ## Local Firebase / API config
 

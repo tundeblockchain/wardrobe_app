@@ -18,5 +18,16 @@ abstract final class AppRoutes {
   static String editItem(String wardrobeId, String itemId) =>
       '/wardrobes/$wardrobeId/items/$itemId/edit';
 
+  static String outfits(String wardrobeId) => '/wardrobes/$wardrobeId/outfits';
+
+  static String createOutfit(String wardrobeId) =>
+      '/wardrobes/$wardrobeId/outfits/create';
+
+  static String outfitDetail(String wardrobeId, String outfitId) =>
+      '/wardrobes/$wardrobeId/outfits/$outfitId';
+
+  static String editOutfit(String wardrobeId, String outfitId) =>
+      '/wardrobes/$wardrobeId/outfits/$outfitId/edit';
+
   static const publicRoutes = <String>{login, signup, forgotPassword};
 }
