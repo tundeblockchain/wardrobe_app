@@ -6,7 +6,6 @@ import '../../../core/router/app_routes.dart';
 import '../application/item_detail_controller.dart';
 import '../application/item_detail_state.dart';
 import '../application/item_scope.dart';
-import '../domain/item.dart';
 
 /// Clothing item detail with edit and delete.
 class ItemDetailScreen extends ConsumerWidget {

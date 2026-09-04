@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wardrobe_app/features/items/application/edit_item_controller.dart';
+import 'package:wardrobe_app/features/items/application/item_detail_controller.dart';
 import 'package:wardrobe_app/features/items/application/item_scope.dart';
 import 'package:wardrobe_app/features/items/application/items_controller.dart';
 import 'package:wardrobe_app/features/items/data/dio_item_repository.dart';
@@ -39,6 +40,7 @@ void main() {
 
   test('submit updates metadata without uploading when no new photo', () async {
     container.read(itemsControllerProvider('wd_abc123'));
+    container.read(itemDetailControllerProvider(scope));
     await settle();
 
     final updated = await container
@@ -55,6 +57,10 @@ void main() {
   });
 
   test('submit uploads a replacement photo when one is picked', () async {
+    container.read(itemsControllerProvider('wd_abc123'));
+    container.read(itemDetailControllerProvider(scope));
+    await settle();
+
     await container
         .read(editItemControllerProvider(scope).notifier)
         .pickFromGallery();

@@ -24,10 +24,19 @@ class ItemsController extends Notifier<ItemsState> {
     state = state.copyWith(isLoading: true, clearError: true);
     try {
       final items = await _repository.listItems(wardrobeId);
+      if (!ref.mounted) {
+        return;
+      }
       state = state.copyWith(isLoading: false, items: items);
     } on ApiException catch (error) {
+      if (!ref.mounted) {
+        return;
+      }
       state = state.copyWith(isLoading: false, errorMessage: error.message);
     } catch (_) {
+      if (!ref.mounted) {
+        return;
+      }
       state = state.copyWith(
         isLoading: false,
         errorMessage: 'Something went wrong. Please try again.',

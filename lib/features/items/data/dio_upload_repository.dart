@@ -14,19 +14,17 @@ import 'upload_dtos.dart';
 /// Ticket creation uses the authenticated API client. The S3 PUT uses a
 /// separate client so the Firebase Bearer token is not sent to S3.
 class DioUploadRepository implements UploadRepository {
-  DioUploadRepository({required Dio api, required Dio uploadClient})
-    : _api = api,
-      _uploadClient = uploadClient;
+  DioUploadRepository({required this.api, required this.uploadClient});
 
-  final Dio _api;
-  final Dio _uploadClient;
+  final Dio api;
+  final Dio uploadClient;
 
   static const _path = '/uploads';
 
   @override
   Future<UploadTicket> createWardrobeItemUpload({required String contentType}) {
     return _guard(() async {
-      final response = await _api.post<dynamic>(
+      final response = await api.post<dynamic>(
         _path,
         data: CreateUploadRequest(contentType: contentType).toJson(),
       );
@@ -41,7 +39,7 @@ class DioUploadRepository implements UploadRepository {
     required String contentType,
   }) {
     return _guard(() async {
-      await _uploadClient.put<dynamic>(
+      await uploadClient.put<dynamic>(
         uploadUrl,
         data: bytes,
         options: Options(

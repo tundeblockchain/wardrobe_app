@@ -81,10 +81,16 @@ class AddItemController extends Notifier<AddItemState> {
         brand: brand,
         imageKey: ticket.objectKey,
       );
+      if (!ref.mounted) {
+        return item;
+      }
       ref.read(itemsControllerProvider(wardrobeId).notifier).upsert(item);
       state = state.copyWith(isSubmitting: false, phase: AddItemPhase.idle);
       return item;
     } on ApiException catch (error) {
+      if (!ref.mounted) {
+        return null;
+      }
       state = state.copyWith(
         isSubmitting: false,
         phase: AddItemPhase.idle,
@@ -92,6 +98,9 @@ class AddItemController extends Notifier<AddItemState> {
       );
       return null;
     } catch (_) {
+      if (!ref.mounted) {
+        return null;
+      }
       state = state.copyWith(
         isSubmitting: false,
         phase: AddItemPhase.idle,

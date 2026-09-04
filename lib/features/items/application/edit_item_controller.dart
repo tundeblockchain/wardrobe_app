@@ -79,14 +79,23 @@ class EditItemController extends Notifier<EditItemState> {
         brand: brand,
         imageKey: imageKey,
       );
+      if (!ref.mounted) {
+        return item;
+      }
       ref.read(itemsControllerProvider(scope.wardrobeId).notifier).upsert(item);
       ref.read(itemDetailControllerProvider(scope).notifier).replace(item);
       state = state.copyWith(isSaving: false);
       return item;
     } on ApiException catch (error) {
+      if (!ref.mounted) {
+        return null;
+      }
       state = state.copyWith(isSaving: false, errorMessage: error.message);
       return null;
     } catch (_) {
+      if (!ref.mounted) {
+        return null;
+      }
       state = state.copyWith(
         isSaving: false,
         errorMessage: 'Something went wrong. Please try again.',
