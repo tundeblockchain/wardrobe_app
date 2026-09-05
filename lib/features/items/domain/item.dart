@@ -32,7 +32,7 @@ enum ItemCategory {
   }
 }
 
-/// Clothing-item processing states. Phase 1 is [ready] (no SQS worker).
+/// Clothing-item processing states from the SQS worker (WARDROBE-16/17).
 enum ItemProcessingStatus {
   pending('PENDING', 'Pending'),
   processing('PROCESSING', 'Processing'),
@@ -58,6 +58,17 @@ enum ItemProcessingStatus {
   }
 }
 
+/// Optional AI metadata from Phase-2 processing. User fields stay authoritative.
+@freezed
+abstract class ItemAiMetadata with _$ItemAiMetadata {
+  const factory ItemAiMetadata({
+    ItemCategory? detectedCategory,
+    String? detectedSubcategory,
+    @Default([]) List<String> detectedColours,
+    bool? backgroundRemoved,
+  }) = _ItemAiMetadata;
+}
+
 /// Clothing item as used by controllers and UI. Backend `itemId` is [id].
 @freezed
 abstract class Item with _$Item {
@@ -72,6 +83,8 @@ abstract class Item with _$Item {
     String? originalImageKey,
     String? processedImageKey,
     @Default(ItemProcessingStatus.ready) ItemProcessingStatus processingStatus,
+    String? processingError,
+    ItemAiMetadata? ai,
     required DateTime createdAt,
     required DateTime updatedAt,
   }) = _Item;

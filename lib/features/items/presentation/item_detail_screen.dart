@@ -2,13 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/router/app_router.dart';
 import '../../../core/router/app_routes.dart';
 import '../application/item_detail_controller.dart';
 import '../application/item_detail_state.dart';
 import '../application/item_scope.dart';
+import 'widgets/processing_status_chip.dart';
 
 /// Clothing item detail with edit and delete.
-class ItemDetailScreen extends ConsumerWidget {
+class ItemDetailScreen extends ConsumerStatefulWidget {
   const ItemDetailScreen({
     super.key,
     required this.wardrobeId,
@@ -22,16 +24,50 @@ class ItemDetailScreen extends ConsumerWidget {
   static const deleteButtonKey = Key('item_detail_delete');
   static const retryButtonKey = Key('item_detail_retry');
 
-  ItemScope get _scope => ItemScope(wardrobeId: wardrobeId, itemId: itemId);
+  @override
+  ConsumerState<ItemDetailScreen> createState() => _ItemDetailScreenState();
+}
+
+class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen>
+    with RouteAware {
+  RouteObserver<ModalRoute<void>>? _observer;
+
+  ItemScope get _scope =>
+      ItemScope(wardrobeId: widget.wardrobeId, itemId: widget.itemId);
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final observer = ref.read(routeObserverProvider);
+    final route = ModalRoute.of(context);
+    if (!identical(_observer, observer)) {
+      _observer?.unsubscribe(this);
+      _observer = observer;
+    }
+    if (route != null) {
+      observer.subscribe(this, route);
+    }
+  }
+
+  @override
+  void dispose() {
+    _observer?.unsubscribe(this);
+    super.dispose();
+  }
+
+  @override
+  void didPopNext() {
+    ref.read(itemDetailControllerProvider(_scope).notifier).refresh();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final state = ref.watch(itemDetailControllerProvider(_scope));
     final item = state.item;
 
     ref.listen(itemDetailControllerProvider(_scope), (previous, next) {
       if (next.isDeleted && context.mounted) {
-        context.go(AppRoutes.wardrobeDetail(wardrobeId));
+        context.go(AppRoutes.wardrobeDetail(widget.wardrobeId));
       }
     });
 
@@ -41,40 +77,44 @@ class ItemDetailScreen extends ConsumerWidget {
         actions: [
           if (item != null) ...[
             IconButton(
-              key: editButtonKey,
+              key: ItemDetailScreen.editButtonKey,
               tooltip: 'Edit',
               onPressed: state.isSaving
                   ? null
-                  : () => context.push(AppRoutes.editItem(wardrobeId, itemId)),
+                  : () => context.push(
+                      AppRoutes.editItem(widget.wardrobeId, widget.itemId),
+                    ),
               icon: const Icon(Icons.edit_outlined),
             ),
             IconButton(
-              key: deleteButtonKey,
+              key: ItemDetailScreen.deleteButtonKey,
               tooltip: 'Delete',
-              onPressed: state.isSaving
-                  ? null
-                  : () => _confirmDelete(context, ref),
+              onPressed: state.isSaving ? null : () => _confirmDelete(context),
               icon: const Icon(Icons.delete_outline),
             ),
           ],
         ],
       ),
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: _buildBody(context, ref, state),
+        child: RefreshIndicator(
+          onRefresh: () =>
+              ref.read(itemDetailControllerProvider(_scope).notifier).refresh(),
+          child: ListView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.all(24),
+            children: [_buildBody(context, state)],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildBody(
-    BuildContext context,
-    WidgetRef ref,
-    ItemDetailState state,
-  ) {
+  Widget _buildBody(BuildContext context, ItemDetailState state) {
     if (state.isLoading && state.item == null) {
-      return const Center(child: CircularProgressIndicator());
+      return const Padding(
+        padding: EdgeInsets.symmetric(vertical: 48),
+        child: Center(child: CircularProgressIndicator()),
+      );
     }
     if (state.item == null) {
       return Center(
@@ -88,7 +128,7 @@ class ItemDetailScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 16),
             FilledButton(
-              key: retryButtonKey,
+              key: ItemDetailScreen.retryButtonKey,
               onPressed: () => ref
                   .read(itemDetailControllerProvider(_scope).notifier)
                   .refresh(),
@@ -100,7 +140,9 @@ class ItemDetailScreen extends ConsumerWidget {
     }
 
     final item = state.item!;
-    return ListView(
+    final ai = item.ai;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text(item.name, style: Theme.of(context).textTheme.headlineSmall),
         const SizedBox(height: 8),
@@ -110,7 +152,21 @@ class ItemDetailScreen extends ConsumerWidget {
         if (item.brand != null && item.brand!.isNotEmpty) Text(item.brand!),
         if (item.colours.isNotEmpty) Text(item.colours.join(', ')),
         const SizedBox(height: 16),
-        Text('Status: ${item.processingStatus.label}'),
+        ProcessingStatusBanner(
+          status: item.processingStatus,
+          processingError: item.processingError,
+        ),
+        if (ai != null) ...[
+          const SizedBox(height: 16),
+          Text('Detected', style: Theme.of(context).textTheme.titleSmall),
+          if (ai.detectedCategory != null) Text(ai.detectedCategory!.label),
+          if (ai.detectedSubcategory != null &&
+              ai.detectedSubcategory!.isNotEmpty)
+            Text(ai.detectedSubcategory!),
+          if (ai.detectedColours.isNotEmpty)
+            Text(ai.detectedColours.join(', ')),
+        ],
+        const SizedBox(height: 16),
         Text('Added ${_formatTimestamp(item.createdAt)}'),
         Text('Updated ${_formatTimestamp(item.updatedAt)}'),
         if (state.errorMessage != null) ...[
@@ -128,7 +184,7 @@ class ItemDetailScreen extends ConsumerWidget {
     );
   }
 
-  Future<void> _confirmDelete(BuildContext context, WidgetRef ref) async {
+  Future<void> _confirmDelete(BuildContext context) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) {

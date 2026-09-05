@@ -1,4 +1,4 @@
-import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -20,6 +20,11 @@ import '../../features/wardrobes/presentation/wardrobes_screen.dart';
 import 'app_routes.dart';
 import 'auth_redirect.dart';
 
+/// Observes route enter/leave so item screens can refetch on re-entry.
+final routeObserverProvider = Provider<RouteObserver<ModalRoute<void>>>((ref) {
+  return RouteObserver<ModalRoute<void>>();
+});
+
 /// Notifies go_router when [AuthStatus] changes without recreating the router.
 final routerRefreshProvider = Provider<ValueNotifier<int>>((ref) {
   final notifier = ValueNotifier<int>(0);
@@ -35,10 +40,12 @@ final routerRefreshProvider = Provider<ValueNotifier<int>>((ref) {
 /// Application [GoRouter] with auth redirect.
 final routerProvider = Provider<GoRouter>((ref) {
   final refresh = ref.watch(routerRefreshProvider);
+  final observer = ref.watch(routeObserverProvider);
 
   return GoRouter(
     initialLocation: AppRoutes.splash,
     refreshListenable: refresh,
+    observers: [observer],
     redirect: (context, state) {
       final auth = ref.read(authControllerProvider);
       return resolveAuthRedirect(

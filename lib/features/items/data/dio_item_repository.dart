@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../core/network/dio_client.dart';
 import '../domain/item.dart';
+import '../domain/item_list_filters.dart';
 import '../domain/item_repository.dart';
 import 'item_dtos.dart';
 
@@ -19,9 +20,15 @@ class DioItemRepository implements ItemRepository {
       '${_collectionPath(wardrobeId)}/$itemId';
 
   @override
-  Future<List<Item>> listItems(String wardrobeId) {
+  Future<List<Item>> listItems(
+    String wardrobeId, {
+    ItemListFilters filters = const ItemListFilters(),
+  }) {
     return _guard(() async {
-      final response = await _dio.get<dynamic>(_collectionPath(wardrobeId));
+      final response = await _dio.get<dynamic>(
+        _collectionPath(wardrobeId),
+        queryParameters: filters.toQueryParameters(),
+      );
       return parseItemList(response.data);
     });
   }

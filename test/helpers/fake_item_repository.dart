@@ -1,5 +1,6 @@
 import 'package:wardrobe_app/core/network/api_exception.dart';
 import 'package:wardrobe_app/features/items/domain/item.dart';
+import 'package:wardrobe_app/features/items/domain/item_list_filters.dart';
 import 'package:wardrobe_app/features/items/domain/item_repository.dart';
 
 /// In-memory [ItemRepository] for unit tests.
@@ -14,10 +15,15 @@ class FakeItemRepository implements ItemRepository {
   int updateCalls = 0;
   int deleteCalls = 0;
   String? lastImageKey;
+  ItemListFilters lastListFilters = const ItemListFilters();
 
   @override
-  Future<List<Item>> listItems(String wardrobeId) async {
+  Future<List<Item>> listItems(
+    String wardrobeId, {
+    ItemListFilters filters = const ItemListFilters(),
+  }) async {
     listCalls++;
+    lastListFilters = filters;
     _maybeFail();
     return [
       for (final item in items)

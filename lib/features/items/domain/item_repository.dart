@@ -1,8 +1,12 @@
 import 'item.dart';
+import 'item_list_filters.dart';
 
 /// Clothing-item CRUD nested under a wardrobe.
 abstract interface class ItemRepository {
-  Future<List<Item>> listItems(String wardrobeId);
+  Future<List<Item>> listItems(
+    String wardrobeId, {
+    ItemListFilters filters = const ItemListFilters(),
+  });
 
   Future<Item> getItem({required String wardrobeId, required String itemId});
 
