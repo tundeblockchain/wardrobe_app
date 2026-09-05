@@ -86,6 +86,20 @@ void main() {
         expect(
           resolveAuthRedirect(
             status: AuthStatus.unauthenticated,
+            location: AppRoutes.recommendations('wd_abc123'),
+          ),
+          AppRoutes.login,
+        );
+        expect(
+          resolveAuthRedirect(
+            status: AuthStatus.unauthenticated,
+            location: AppRoutes.recommendationDetail('wd_abc123', 0),
+          ),
+          AppRoutes.login,
+        );
+        expect(
+          resolveAuthRedirect(
+            status: AuthStatus.unauthenticated,
             location: AppRoutes.splash,
           ),
           AppRoutes.login,
@@ -165,6 +179,20 @@ void main() {
           resolveAuthRedirect(
             status: AuthStatus.authenticated,
             location: AppRoutes.editItem('wd_abc123', 'item_xyz123'),
+          ),
+          isNull,
+        );
+        expect(
+          resolveAuthRedirect(
+            status: AuthStatus.authenticated,
+            location: AppRoutes.recommendations('wd_abc123'),
+          ),
+          isNull,
+        );
+        expect(
+          resolveAuthRedirect(
+            status: AuthStatus.authenticated,
+            location: AppRoutes.recommendationDetail('wd_abc123', 0),
           ),
           isNull,
         );
