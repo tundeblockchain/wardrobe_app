@@ -6,8 +6,9 @@ import '../../../core/router/app_routes.dart';
 import '../application/auth_controller.dart';
 import '../domain/auth_validators.dart';
 import 'widgets/auth_scaffold.dart';
+import 'widgets/google_sign_in_button.dart';
 
-/// Minimal email/password registration.
+/// Email/password registration with optional Google sign-in.
 class SignupScreen extends ConsumerStatefulWidget {
   const SignupScreen({super.key});
 
@@ -15,6 +16,7 @@ class SignupScreen extends ConsumerStatefulWidget {
   static const passwordFieldKey = Key('signup_password');
   static const confirmPasswordFieldKey = Key('signup_confirm_password');
   static const submitButtonKey = Key('signup_submit');
+  static const googleButtonKey = Key('signup_google');
 
   @override
   ConsumerState<SignupScreen> createState() => _SignupScreenState();
@@ -25,6 +27,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmController = TextEditingController();
+  bool _googleBusy = false;
 
   @override
   void dispose() {
@@ -46,13 +49,24 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
         );
   }
 
+  Future<void> _signInWithGoogle() async {
+    setState(() => _googleBusy = true);
+    try {
+      await ref.read(authControllerProvider.notifier).signInWithGoogle();
+    } finally {
+      if (mounted) {
+        setState(() => _googleBusy = false);
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final auth = ref.watch(authControllerProvider);
 
     return AuthScaffold(
       title: 'Create account',
-      subtitle: 'Email and password only for Phase 1.',
+      subtitle: 'Use email and password, or continue with Google.',
       child: Form(
         key: _formKey,
         child: Column(
@@ -110,13 +124,20 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
             FilledButton(
               key: SignupScreen.submitButtonKey,
               onPressed: auth.isBusy ? null : _submit,
-              child: auth.isBusy
+              child: auth.isBusy && !_googleBusy
                   ? const SizedBox(
                       height: 20,
                       width: 20,
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
                   : const Text('Sign up'),
+            ),
+            const AuthOrDivider(),
+            GoogleSignInButton(
+              key: SignupScreen.googleButtonKey,
+              onPressed: _signInWithGoogle,
+              enabled: !auth.isBusy,
+              busy: _googleBusy,
             ),
             const SizedBox(height: 8),
             TextButton(

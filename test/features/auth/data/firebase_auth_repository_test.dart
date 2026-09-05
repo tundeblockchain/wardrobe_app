@@ -1,0 +1,222 @@
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:mocktail/mocktail.dart';
+import 'package:wardrobe_app/features/auth/data/firebase_auth_repository.dart';
+import 'package:wardrobe_app/features/auth/domain/auth_failure.dart';
+
+class MockFirebaseAuth extends Mock implements FirebaseAuth {}
+
+class MockGoogleSignIn extends Mock implements GoogleSignIn {}
+
+class MockGoogleSignInAccount extends Mock implements GoogleSignInAccount {}
+
+class MockGoogleSignInAuthentication extends Mock
+    implements GoogleSignInAuthentication {}
+
+class MockUserCredential extends Mock implements UserCredential {}
+
+class MockUser extends Mock implements User {}
+
+class FakeAuthCredential extends Fake implements AuthCredential {}
+
+void main() {
+  late MockFirebaseAuth firebaseAuth;
+  late MockGoogleSignIn googleSignIn;
+  late FirebaseAuthRepository repository;
+
+  setUpAll(() {
+    registerFallbackValue(FakeAuthCredential());
+  });
+
+  setUp(() {
+    firebaseAuth = MockFirebaseAuth();
+    googleSignIn = MockGoogleSignIn();
+    repository = FirebaseAuthRepository(
+      firebaseAuth: firebaseAuth,
+      googleSignIn: googleSignIn,
+    );
+  });
+
+  MockUserCredential stubSignedInUser({
+    String uid = 'uid-google',
+    String email = 'user@gmail.com',
+  }) {
+    final user = MockUser();
+    when(() => user.uid).thenReturn(uid);
+    when(() => user.email).thenReturn(email);
+    final credential = MockUserCredential();
+    when(() => credential.user).thenReturn(user);
+    when(() => firebaseAuth.signInWithCredential(any()))
+        .thenAnswer((_) async => credential);
+    return credential;
+  }
+
+  Future<void> stubGoogleAccount({
+    String? idToken = 'id-token',
+    String? accessToken = 'access-token',
+  }) async {
+    final account = MockGoogleSignInAccount();
+    final auth = MockGoogleSignInAuthentication();
+    when(() => auth.idToken).thenReturn(idToken);
+    when(() => auth.accessToken).thenReturn(accessToken);
+    when(() => account.authentication).thenAnswer((_) async => auth);
+    when(() => googleSignIn.signIn()).thenAnswer((_) async => account);
+  }
+
+  test('signInWithGoogle maps Google tokens to an AppUser session', () async {
+    await stubGoogleAccount();
+    stubSignedInUser();
+
+    final user = await repository.signInWithGoogle();
+
+    expect(user.uid, 'uid-google');
+    expect(user.email, 'user@gmail.com');
+    verify(() => googleSignIn.signIn()).called(1);
+    verify(() => firebaseAuth.signInWithCredential(any())).called(1);
+  });
+
+  test('signInWithGoogle treats a null account as cancelled', () async {
+    when(() => googleSignIn.signIn()).thenAnswer((_) async => null);
+
+    expect(
+      () => repository.signInWithGoogle(),
+      throwsA(
+        isA<AuthFailure>().having(
+          (failure) => failure.isCancelled,
+          'isCancelled',
+          isTrue,
+        ),
+      ),
+    );
+    verifyNever(() => firebaseAuth.signInWithCredential(any()));
+  });
+
+  test(
+    'signInWithGoogle maps account-exists-with-different-credential',
+    () async {
+      await stubGoogleAccount();
+      when(() => firebaseAuth.signInWithCredential(any())).thenThrow(
+        FirebaseAuthException(code: 'account-exists-with-different-credential'),
+      );
+
+      expect(
+        () => repository.signInWithGoogle(),
+        throwsA(
+          isA<AuthFailure>()
+              .having(
+                (failure) => failure.code,
+                'code',
+                'account-exists-with-different-credential',
+              )
+              .having(
+                (failure) => failure.message,
+                'message',
+                contains('already exists'),
+              ),
+        ),
+      );
+    },
+  );
+
+  test(
+    'signInWithGoogle maps platform cancel without hitting Firebase',
+    () async {
+      when(() => googleSignIn.signIn()).thenThrow(
+        PlatformException(code: 'sign_in_canceled', message: 'cancelled'),
+      );
+
+      expect(
+        () => repository.signInWithGoogle(),
+        throwsA(
+          isA<AuthFailure>().having(
+            (failure) => failure.isCancelled,
+            'isCancelled',
+            isTrue,
+          ),
+        ),
+      );
+      verifyNever(() => firebaseAuth.signInWithCredential(any()));
+    },
+  );
+
+  test('signInWithGoogle maps other platform errors', () async {
+    when(() => googleSignIn.signIn())
+        .thenThrow(PlatformException(code: 'network_error'));
+
+    expect(
+      () => repository.signInWithGoogle(),
+      throwsA(
+        isA<AuthFailure>().having(
+          (failure) => failure.message,
+          'message',
+          'Network error. Check your connection.',
+        ),
+      ),
+    );
+  });
+
+  test('signInWithGoogle fails when Google returns no tokens', () async {
+    await stubGoogleAccount(idToken: null, accessToken: null);
+
+    expect(
+      () => repository.signInWithGoogle(),
+      throwsA(
+        isA<AuthFailure>().having(
+          (failure) => failure.code,
+          'code',
+          'missing-google-tokens',
+        ),
+      ),
+    );
+    verifyNever(() => firebaseAuth.signInWithCredential(any()));
+  });
+
+  test('signOut disconnects Google then signs out of Firebase', () async {
+    when(() => googleSignIn.disconnect()).thenAnswer((_) async => null);
+    when(() => firebaseAuth.signOut()).thenAnswer((_) async {});
+
+    await repository.signOut();
+
+    verifyInOrder([
+      () => googleSignIn.disconnect(),
+      () => firebaseAuth.signOut(),
+    ]);
+  });
+
+  test(
+    'signOut still signs out of Firebase if Google disconnect fails',
+    () async {
+      when(() => googleSignIn.disconnect())
+          .thenThrow(Exception('no google session'));
+      when(() => firebaseAuth.signOut()).thenAnswer((_) async {});
+
+      await repository.signOut();
+
+      verify(() => firebaseAuth.signOut()).called(1);
+    },
+  );
+
+  test('email signIn is unchanged', () async {
+    final user = MockUser();
+    when(() => user.uid).thenReturn('uid-email');
+    when(() => user.email).thenReturn('user@example.com');
+    final credential = MockUserCredential();
+    when(() => credential.user).thenReturn(user);
+    when(
+      () => firebaseAuth.signInWithEmailAndPassword(
+        email: any(named: 'email'),
+        password: any(named: 'password'),
+      ),
+    ).thenAnswer((_) async => credential);
+
+    final session = await repository.signIn(
+      email: ' user@example.com ',
+      password: 'secret1',
+    );
+
+    expect(session.email, 'user@example.com');
+    verifyNever(() => googleSignIn.signIn());
+  });
+}

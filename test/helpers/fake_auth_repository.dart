@@ -33,6 +33,11 @@ class FakeAuthRepository implements AuthRepository {
   }
 
   @override
+  Future<AppUser> signInWithGoogle() {
+    return _authenticate('google.user@example.com');
+  }
+
+  @override
   Future<void> sendPasswordResetEmail({required String email}) async {
     await _maybeFail();
   }

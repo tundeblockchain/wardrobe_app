@@ -17,7 +17,8 @@ Copy these placeholders into a **local** file that is **not committed**
   "FIREBASE_MESSAGING_SENDER_ID": "000000000000",
   "FIREBASE_PROJECT_ID": "your-project-id",
   "FIREBASE_AUTH_DOMAIN": "your-project-id.firebaseapp.com",
-  "FIREBASE_STORAGE_BUCKET": "your-project-id.appspot.com"
+  "FIREBASE_STORAGE_BUCKET": "your-project-id.appspot.com",
+  "GOOGLE_SERVER_CLIENT_ID": "your-web-client-id.apps.googleusercontent.com"
 }
 ```
 
@@ -30,4 +31,8 @@ flutter run --dart-define-from-file=dart_defines.json
 Or generate `lib/firebase_options.dart` locally with FlutterFire CLI and keep it
 gitignored. This app reads options from dart-defines so CI never needs real keys.
 
-Google sign-in is out of scope for Phase 1 (email/password only).
+Optional `GOOGLE_SERVER_CLIENT_ID` is the **Web** OAuth client ID from
+Firebase (Google provider). Android needs it to mint an ID token for
+`signInWithCredential`. See [docs/google-sign-in.md](google-sign-in.md).
+Do **not** commit real client IDs or `google-services.json` /
+`GoogleService-Info.plist`.
