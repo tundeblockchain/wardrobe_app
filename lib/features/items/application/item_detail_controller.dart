@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/lifecycle/app_lifecycle.dart';
 import '../../../core/network/api_exception.dart';
 import '../data/dio_item_repository.dart';
 import '../domain/item.dart';
@@ -16,6 +17,11 @@ class ItemDetailController extends Notifier<ItemDetailState> {
 
   @override
   ItemDetailState build() {
+    ref.listen<int>(appLifecycleTickProvider, (previous, next) {
+      if (previous != null && previous != next) {
+        refresh();
+      }
+    });
     Future<void>.microtask(refresh);
     return const ItemDetailState(isLoading: true);
   }

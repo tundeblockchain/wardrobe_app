@@ -18,6 +18,26 @@ Map<String, dynamic> _$ItemImageResponseToJson(_ItemImageResponse instance) =>
       'processedKey': instance.processedKey,
     };
 
+_ItemAiResponse _$ItemAiResponseFromJson(Map<String, dynamic> json) =>
+    _ItemAiResponse(
+      detectedCategory: json['detectedCategory'] as String?,
+      detectedSubcategory: json['detectedSubcategory'] as String?,
+      detectedColours: (json['detectedColours'] as List<dynamic>?)
+          ?.map((e) => e as String)
+          .toList(),
+      backgroundRemoved: json['backgroundRemoved'] as bool?,
+      processedImageKey: json['processedImageKey'] as String?,
+    );
+
+Map<String, dynamic> _$ItemAiResponseToJson(_ItemAiResponse instance) =>
+    <String, dynamic>{
+      'detectedCategory': instance.detectedCategory,
+      'detectedSubcategory': instance.detectedSubcategory,
+      'detectedColours': instance.detectedColours,
+      'backgroundRemoved': instance.backgroundRemoved,
+      'processedImageKey': instance.processedImageKey,
+    };
+
 _ItemResponse _$ItemResponseFromJson(Map<String, dynamic> json) =>
     _ItemResponse(
       itemId: json['itemId'] as String,
@@ -34,6 +54,12 @@ _ItemResponse _$ItemResponseFromJson(Map<String, dynamic> json) =>
           : ItemImageResponse.fromJson(json['image'] as Map<String, dynamic>),
       imageKey: json['imageKey'] as String?,
       processingStatus: json['processingStatus'] as String?,
+      processingError: json['processingError'] as String?,
+      failureReason: json['failureReason'] as String?,
+      errorMessage: json['errorMessage'] as String?,
+      ai: json['ai'] == null
+          ? null
+          : ItemAiResponse.fromJson(json['ai'] as Map<String, dynamic>),
       createdAt: DateTime.parse(json['createdAt'] as String),
       updatedAt: DateTime.parse(json['updatedAt'] as String),
     );
@@ -50,6 +76,10 @@ Map<String, dynamic> _$ItemResponseToJson(_ItemResponse instance) =>
       'image': instance.image,
       'imageKey': instance.imageKey,
       'processingStatus': instance.processingStatus,
+      'processingError': instance.processingError,
+      'failureReason': instance.failureReason,
+      'errorMessage': instance.errorMessage,
+      'ai': instance.ai,
       'createdAt': instance.createdAt.toIso8601String(),
       'updatedAt': instance.updatedAt.toIso8601String(),
     };

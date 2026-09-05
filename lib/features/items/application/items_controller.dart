@@ -1,8 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/lifecycle/app_lifecycle.dart';
 import '../../../core/network/api_exception.dart';
 import '../data/dio_item_repository.dart';
 import '../domain/item.dart';
+import '../domain/item_list_filters.dart';
 import '../domain/item_repository.dart';
 import 'items_state.dart';
 
@@ -14,6 +16,11 @@ class ItemsController extends Notifier<ItemsState> {
 
   @override
   ItemsState build() {
+    ref.listen<int>(appLifecycleTickProvider, (previous, next) {
+      if (previous != null && previous != next) {
+        refresh();
+      }
+    });
     Future<void>.microtask(refresh);
     return const ItemsState(isLoading: true);
   }
@@ -23,7 +30,10 @@ class ItemsController extends Notifier<ItemsState> {
   Future<void> refresh() async {
     state = state.copyWith(isLoading: true, clearError: true);
     try {
-      final items = await _repository.listItems(wardrobeId);
+      final items = await _repository.listItems(
+        wardrobeId,
+        filters: state.filters,
+      );
       if (!ref.mounted) {
         return;
       }
@@ -42,6 +52,14 @@ class ItemsController extends Notifier<ItemsState> {
         errorMessage: 'Something went wrong. Please try again.',
       );
     }
+  }
+
+  Future<void> setFilters(ItemListFilters filters) async {
+    if (state.filters == filters) {
+      return;
+    }
+    state = state.copyWith(filters: filters);
+    await refresh();
   }
 
   void upsert(Item item) {

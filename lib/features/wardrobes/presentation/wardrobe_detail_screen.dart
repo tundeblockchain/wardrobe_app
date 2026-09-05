@@ -2,10 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/router/app_router.dart';
 import '../../../core/router/app_routes.dart';
 import '../../items/application/items_controller.dart';
 import '../../items/application/items_state.dart';
-import '../../items/domain/item.dart';
+import '../../items/domain/item_list_filters.dart';
+import '../../items/presentation/widgets/item_filter_bar.dart';
+import '../../items/presentation/widgets/item_grid_card.dart';
 import '../../outfits/application/outfits_controller.dart';
 import '../../outfits/application/outfits_state.dart';
 import '../../outfits/domain/outfit.dart';
@@ -14,7 +17,7 @@ import '../application/wardrobe_detail_state.dart';
 import '../domain/wardrobe_validators.dart';
 
 /// Wardrobe metadata plus nested clothing items and an outfits entry point.
-class WardrobeDetailScreen extends ConsumerWidget {
+class WardrobeDetailScreen extends ConsumerStatefulWidget {
   const WardrobeDetailScreen({super.key, required this.wardrobeId});
 
   final String wardrobeId;
@@ -28,7 +31,43 @@ class WardrobeDetailScreen extends ConsumerWidget {
   static const createOutfitButtonKey = Key('wardrobe_detail_create_outfit');
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<WardrobeDetailScreen> createState() =>
+      _WardrobeDetailScreenState();
+}
+
+class _WardrobeDetailScreenState extends ConsumerState<WardrobeDetailScreen>
+    with RouteAware {
+  RouteObserver<ModalRoute<void>>? _observer;
+
+  String get wardrobeId => widget.wardrobeId;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final observer = ref.read(routeObserverProvider);
+    final route = ModalRoute.of(context);
+    if (!identical(_observer, observer)) {
+      _observer?.unsubscribe(this);
+      _observer = observer;
+    }
+    if (route != null) {
+      observer.subscribe(this, route);
+    }
+  }
+
+  @override
+  void dispose() {
+    _observer?.unsubscribe(this);
+    super.dispose();
+  }
+
+  @override
+  void didPopNext() {
+    ref.read(itemsControllerProvider(wardrobeId).notifier).refresh();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final state = ref.watch(wardrobeDetailControllerProvider(wardrobeId));
     final itemsState = ref.watch(itemsControllerProvider(wardrobeId));
     final outfitsState = ref.watch(outfitsControllerProvider(wardrobeId));
@@ -46,7 +85,7 @@ class WardrobeDetailScreen extends ConsumerWidget {
         actions: [
           if (wardrobe != null) ...[
             IconButton(
-              key: renameButtonKey,
+              key: WardrobeDetailScreen.renameButtonKey,
               tooltip: 'Rename',
               onPressed: state.isSaving
                   ? null
@@ -54,7 +93,7 @@ class WardrobeDetailScreen extends ConsumerWidget {
               icon: const Icon(Icons.edit_outlined),
             ),
             IconButton(
-              key: deleteButtonKey,
+              key: WardrobeDetailScreen.deleteButtonKey,
               tooltip: 'Delete',
               onPressed: state.isSaving
                   ? null
@@ -67,7 +106,7 @@ class WardrobeDetailScreen extends ConsumerWidget {
       floatingActionButton: wardrobe == null
           ? null
           : FloatingActionButton(
-              key: addItemButtonKey,
+              key: WardrobeDetailScreen.addItemButtonKey,
               tooltip: 'Add item',
               onPressed: () => context.push(AppRoutes.createItem(wardrobeId)),
               child: const Icon(Icons.add_a_photo_outlined),
@@ -122,7 +161,7 @@ class WardrobeDetailScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 16),
             FilledButton(
-              key: retryButtonKey,
+              key: WardrobeDetailScreen.retryButtonKey,
               onPressed: () => ref
                   .read(wardrobeDetailControllerProvider(wardrobeId).notifier)
                   .refresh(),
@@ -333,7 +372,7 @@ class _ItemsSection extends ConsumerWidget {
         ],
       );
     }
-    if (state.isEmpty) {
+    if (state.isEmpty && state.filters.isEmpty) {
       return Padding(
         key: WardrobeDetailScreen.itemsEmptyKey,
         padding: const EdgeInsets.symmetric(vertical: 16),
@@ -360,22 +399,39 @@ class _ItemsSection extends ConsumerWidget {
               style: TextStyle(color: Theme.of(context).colorScheme.error),
             ),
           ),
-        for (final Item item in state.items)
-          Card(
-            child: ListTile(
-              key: Key('item_tile_${item.id}'),
-              leading: CircleAvatar(child: Text(item.category.label[0])),
-              title: Text(item.name),
-              subtitle: Text(
-                [
-                  item.category.label,
-                  if (item.brand != null && item.brand!.isNotEmpty) item.brand,
-                ].join(' · '),
-              ),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: () =>
-                  context.push(AppRoutes.itemDetail(wardrobeId, item.id)),
+        ItemFilterBar(
+          filters: state.filters,
+          onChanged: (ItemListFilters filters) {
+            ref
+                .read(itemsControllerProvider(wardrobeId).notifier)
+                .setFilters(filters);
+          },
+        ),
+        const SizedBox(height: 16),
+        if (state.isEmpty)
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 16),
+            child: Text('No items match these filters.'),
+          )
+        else
+          GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: state.items.length,
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              childAspectRatio: 0.95,
+              crossAxisSpacing: 12,
+              mainAxisSpacing: 12,
             ),
+            itemBuilder: (context, index) {
+              final item = state.items[index];
+              return ItemGridCard(
+                key: Key('item_tile_${item.id}'),
+                wardrobeId: wardrobeId,
+                item: item,
+              );
+            },
           ),
       ],
     );

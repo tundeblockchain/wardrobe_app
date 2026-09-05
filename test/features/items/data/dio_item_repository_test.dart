@@ -7,6 +7,8 @@ import 'package:wardrobe_app/core/network/dio_client.dart';
 import 'package:wardrobe_app/core/network/id_token_source.dart';
 import 'package:wardrobe_app/features/items/data/dio_item_repository.dart';
 import 'package:wardrobe_app/features/items/domain/item.dart';
+import 'package:wardrobe_app/features/items/domain/item_list_filters.dart';
+import 'package:wardrobe_app/features/items/domain/item_taxonomy.dart';
 
 import '../../../helpers/scripted_http_adapter.dart';
 
@@ -56,6 +58,57 @@ void main() {
     expect(result.single.id, 'item_xyz123');
     expect(adapter.requests.single.method, 'GET');
     expect(adapter.requests.single.path, '/wardrobes/wd_abc123/items');
+    expect(adapter.requests.single.queryParameters, isEmpty);
+  });
+
+  test(
+    'listItems sends category, colour, and subcategory query params',
+    () async {
+      repository = buildRepository([
+        const HttpScript(
+          statusCode: 200,
+          body: {
+            'items': [payload],
+          },
+        ),
+      ]);
+
+      final result = await repository.listItems(
+        'wd_abc123',
+        filters: const ItemListFilters(
+          category: ItemCategory.top,
+          colour: ItemColour.black,
+          subcategory: ItemSubcategory.tshirt,
+        ),
+      );
+
+      expect(result, hasLength(1));
+      expect(adapter.requests.single.method, 'GET');
+      expect(adapter.requests.single.path, '/wardrobes/wd_abc123/items');
+      expect(adapter.requests.single.queryParameters, {
+        'category': 'TOP',
+        'colour': 'BLACK',
+        'subcategory': 'TSHIRT',
+      });
+    },
+  );
+
+  test('listItems sends only the selected filter params', () async {
+    repository = buildRepository([
+      const HttpScript(
+        statusCode: 200,
+        body: {
+          'items': [payload],
+        },
+      ),
+    ]);
+
+    await repository.listItems(
+      'wd_abc123',
+      filters: const ItemListFilters(category: ItemCategory.top),
+    );
+
+    expect(adapter.requests.single.queryParameters, {'category': 'TOP'});
   });
 
   test('listItems accepts a bare array', () async {

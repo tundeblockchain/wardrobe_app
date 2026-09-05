@@ -39,7 +39,40 @@ void main() {
         'users/uid/items/item_xyz123/processed.png',
       );
       expect(domain.processingStatus, ItemProcessingStatus.ready);
+      expect(domain.processingError, isNull);
+      expect(domain.ai, isNull);
       expect(domain.toString(), isNot(contains('itemId')));
+    });
+
+    test('maps optional ai metadata and processingError', () {
+      final domain = ItemResponse.fromJson({
+        ...json,
+        'processingStatus': 'FAILED',
+        'processingError': 'Background removal failed.',
+        'ai': {
+          'detectedCategory': 'TOP',
+          'detectedSubcategory': 'TSHIRT',
+          'detectedColours': ['BLACK', 'WHITE'],
+          'backgroundRemoved': false,
+        },
+      }).toDomain();
+
+      expect(domain.processingStatus, ItemProcessingStatus.failed);
+      expect(domain.processingError, 'Background removal failed.');
+      expect(domain.ai?.detectedCategory, ItemCategory.top);
+      expect(domain.ai?.detectedSubcategory, 'TSHIRT');
+      expect(domain.ai?.detectedColours, ['BLACK', 'WHITE']);
+      expect(domain.ai?.backgroundRemoved, isFalse);
+    });
+
+    test('maps failureReason alias onto processingError', () {
+      final domain = ItemResponse.fromJson({
+        ...json,
+        'processingStatus': 'FAILED',
+        'failureReason': 'Classifier unavailable.',
+      }).toDomain();
+
+      expect(domain.processingError, 'Classifier unavailable.');
     });
 
     test('falls back to flat imageKey when nested image is absent', () {

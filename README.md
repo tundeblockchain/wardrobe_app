@@ -59,9 +59,12 @@ Upload flow:
 3. `POST /wardrobes/{wardrobeId}/items` with `{ "name", "category", "imageKey" }`
 
 Response `itemId` maps to domain `id`. Image keys stay on the domain as
-`originalImageKey` / `processedImageKey`. Phase 1 `processingStatus` is `READY`
-(no SQS). Camera/gallery is abstracted as `ItemImagePicker` so unit tests never
-need a device.
+`originalImageKey` / `processedImageKey`. `processingStatus` is shown on the
+item grid and detail (`PENDING` / `PROCESSING` / `READY` / `FAILED`). The
+client refetches on pull-to-refresh, app resume, and route re-entry (no
+websockets). Category / colour / subcategory chips send WARDROBE-21 query
+params to `GET /wardrobes/{wardrobeId}/items`. Camera/gallery is abstracted as
+`ItemImagePicker` so unit tests never need a device.
 
 Backend item/upload APIs (WARDROBE-8 / WARDROBE-11) may not be live yet; the
 client is scaffolded against the contract with mocked unit tests.

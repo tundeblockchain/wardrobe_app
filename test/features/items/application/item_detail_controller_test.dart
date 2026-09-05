@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:wardrobe_app/core/lifecycle/app_lifecycle.dart';
 import 'package:wardrobe_app/core/network/api_exception.dart';
 import 'package:wardrobe_app/features/items/application/item_detail_controller.dart';
 import 'package:wardrobe_app/features/items/application/item_scope.dart';
@@ -67,5 +68,16 @@ void main() {
       container.read(itemDetailControllerProvider(missing)).errorMessage,
       'Item not found.',
     );
+  });
+
+  test('app resume refetches item detail', () async {
+    container.read(itemDetailControllerProvider(scope));
+    await settle();
+    expect(repository.getCalls, 1);
+
+    container.read(appLifecycleTickProvider.notifier).bump();
+    await settle();
+
+    expect(repository.getCalls, 2);
   });
 }

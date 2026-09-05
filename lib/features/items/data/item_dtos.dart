@@ -18,6 +18,32 @@ abstract class ItemImageResponse with _$ItemImageResponse {
       _$ItemImageResponseFromJson(json);
 }
 
+/// Optional Phase-2 `ai` map. Never overwrites user category / colours.
+@freezed
+abstract class ItemAiResponse with _$ItemAiResponse {
+  const ItemAiResponse._();
+
+  const factory ItemAiResponse({
+    String? detectedCategory,
+    String? detectedSubcategory,
+    List<String>? detectedColours,
+    bool? backgroundRemoved,
+    String? processedImageKey,
+  }) = _ItemAiResponse;
+
+  factory ItemAiResponse.fromJson(Map<String, dynamic> json) =>
+      _$ItemAiResponseFromJson(json);
+
+  ItemAiMetadata toDomain() {
+    return ItemAiMetadata(
+      detectedCategory: ItemCategory.tryParse(detectedCategory),
+      detectedSubcategory: detectedSubcategory,
+      detectedColours: [...?detectedColours],
+      backgroundRemoved: backgroundRemoved,
+    );
+  }
+}
+
 /// Backend clothing-item payload. [itemId] maps to domain [Item.id].
 @freezed
 abstract class ItemResponse with _$ItemResponse {
@@ -34,6 +60,10 @@ abstract class ItemResponse with _$ItemResponse {
     ItemImageResponse? image,
     String? imageKey,
     String? processingStatus,
+    String? processingError,
+    String? failureReason,
+    String? errorMessage,
+    ItemAiResponse? ai,
     required DateTime createdAt,
     required DateTime updatedAt,
   }) = _ItemResponse;
@@ -58,12 +88,24 @@ abstract class ItemResponse with _$ItemResponse {
       colours: [...?colours],
       brand: brand,
       originalImageKey: image?.originalKey ?? imageKey,
-      processedImageKey: image?.processedKey,
+      processedImageKey: image?.processedKey ?? ai?.processedImageKey,
       processingStatus: ItemProcessingStatus.parse(processingStatus),
+      processingError: _optionalError(
+        processingError ?? failureReason ?? errorMessage,
+      ),
+      ai: ai?.toDomain(),
       createdAt: createdAt,
       updatedAt: updatedAt,
     );
   }
+}
+
+String? _optionalError(String? value) {
+  final trimmed = value?.trim();
+  if (trimmed == null || trimmed.isEmpty) {
+    return null;
+  }
+  return trimmed;
 }
 
 /// `GET /wardrobes/{wardrobeId}/items` envelope.
