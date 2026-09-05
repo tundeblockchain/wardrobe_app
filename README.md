@@ -20,11 +20,12 @@ Layers (dependencies point downward only):
 1. **Presentation** — screens (`login`, `signup`, `forgot-password`, splash, wardrobes list / create / detail, add item / item detail / edit item, outfits list / create / detail / edit)
 2. **Controller / Provider** — Riverpod auth, wardrobe, item, outfit, and recommendation controllers
 3. **Repository** — `AuthRepository`, `WardrobeRepository`, `ItemRepository`, `UploadRepository`, `OutfitRepository`, `RecommendationRepository`
-4. **API client / Firebase** — `FirebaseAuthRepository`, Dio + ID-token interceptor, wardrobe/item/upload/outfit/recommendation Dio repositories, `image_picker` behind `ItemImagePicker`
+4. **API client / Firebase** — `FirebaseAuthRepository` (email/password + Google), Dio + ID-token interceptor, wardrobe/item/upload/outfit/recommendation Dio repositories, `image_picker` behind `ItemImagePicker`
 
 ## Auth shell
 
-- Email/password via `firebase_auth`. Google sign-in is deferred.
+- Email/password and Google / Gmail via `firebase_auth` + `google_sign_in`.
+  Firebase console setup: [docs/google-sign-in.md](docs/google-sign-in.md).
 - `go_router` restores on splash, sends signed-out users to `/login`, and signed-in users to `/wardrobes`.
 - Dio attaches `Authorization: Bearer <idToken>` from
   `FirebaseAuth.currentUser.getIdToken()` on **each** request. Tokens are never

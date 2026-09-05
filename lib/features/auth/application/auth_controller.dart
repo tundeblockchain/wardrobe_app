@@ -65,6 +65,10 @@ class AuthController extends Notifier<AuthState> {
     );
   }
 
+  Future<void> signInWithGoogle() async {
+    await _authenticate(_repository.signInWithGoogle);
+  }
+
   Future<void> sendPasswordResetEmail({required String email}) async {
     state = state.copyWith(isBusy: true, clearError: true, clearInfo: true);
     try {
@@ -112,6 +116,10 @@ class AuthController extends Notifier<AuthState> {
         user: user,
       );
     } on AuthFailure catch (failure) {
+      if (failure.isCancelled) {
+        state = state.copyWith(isBusy: false);
+        return;
+      }
       state = state.copyWith(isBusy: false, errorMessage: failure.message);
     } catch (_) {
       state = state.copyWith(
