@@ -7,6 +7,7 @@ import 'package:wardrobe_app/features/items/data/dio_item_repository.dart';
 import 'package:wardrobe_app/features/items/data/dio_upload_repository.dart';
 import 'package:wardrobe_app/features/items/data/image_picker_item_image_picker.dart';
 import 'package:wardrobe_app/features/outfits/data/dio_outfit_repository.dart';
+import 'package:wardrobe_app/features/recommendations/data/dio_recommendation_repository.dart';
 import 'package:wardrobe_app/features/wardrobes/data/dio_wardrobe_repository.dart';
 import 'package:wardrobe_app/features/wardrobes/presentation/wardrobes_screen.dart';
 
@@ -14,6 +15,7 @@ import 'helpers/fake_auth_repository.dart';
 import 'helpers/fake_item_image_picker.dart';
 import 'helpers/fake_item_repository.dart';
 import 'helpers/fake_outfit_repository.dart';
+import 'helpers/fake_recommendation_repository.dart';
 import 'helpers/fake_upload_repository.dart';
 import 'helpers/fake_wardrobe_repository.dart';
 
@@ -33,6 +35,9 @@ void main() {
           ),
           itemRepositoryProvider.overrideWithValue(FakeItemRepository()),
           outfitRepositoryProvider.overrideWithValue(FakeOutfitRepository()),
+          recommendationRepositoryProvider.overrideWithValue(
+            FakeRecommendationRepository(),
+          ),
           uploadRepositoryProvider.overrideWithValue(FakeUploadRepository()),
           itemImagePickerProvider.overrideWithValue(FakeItemImagePicker()),
         ],

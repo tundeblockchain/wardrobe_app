@@ -9,6 +9,9 @@ import '../../items/domain/item.dart';
 import '../../outfits/application/outfits_controller.dart';
 import '../../outfits/application/outfits_state.dart';
 import '../../outfits/domain/outfit.dart';
+import '../../recommendations/application/recommendations_controller.dart';
+import '../../recommendations/application/recommendations_state.dart';
+import '../../recommendations/domain/recommendation.dart';
 import '../application/wardrobe_detail_controller.dart';
 import '../application/wardrobe_detail_state.dart';
 import '../domain/wardrobe_validators.dart';
@@ -26,12 +29,18 @@ class WardrobeDetailScreen extends ConsumerWidget {
   static const itemsEmptyKey = Key('wardrobe_detail_items_empty');
   static const outfitsButtonKey = Key('wardrobe_detail_outfits');
   static const createOutfitButtonKey = Key('wardrobe_detail_create_outfit');
+  static const recommendationsButtonKey = Key(
+    'wardrobe_detail_recommendations',
+  );
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(wardrobeDetailControllerProvider(wardrobeId));
     final itemsState = ref.watch(itemsControllerProvider(wardrobeId));
     final outfitsState = ref.watch(outfitsControllerProvider(wardrobeId));
+    final recommendationsState = ref.watch(
+      recommendationsControllerProvider(wardrobeId),
+    );
     final wardrobe = state.wardrobe;
 
     ref.listen(wardrobeDetailControllerProvider(wardrobeId), (previous, next) {
@@ -83,13 +92,23 @@ class WardrobeDetailScreen extends ConsumerWidget {
               ref
                   .read(outfitsControllerProvider(wardrobeId).notifier)
                   .refresh(),
+              ref
+                  .read(recommendationsControllerProvider(wardrobeId).notifier)
+                  .refresh(),
             ]);
           },
           child: ListView(
             physics: const AlwaysScrollableScrollPhysics(),
             padding: const EdgeInsets.all(24),
             children: [
-              _buildBody(context, ref, state, itemsState, outfitsState),
+              _buildBody(
+                context,
+                ref,
+                state,
+                itemsState,
+                outfitsState,
+                recommendationsState,
+              ),
             ],
           ),
         ),
@@ -103,6 +122,7 @@ class WardrobeDetailScreen extends ConsumerWidget {
     WardrobeDetailState state,
     ItemsState itemsState,
     OutfitsState outfitsState,
+    RecommendationsState recommendationsState,
   ) {
     if (state.isLoading && state.wardrobe == null) {
       return const Padding(
@@ -156,6 +176,13 @@ class WardrobeDetailScreen extends ConsumerWidget {
         Text('Outfits', style: Theme.of(context).textTheme.titleMedium),
         const SizedBox(height: 12),
         _OutfitsSection(wardrobeId: wardrobeId, state: outfitsState),
+        const SizedBox(height: 32),
+        Text('Suggestions', style: Theme.of(context).textTheme.titleMedium),
+        const SizedBox(height: 12),
+        _RecommendationsSection(
+          wardrobeId: wardrobeId,
+          state: recommendationsState,
+        ),
         const SizedBox(height: 32),
         Text('Items', style: Theme.of(context).textTheme.titleMedium),
         const SizedBox(height: 12),
@@ -297,6 +324,81 @@ class _OutfitsSection extends ConsumerWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _RecommendationsSection extends StatelessWidget {
+  const _RecommendationsSection({
+    required this.wardrobeId,
+    required this.state,
+  });
+
+  final String wardrobeId;
+  final RecommendationsState state;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        ListTile(
+          key: WardrobeDetailScreen.recommendationsButtonKey,
+          contentPadding: EdgeInsets.zero,
+          leading: const CircleAvatar(child: Icon(Icons.auto_awesome_outlined)),
+          title: const Text('Suggested outfits'),
+          subtitle: Text(
+            state.isUnavailable
+                ? 'Suggestions unavailable'
+                : state.isLoading && state.recommendations.isEmpty
+                ? 'Loading…'
+                : state.isEmpty
+                ? 'No suggestions yet'
+                : state.recommendations.length == 1
+                ? '1 look'
+                : '${state.recommendations.length} looks',
+          ),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () => context.push(AppRoutes.recommendations(wardrobeId)),
+        ),
+        if (!state.isEmpty)
+          for (var i = 0; i < state.recommendations.take(3).length; i++)
+            _RecommendationPreviewTile(
+              wardrobeId: wardrobeId,
+              index: i,
+              recommendation: state.recommendations[i],
+            ),
+      ],
+    );
+  }
+}
+
+class _RecommendationPreviewTile extends StatelessWidget {
+  const _RecommendationPreviewTile({
+    required this.wardrobeId,
+    required this.index,
+    required this.recommendation,
+  });
+
+  final String wardrobeId;
+  final int index;
+  final Recommendation recommendation;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: ListTile(
+        key: Key('wardrobe_recommendation_tile_$index'),
+        title: Text(recommendation.name),
+        subtitle: Text(
+          recommendation.items.length == 1
+              ? '1 item'
+              : '${recommendation.items.length} items',
+        ),
+        trailing: const Icon(Icons.chevron_right),
+        onTap: () =>
+            context.push(AppRoutes.recommendationDetail(wardrobeId, index)),
+      ),
     );
   }
 }

@@ -3,64 +3,49 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/router/app_routes.dart';
-import '../application/outfits_controller.dart';
-import '../domain/outfit.dart';
+import '../application/recommendations_controller.dart';
+import '../domain/recommendation.dart';
 
-/// Saved outfits for one wardrobe.
-class OutfitsScreen extends ConsumerWidget {
-  const OutfitsScreen({super.key, required this.wardrobeId});
+/// Suggested outfits for one wardrobe. Additive — failures stay on this screen.
+class RecommendationsScreen extends ConsumerWidget {
+  const RecommendationsScreen({super.key, required this.wardrobeId});
 
   final String wardrobeId;
 
-  static const createButtonKey = Key('outfits_create');
-  static const emptyStateKey = Key('outfits_empty');
-  static const retryButtonKey = Key('outfits_retry');
-  static const recommendationsButtonKey = Key('outfits_recommendations');
+  static const emptyStateKey = Key('recommendations_empty');
+  static const retryButtonKey = Key('recommendations_retry');
+  static const unavailableKey = Key('recommendations_unavailable');
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final state = ref.watch(outfitsControllerProvider(wardrobeId));
+    final state = ref.watch(recommendationsControllerProvider(wardrobeId));
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Outfits'),
-        actions: [
-          IconButton(
-            key: recommendationsButtonKey,
-            tooltip: 'Suggested outfits',
-            onPressed: () =>
-                context.push(AppRoutes.recommendations(wardrobeId)),
-            icon: const Icon(Icons.auto_awesome_outlined),
-          ),
-        ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        key: createButtonKey,
-        tooltip: 'Create outfit',
-        onPressed: () => context.push(AppRoutes.createOutfit(wardrobeId)),
-        child: const Icon(Icons.checkroom_outlined),
-      ),
+      appBar: AppBar(title: const Text('Suggested outfits')),
       body: RefreshIndicator(
-        onRefresh: () =>
-            ref.read(outfitsControllerProvider(wardrobeId).notifier).refresh(),
+        onRefresh: () => ref
+            .read(recommendationsControllerProvider(wardrobeId).notifier)
+            .refresh(),
         child: ListView(
           physics: const AlwaysScrollableScrollPhysics(),
           padding: const EdgeInsets.all(24),
           children: [
-            if (state.isLoading && state.outfits.isEmpty)
+            if (state.isLoading && state.recommendations.isEmpty)
               const Padding(
                 padding: EdgeInsets.symmetric(vertical: 48),
                 child: Center(child: CircularProgressIndicator()),
               )
-            else if (state.errorMessage != null && state.outfits.isEmpty)
+            else if (state.isUnavailable)
               _ErrorBody(
                 message: state.errorMessage!,
                 onRetry: () => ref
-                    .read(outfitsControllerProvider(wardrobeId).notifier)
+                    .read(
+                      recommendationsControllerProvider(wardrobeId).notifier,
+                    )
                     .refresh(),
               )
             else if (state.isEmpty)
-              _EmptyBody(wardrobeId: wardrobeId)
+              const _EmptyBody()
             else ...[
               if (state.errorMessage != null)
                 Padding(
@@ -72,8 +57,12 @@ class OutfitsScreen extends ConsumerWidget {
                     ),
                   ),
                 ),
-              for (final outfit in state.outfits)
-                _OutfitTile(wardrobeId: wardrobeId, outfit: outfit),
+              for (var i = 0; i < state.recommendations.length; i++)
+                _RecommendationTile(
+                  wardrobeId: wardrobeId,
+                  index: i,
+                  recommendation: state.recommendations[i],
+                ),
             ],
           ],
         ),
@@ -83,31 +72,24 @@ class OutfitsScreen extends ConsumerWidget {
 }
 
 class _EmptyBody extends StatelessWidget {
-  const _EmptyBody({required this.wardrobeId});
-
-  final String wardrobeId;
+  const _EmptyBody();
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      key: OutfitsScreen.emptyStateKey,
+      key: RecommendationsScreen.emptyStateKey,
       padding: const EdgeInsets.symmetric(vertical: 32),
       child: Column(
         children: [
           Text(
-            'No outfits yet',
+            'No suggestions yet',
             style: Theme.of(context).textTheme.headlineSmall,
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 8),
           const Text(
-            'Build a look from items in this wardrobe.',
+            'Add more items to this wardrobe, then pull to refresh.',
             textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 24),
-          FilledButton(
-            onPressed: () => context.push(AppRoutes.createOutfit(wardrobeId)),
-            child: const Text('Create outfit'),
           ),
         ],
       ),
@@ -124,6 +106,7 @@ class _ErrorBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
+      key: RecommendationsScreen.unavailableKey,
       padding: const EdgeInsets.symmetric(vertical: 32),
       child: Column(
         children: [
@@ -132,9 +115,14 @@ class _ErrorBody extends StatelessWidget {
             style: TextStyle(color: Theme.of(context).colorScheme.error),
             textAlign: TextAlign.center,
           ),
+          const SizedBox(height: 8),
+          const Text(
+            'Your wardrobe and saved outfits still work without suggestions.',
+            textAlign: TextAlign.center,
+          ),
           const SizedBox(height: 16),
           FilledButton(
-            key: OutfitsScreen.retryButtonKey,
+            key: RecommendationsScreen.retryButtonKey,
             onPressed: onRetry,
             child: const Text('Retry'),
           ),
@@ -144,24 +132,29 @@ class _ErrorBody extends StatelessWidget {
   }
 }
 
-class _OutfitTile extends StatelessWidget {
-  const _OutfitTile({required this.wardrobeId, required this.outfit});
+class _RecommendationTile extends StatelessWidget {
+  const _RecommendationTile({
+    required this.wardrobeId,
+    required this.index,
+    required this.recommendation,
+  });
 
   final String wardrobeId;
-  final Outfit outfit;
+  final int index;
+  final Recommendation recommendation;
 
   @override
   Widget build(BuildContext context) {
-    final slotCount = outfit.items.length;
+    final slotCount = recommendation.items.length;
     return Card(
       child: ListTile(
-        key: Key('outfit_tile_${outfit.id}'),
-        leading: const CircleAvatar(child: Icon(Icons.checkroom_outlined)),
-        title: Text(outfit.name),
+        key: Key('recommendation_tile_$index'),
+        leading: const CircleAvatar(child: Icon(Icons.auto_awesome_outlined)),
+        title: Text(recommendation.name),
         subtitle: Text(slotCount == 1 ? '1 item' : '$slotCount items'),
         trailing: const Icon(Icons.chevron_right),
         onTap: () =>
-            context.push(AppRoutes.outfitDetail(wardrobeId, outfit.id)),
+            context.push(AppRoutes.recommendationDetail(wardrobeId, index)),
       ),
     );
   }

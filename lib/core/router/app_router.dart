@@ -14,6 +14,8 @@ import '../../features/outfits/presentation/create_outfit_screen.dart';
 import '../../features/outfits/presentation/edit_outfit_screen.dart';
 import '../../features/outfits/presentation/outfit_detail_screen.dart';
 import '../../features/outfits/presentation/outfits_screen.dart';
+import '../../features/recommendations/presentation/recommendation_detail_screen.dart';
+import '../../features/recommendations/presentation/recommendations_screen.dart';
 import '../../features/wardrobes/presentation/create_wardrobe_screen.dart';
 import '../../features/wardrobes/presentation/wardrobe_detail_screen.dart';
 import '../../features/wardrobes/presentation/wardrobes_screen.dart';
@@ -78,6 +80,28 @@ final routerProvider = Provider<GoRouter>((ref) {
               return WardrobeDetailScreen(wardrobeId: wardrobeId);
             },
             routes: [
+              GoRoute(
+                path: 'recommendations',
+                builder: (context, state) {
+                  final wardrobeId = state.pathParameters['wardrobeId']!;
+                  return RecommendationsScreen(wardrobeId: wardrobeId);
+                },
+                routes: [
+                  GoRoute(
+                    path: ':index',
+                    builder: (context, state) {
+                      final wardrobeId = state.pathParameters['wardrobeId']!;
+                      final index =
+                          int.tryParse(state.pathParameters['index'] ?? '') ??
+                          -1;
+                      return RecommendationDetailScreen(
+                        wardrobeId: wardrobeId,
+                        index: index,
+                      );
+                    },
+                  ),
+                ],
+              ),
               GoRoute(
                 path: 'outfits',
                 builder: (context, state) {

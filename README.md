@@ -9,16 +9,18 @@ wardrobe list / create / detail
 clothing items with camera/gallery upload
 ([WARDROBE-13](https://tundetunde000.atlassian.net/browse/WARDROBE-13)), and
 outfit build / save
-([WARDROBE-14](https://tundetunde000.atlassian.net/browse/WARDROBE-14)).
+([WARDROBE-14](https://tundetunde000.atlassian.net/browse/WARDROBE-14)), and
+AI outfit recommendations
+([WARDROBE-24](https://tundetunde000.atlassian.net/browse/WARDROBE-24)).
 
 ## Architecture
 
 Layers (dependencies point downward only):
 
 1. **Presentation** — screens (`login`, `signup`, `forgot-password`, splash, wardrobes list / create / detail, add item / item detail / edit item, outfits list / create / detail / edit)
-2. **Controller / Provider** — Riverpod auth, wardrobe, item, and outfit controllers
-3. **Repository** — `AuthRepository`, `WardrobeRepository`, `ItemRepository`, `UploadRepository`, `OutfitRepository`
-4. **API client / Firebase** — `FirebaseAuthRepository`, Dio + ID-token interceptor, wardrobe/item/upload/outfit Dio repositories, `image_picker` behind `ItemImagePicker`
+2. **Controller / Provider** — Riverpod auth, wardrobe, item, outfit, and recommendation controllers
+3. **Repository** — `AuthRepository`, `WardrobeRepository`, `ItemRepository`, `UploadRepository`, `OutfitRepository`, `RecommendationRepository`
+4. **API client / Firebase** — `FirebaseAuthRepository`, Dio + ID-token interceptor, wardrobe/item/upload/outfit/recommendation Dio repositories, `image_picker` behind `ItemImagePicker`
 
 ## Auth shell
 
@@ -34,7 +36,7 @@ Authenticated routes:
 
 - `/wardrobes` — list + empty state
 - `/wardrobes/create` — name form
-- `/wardrobes/:wardrobeId` — detail, rename, delete, item list, outfits entry
+- `/wardrobes/:wardrobeId` — detail, rename, delete, item list, outfits entry, suggestions entry
 
 The Dio client matches the backend contract (`GET/POST /wardrobes`,
 `GET/PATCH/DELETE /wardrobes/{wardrobeId}`). Response `wardrobeId` is mapped to
@@ -82,6 +84,21 @@ maps to domain `id`.
 
 Backend outfits API (WARDROBE-7) may not be live yet; the client is scaffolded
 against the contract with mocked unit tests. No AI try-on.
+
+## Recommendations
+
+Authenticated routes nested under a wardrobe:
+
+- `/wardrobes/:wardrobeId/recommendations` — suggested looks + empty/error
+- `/wardrobes/:wardrobeId/recommendations/:index` — slot preview; Save creates
+  an outfit via the existing `POST /wardrobes/{wardrobeId}/outfits` body
+  (`name` + `items[{itemId,slot}]`)
+
+Suggestions are never auto-saved. The feature is additive: if
+`GET /wardrobes/{wardrobeId}/recommendations` fails, wardrobe/item/outfit
+flows still work and the suggestions entry shows an unavailable state.
+
+No Phase-3 virtual try-on.
 
 ## Local Firebase / API config
 
