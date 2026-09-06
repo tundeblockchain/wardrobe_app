@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:wardrobe_app/core/router/app_routes.dart';
 import 'package:wardrobe_app/features/auth/application/auth_controller.dart';
 import 'package:wardrobe_app/features/auth/domain/app_user.dart';
+import 'package:wardrobe_app/features/account/data/dio_account_repository.dart';
 import 'package:wardrobe_app/features/profile/data/dio_support_repository.dart';
 import 'package:wardrobe_app/features/profile/data/in_app_reviewer.dart';
 import 'package:wardrobe_app/features/profile/data/package_info_device_context.dart';
@@ -12,6 +13,7 @@ import 'package:wardrobe_app/features/profile/presentation/contact_us_screen.dar
 import 'package:wardrobe_app/features/profile/presentation/profile_screen.dart';
 import 'package:wardrobe_app/features/profile/presentation/report_bug_screen.dart';
 
+import '../../../helpers/fake_account_repository.dart';
 import '../../../helpers/fake_app_reviewer.dart';
 import '../../../helpers/fake_auth_repository.dart';
 import '../../../helpers/fake_device_context.dart';
@@ -62,6 +64,7 @@ void main() {
       ProviderScope(
         overrides: [
           authRepositoryProvider.overrideWithValue(auth),
+          accountRepositoryProvider.overrideWithValue(FakeAccountRepository()),
           appReviewerProvider.overrideWithValue(reviewer),
           supportRepositoryProvider.overrideWithValue(support),
           deviceContextProvider.overrideWithValue(const FakeDeviceContext()),
@@ -82,6 +85,8 @@ void main() {
     expect(find.byKey(ProfileScreen.rateTileKey), findsOneWidget);
     expect(find.byKey(ProfileScreen.contactTileKey), findsOneWidget);
     expect(find.byKey(ProfileScreen.reportBugTileKey), findsOneWidget);
+    expect(find.byKey(ProfileScreen.clearContentButtonKey), findsOneWidget);
+    expect(find.byKey(ProfileScreen.deleteAccountButtonKey), findsOneWidget);
   });
 
   testWidgets('Rate the app calls the reviewer', (tester) async {

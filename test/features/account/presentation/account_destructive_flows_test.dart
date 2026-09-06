@@ -3,10 +3,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:wardrobe_app/core/network/api_exception.dart';
 import 'package:wardrobe_app/core/widgets/destructive_confirm_dialog.dart';
 import 'package:wardrobe_app/core/widgets/type_to_confirm_dialog.dart';
-import 'package:wardrobe_app/features/account/presentation/account_screen.dart';
 import 'package:wardrobe_app/features/auth/domain/auth_failure.dart';
 import 'package:wardrobe_app/features/auth/presentation/login_screen.dart';
 import 'package:wardrobe_app/features/items/presentation/item_detail_screen.dart';
+import 'package:wardrobe_app/features/profile/presentation/profile_screen.dart';
 import 'package:wardrobe_app/features/wardrobes/presentation/wardrobe_detail_screen.dart';
 import 'package:wardrobe_app/features/wardrobes/presentation/wardrobes_screen.dart';
 
@@ -128,16 +128,17 @@ void main() {
 
     await tester.pumpWidget(harness.app());
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(WardrobesScreen.accountButtonKey));
+    await tester.tap(find.byKey(WardrobesScreen.profileButtonKey));
     await tester.pumpAndSettle();
+    await _ensureVisible(tester, ProfileScreen.clearContentButtonKey);
 
-    await tester.tap(find.byKey(AccountScreen.clearContentButtonKey));
+    await tester.tap(find.byKey(ProfileScreen.clearContentButtonKey));
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(TypeToConfirmDialog.cancelButtonKey));
     await tester.pumpAndSettle();
     expect(harness.account.clearCalls, 0);
 
-    await tester.tap(find.byKey(AccountScreen.clearContentButtonKey));
+    await tester.tap(find.byKey(ProfileScreen.clearContentButtonKey));
     await tester.pumpAndSettle();
     await tester.enterText(
       find.byKey(TypeToConfirmDialog.phraseFieldKey),
@@ -149,8 +150,8 @@ void main() {
 
     expect(harness.account.clearCalls, 1);
     expect(harness.auth.deleteUserCalls, 0);
-    expect(find.byType(AccountScreen), findsOneWidget);
-    expect(find.byKey(AccountScreen.infoTextKey), findsOneWidget);
+    expect(find.byType(ProfileScreen), findsOneWidget);
+    expect(find.byKey(ProfileScreen.infoTextKey), findsOneWidget);
     expect(find.byType(LoginScreen), findsNothing);
   });
 
@@ -164,9 +165,10 @@ void main() {
 
     await tester.pumpWidget(harness.app());
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(WardrobesScreen.accountButtonKey));
+    await tester.tap(find.byKey(WardrobesScreen.profileButtonKey));
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(AccountScreen.clearContentButtonKey));
+    await _ensureVisible(tester, ProfileScreen.clearContentButtonKey);
+    await tester.tap(find.byKey(ProfileScreen.clearContentButtonKey));
     await tester.pumpAndSettle();
     await tester.enterText(
       find.byKey(TypeToConfirmDialog.phraseFieldKey),
@@ -176,9 +178,9 @@ void main() {
     await tester.tap(find.byKey(TypeToConfirmDialog.confirmButtonKey));
     await tester.pumpAndSettle();
 
-    expect(find.byKey(AccountScreen.errorTextKey), findsOneWidget);
+    expect(find.byKey(ProfileScreen.errorTextKey), findsOneWidget);
     expect(find.textContaining('connection'), findsOneWidget);
-    expect(find.byType(AccountScreen), findsOneWidget);
+    expect(find.byType(ProfileScreen), findsOneWidget);
   });
 
   testWidgets('delete account requires DELETE then goes to login', (
@@ -189,10 +191,11 @@ void main() {
 
     await tester.pumpWidget(harness.app());
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(WardrobesScreen.accountButtonKey));
+    await tester.tap(find.byKey(WardrobesScreen.profileButtonKey));
     await tester.pumpAndSettle();
+    await _ensureVisible(tester, ProfileScreen.deleteAccountButtonKey);
 
-    await tester.tap(find.byKey(AccountScreen.deleteAccountButtonKey));
+    await tester.tap(find.byKey(ProfileScreen.deleteAccountButtonKey));
     await tester.pumpAndSettle();
     await tester.enterText(
       find.byKey(TypeToConfirmDialog.phraseFieldKey),
@@ -219,9 +222,10 @@ void main() {
 
     await tester.pumpWidget(harness.app());
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(WardrobesScreen.accountButtonKey));
+    await tester.tap(find.byKey(WardrobesScreen.profileButtonKey));
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(AccountScreen.deleteAccountButtonKey));
+    await _ensureVisible(tester, ProfileScreen.deleteAccountButtonKey);
+    await tester.tap(find.byKey(ProfileScreen.deleteAccountButtonKey));
     await tester.pumpAndSettle();
     await tester.enterText(
       find.byKey(TypeToConfirmDialog.phraseFieldKey),
@@ -233,10 +237,16 @@ void main() {
 
     expect(harness.account.deleteCalls, 1);
     expect(harness.auth.deleteUserCalls, 0);
-    expect(find.byType(AccountScreen), findsOneWidget);
+    expect(find.byType(ProfileScreen), findsOneWidget);
     expect(find.byType(LoginScreen), findsNothing);
     expect(find.textContaining('could not be removed'), findsOneWidget);
   });
+}
+
+Future<void> _ensureVisible(WidgetTester tester, Key key) async {
+  final finder = find.byKey(key);
+  await tester.ensureVisible(finder);
+  await tester.pumpAndSettle();
 }
 
 Future<void> _openItemDetail(WidgetTester tester) async {

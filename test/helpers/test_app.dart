@@ -8,15 +8,21 @@ import 'package:wardrobe_app/features/items/data/dio_item_repository.dart';
 import 'package:wardrobe_app/features/items/data/dio_upload_repository.dart';
 import 'package:wardrobe_app/features/items/data/image_picker_item_image_picker.dart';
 import 'package:wardrobe_app/features/outfits/data/dio_outfit_repository.dart';
+import 'package:wardrobe_app/features/profile/data/dio_support_repository.dart';
+import 'package:wardrobe_app/features/profile/data/in_app_reviewer.dart';
+import 'package:wardrobe_app/features/profile/data/package_info_device_context.dart';
 import 'package:wardrobe_app/features/recommendations/data/dio_recommendation_repository.dart';
 import 'package:wardrobe_app/features/wardrobes/data/dio_wardrobe_repository.dart';
 
 import 'fake_account_repository.dart';
+import 'fake_app_reviewer.dart';
 import 'fake_auth_repository.dart';
+import 'fake_device_context.dart';
 import 'fake_item_image_picker.dart';
 import 'fake_item_repository.dart';
 import 'fake_outfit_repository.dart';
 import 'fake_recommendation_repository.dart';
+import 'fake_support_repository.dart';
 import 'fake_upload_repository.dart';
 import 'fake_wardrobe_repository.dart';
 
@@ -47,6 +53,8 @@ class TestAppHarness {
   final recommendations = FakeRecommendationRepository();
   final uploads = FakeUploadRepository();
   final picker = FakeItemImagePicker();
+  final reviewer = FakeAppReviewer();
+  final support = FakeSupportRepository();
 
   Widget app() {
     return ProviderScope(
@@ -59,6 +67,9 @@ class TestAppHarness {
         uploadRepositoryProvider.overrideWithValue(uploads),
         itemImagePickerProvider.overrideWithValue(picker),
         accountRepositoryProvider.overrideWithValue(account),
+        appReviewerProvider.overrideWithValue(reviewer),
+        supportRepositoryProvider.overrideWithValue(support),
+        deviceContextProvider.overrideWithValue(const FakeDeviceContext()),
       ],
       child: const WardrobeApp(),
     );
