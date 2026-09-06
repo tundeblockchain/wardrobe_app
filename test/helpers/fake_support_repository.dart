@@ -12,47 +12,47 @@ class FakeSupportRepository implements SupportRepository {
   @override
   Future<void> sendContact({
     required String subject,
-    required String message,
-    String? device,
-    String? appVersion,
+    required String body,
+    String? replyTo,
+    Map<String, String>? meta,
   }) {
     return _record(
       isBug: false,
       subject: subject,
-      message: message,
-      device: device,
-      appVersion: appVersion,
+      body: body,
+      replyTo: replyTo,
+      meta: meta,
     );
   }
 
   @override
   Future<void> sendBug({
     required String subject,
-    required String message,
-    String? device,
-    String? appVersion,
+    required String body,
+    String? replyTo,
+    Map<String, String>? meta,
   }) {
     return _record(
       isBug: true,
       subject: subject,
-      message: message,
-      device: device,
-      appVersion: appVersion,
+      body: body,
+      replyTo: replyTo,
+      meta: meta,
     );
   }
 
   Future<void> _record({
     required bool isBug,
     required String subject,
-    required String message,
-    String? device,
-    String? appVersion,
+    required String body,
+    String? replyTo,
+    Map<String, String>? meta,
   }) async {
     lastRequest = SupportRequest(
       subject: subject,
-      message: message,
-      device: device,
-      appVersion: appVersion,
+      body: body,
+      replyTo: replyTo,
+      meta: meta,
     );
     if (isBug) {
       bugCalls++;

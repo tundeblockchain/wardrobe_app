@@ -39,7 +39,7 @@ Authenticated routes:
 
 - `/profile` — account info (email, display name, sign-in provider), Rate the app, Contact us, Report a bug
 - `/profile/contact` — in-app form → `POST /support/contact`
-- `/profile/report-bug` — in-app form → `POST /support/bug` (includes optional device / app version)
+- `/profile/report-bug` — in-app form → `POST /support/bug` (optional `replyTo` + `meta`)
 - `/wardrobes` — list + empty state
 - `/wardrobes/create` — name form
 - `/wardrobes/:wardrobeId` — detail, rename, delete, item list, outfits entry, suggestions entry
@@ -114,8 +114,27 @@ No Phase-3 virtual try-on.
 Authenticated routes:
 
 - `/profile` — Firebase account card (email, display name, provider) plus menu items
-- `/profile/contact` — subject + message → `POST /support/contact`
-- `/profile/report-bug` — subject + message + optional device / app version → `POST /support/bug`
+- `/profile/contact` → `POST /support/contact`
+- `/profile/report-bug` → `POST /support/bug`
+
+Request body (WARDROBE-38):
+
+```json
+{
+  "subject": "Can't upload a photo",
+  "body": "The camera sheet hangs after I pick a photo.",
+  "replyTo": "user@example.com",
+  "meta": {
+    "appVersion": "1.0.0",
+    "platform": "ios",
+    "deviceModel": "iPhone 15",
+    "osVersion": "18.1"
+  }
+}
+```
+
+`replyTo` is the signed-in Firebase email when present. `meta` is optional
+device/app context. The form field is labeled Message; the wire field is `body`.
 
 **Flutter never talks to Resend** and never opens mailto for these flows. Backend
 [WARDROBE-38](https://tundetunde000.atlassian.net/browse/WARDROBE-38) owns

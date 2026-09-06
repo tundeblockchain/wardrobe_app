@@ -21,17 +21,17 @@ class DioSupportRepository implements SupportRepository {
   @override
   Future<void> sendContact({
     required String subject,
-    required String message,
-    String? device,
-    String? appVersion,
+    required String body,
+    String? replyTo,
+    Map<String, String>? meta,
   }) {
     return _post(
       contactPath,
       SupportRequest(
         subject: subject,
-        message: message,
-        device: device,
-        appVersion: appVersion,
+        body: body,
+        replyTo: replyTo,
+        meta: meta,
       ),
     );
   }
@@ -39,17 +39,17 @@ class DioSupportRepository implements SupportRepository {
   @override
   Future<void> sendBug({
     required String subject,
-    required String message,
-    String? device,
-    String? appVersion,
+    required String body,
+    String? replyTo,
+    Map<String, String>? meta,
   }) {
     return _post(
       bugPath,
       SupportRequest(
         subject: subject,
-        message: message,
-        device: device,
-        appVersion: appVersion,
+        body: body,
+        replyTo: replyTo,
+        meta: meta,
       ),
     );
   }

@@ -9,15 +9,17 @@ part of 'support_dtos.dart';
 _SupportRequest _$SupportRequestFromJson(Map<String, dynamic> json) =>
     _SupportRequest(
       subject: json['subject'] as String,
-      message: json['message'] as String,
-      device: json['device'] as String?,
-      appVersion: json['appVersion'] as String?,
+      body: json['body'] as String,
+      replyTo: json['replyTo'] as String?,
+      meta: (json['meta'] as Map<String, dynamic>?)?.map(
+        (k, e) => MapEntry(k, e as String),
+      ),
     );
 
 Map<String, dynamic> _$SupportRequestToJson(_SupportRequest instance) =>
     <String, dynamic>{
       'subject': instance.subject,
-      'message': instance.message,
-      'device': ?instance.device,
-      'appVersion': ?instance.appVersion,
+      'body': instance.body,
+      'replyTo': ?instance.replyTo,
+      'meta': ?instance.meta,
     };

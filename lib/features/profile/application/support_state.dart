@@ -3,35 +3,32 @@ class SupportState {
   const SupportState({
     this.isSubmitting = false,
     this.errorMessage,
-    this.device,
-    this.appVersion,
+    this.replyTo,
+    this.meta,
   });
 
   final bool isSubmitting;
   final String? errorMessage;
-  final String? device;
-  final String? appVersion;
+  final String? replyTo;
+  final Map<String, String>? meta;
 
   String get deviceAppSummary {
-    final parts = <String>[
-      if (device != null && device!.isNotEmpty) device!,
-      if (appVersion != null && appVersion!.isNotEmpty) appVersion!,
-    ];
-    return parts.join(' · ');
+    final values = meta?.values.where((value) => value.trim().isNotEmpty);
+    return values == null ? '' : values.join(' · ');
   }
 
   SupportState copyWith({
     bool? isSubmitting,
     String? errorMessage,
     bool clearError = false,
-    String? device,
-    String? appVersion,
+    String? replyTo,
+    Map<String, String>? meta,
   }) {
     return SupportState(
       isSubmitting: isSubmitting ?? this.isSubmitting,
       errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
-      device: device ?? this.device,
-      appVersion: appVersion ?? this.appVersion,
+      replyTo: replyTo ?? this.replyTo,
+      meta: meta ?? this.meta,
     );
   }
 
@@ -41,11 +38,30 @@ class SupportState {
         other is SupportState &&
             isSubmitting == other.isSubmitting &&
             errorMessage == other.errorMessage &&
-            device == other.device &&
-            appVersion == other.appVersion;
+            replyTo == other.replyTo &&
+            _mapEquals(meta, other.meta);
   }
 
   @override
-  int get hashCode =>
-      Object.hash(isSubmitting, errorMessage, device, appVersion);
+  int get hashCode => Object.hash(
+    isSubmitting,
+    errorMessage,
+    replyTo,
+    meta == null ? null : Object.hashAll(meta!.entries),
+  );
+}
+
+bool _mapEquals(Map<String, String>? a, Map<String, String>? b) {
+  if (identical(a, b)) {
+    return true;
+  }
+  if (a == null || b == null || a.length != b.length) {
+    return a == b;
+  }
+  for (final entry in a.entries) {
+    if (b[entry.key] != entry.value) {
+      return false;
+    }
+  }
+  return true;
 }

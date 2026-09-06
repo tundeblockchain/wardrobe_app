@@ -6,7 +6,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 
 import '../domain/device_context.dart';
 
-/// Loads OS + app version for optional support context.
+/// Loads OS + app version for optional WARDROBE-38 `meta`.
 class PackageInfoDeviceContext implements DeviceContext {
   const PackageInfoDeviceContext();
 
@@ -21,11 +21,15 @@ class PackageInfoDeviceContext implements DeviceContext {
       appVersion = null;
     }
 
-    final device = kIsWeb
-        ? 'web'
-        : '${Platform.operatingSystem} ${Platform.operatingSystemVersion}';
+    if (kIsWeb) {
+      return DeviceAppInfo(appVersion: appVersion, platform: 'web');
+    }
 
-    return DeviceAppInfo(device: device, appVersion: appVersion);
+    return DeviceAppInfo(
+      appVersion: appVersion,
+      platform: Platform.operatingSystem,
+      osVersion: Platform.operatingSystemVersion,
+    );
   }
 }
 

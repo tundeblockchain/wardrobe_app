@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wardrobe_app/core/network/api_exception.dart';
+import 'package:wardrobe_app/features/auth/application/auth_controller.dart';
+import 'package:wardrobe_app/features/auth/domain/app_user.dart';
 import 'package:wardrobe_app/features/profile/data/dio_support_repository.dart';
 import 'package:wardrobe_app/features/profile/data/package_info_device_context.dart';
 import 'package:wardrobe_app/features/profile/domain/support_form_kind.dart';
@@ -9,15 +11,22 @@ import 'package:wardrobe_app/features/profile/presentation/contact_us_screen.dar
 import 'package:wardrobe_app/features/profile/presentation/report_bug_screen.dart';
 import 'package:wardrobe_app/features/profile/presentation/widgets/support_form.dart';
 
+import '../../../helpers/fake_auth_repository.dart';
 import '../../../helpers/fake_device_context.dart';
 import '../../../helpers/fake_support_repository.dart';
 
 void main() {
   late FakeSupportRepository support;
+  late FakeAuthRepository auth;
 
   setUp(() {
     support = FakeSupportRepository();
+    auth = FakeAuthRepository(
+      initialUser: const AppUser(uid: 'uid-1', email: 'ada@example.com'),
+    );
   });
+
+  tearDown(() => auth.dispose());
 
   Future<void> pumpForm(WidgetTester tester, {required Widget home}) async {
     await tester.pumpWidget(
@@ -25,6 +34,7 @@ void main() {
         overrides: [
           supportRepositoryProvider.overrideWithValue(support),
           deviceContextProvider.overrideWithValue(const FakeDeviceContext()),
+          authRepositoryProvider.overrideWithValue(auth),
         ],
         child: MaterialApp(home: home),
       ),
@@ -49,7 +59,7 @@ void main() {
     await pumpForm(tester, home: const ContactUsScreen());
 
     expect(
-      find.text('Included with this report: Pixel 8 (Android 14) · 1.0.0+1'),
+      find.text('Included with this report: 1.0.0+1 · android · Pixel 8 · 14'),
       findsOneWidget,
     );
 
@@ -64,9 +74,14 @@ void main() {
     expect(support.contactCalls, 1);
     expect(support.bugCalls, 0);
     expect(support.lastRequest?.subject, 'Hello');
-    expect(support.lastRequest?.message, 'Please help with my wardrobe.');
-    expect(support.lastRequest?.device, 'Pixel 8 (Android 14)');
-    expect(support.lastRequest?.appVersion, '1.0.0+1');
+    expect(support.lastRequest?.body, 'Please help with my wardrobe.');
+    expect(support.lastRequest?.replyTo, 'ada@example.com');
+    expect(support.lastRequest?.meta, {
+      'appVersion': '1.0.0+1',
+      'platform': 'android',
+      'deviceModel': 'Pixel 8',
+      'osVersion': '14',
+    });
     expect(
       find.text('Message sent. Thanks for getting in touch.'),
       findsOneWidget,

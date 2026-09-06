@@ -42,7 +42,7 @@ class _SupportFormState extends ConsumerState<SupportForm> {
         .read(supportControllerProvider(widget.kind).notifier)
         .submit(
           subject: _subjectController.text,
-          message: _messageController.text,
+          body: _messageController.text,
         );
     if (sent && mounted) {
       ScaffoldMessenger.of(context)

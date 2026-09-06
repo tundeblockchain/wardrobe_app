@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$SupportRequest {
 
- String get subject; String get message;@JsonKey(includeIfNull: false) String? get device;@JsonKey(includeIfNull: false) String? get appVersion;
+ String get subject; String get body;@JsonKey(includeIfNull: false) String? get replyTo;@JsonKey(includeIfNull: false) Map<String, String>? get meta;
 /// Create a copy of SupportRequest
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $SupportRequestCopyWith<SupportRequest> get copyWith => _$SupportRequestCopyWith
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is SupportRequest&&(identical(other.subject, subject) || other.subject == subject)&&(identical(other.message, message) || other.message == message)&&(identical(other.device, device) || other.device == device)&&(identical(other.appVersion, appVersion) || other.appVersion == appVersion));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is SupportRequest&&(identical(other.subject, subject) || other.subject == subject)&&(identical(other.body, body) || other.body == body)&&(identical(other.replyTo, replyTo) || other.replyTo == replyTo)&&const DeepCollectionEquality().equals(other.meta, meta));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,subject,message,device,appVersion);
+int get hashCode => Object.hash(runtimeType,subject,body,replyTo,const DeepCollectionEquality().hash(meta));
 
 @override
 String toString() {
-  return 'SupportRequest(subject: $subject, message: $message, device: $device, appVersion: $appVersion)';
+  return 'SupportRequest(subject: $subject, body: $body, replyTo: $replyTo, meta: $meta)';
 }
 
 
@@ -48,7 +48,7 @@ abstract mixin class $SupportRequestCopyWith<$Res>  {
   factory $SupportRequestCopyWith(SupportRequest value, $Res Function(SupportRequest) _then) = _$SupportRequestCopyWithImpl;
 @useResult
 $Res call({
- String subject, String message,@JsonKey(includeIfNull: false) String? device,@JsonKey(includeIfNull: false) String? appVersion
+ String subject, String body,@JsonKey(includeIfNull: false) String? replyTo,@JsonKey(includeIfNull: false) Map<String, String>? meta
 });
 
 
@@ -65,13 +65,13 @@ class _$SupportRequestCopyWithImpl<$Res>
 
 /// Create a copy of SupportRequest
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? subject = null,Object? message = null,Object? device = freezed,Object? appVersion = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? subject = null,Object? body = null,Object? replyTo = freezed,Object? meta = freezed,}) {
   return _then(_self.copyWith(
 subject: null == subject ? _self.subject : subject // ignore: cast_nullable_to_non_nullable
-as String,message: null == message ? _self.message : message // ignore: cast_nullable_to_non_nullable
-as String,device: freezed == device ? _self.device : device // ignore: cast_nullable_to_non_nullable
-as String?,appVersion: freezed == appVersion ? _self.appVersion : appVersion // ignore: cast_nullable_to_non_nullable
-as String?,
+as String,body: null == body ? _self.body : body // ignore: cast_nullable_to_non_nullable
+as String,replyTo: freezed == replyTo ? _self.replyTo : replyTo // ignore: cast_nullable_to_non_nullable
+as String?,meta: freezed == meta ? _self.meta : meta // ignore: cast_nullable_to_non_nullable
+as Map<String, String>?,
   ));
 }
 
@@ -156,10 +156,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String subject,  String message, @JsonKey(includeIfNull: false)  String? device, @JsonKey(includeIfNull: false)  String? appVersion)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String subject,  String body, @JsonKey(includeIfNull: false)  String? replyTo, @JsonKey(includeIfNull: false)  Map<String, String>? meta)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _SupportRequest() when $default != null:
-return $default(_that.subject,_that.message,_that.device,_that.appVersion);case _:
+return $default(_that.subject,_that.body,_that.replyTo,_that.meta);case _:
   return orElse();
 
 }
@@ -177,10 +177,10 @@ return $default(_that.subject,_that.message,_that.device,_that.appVersion);case 
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String subject,  String message, @JsonKey(includeIfNull: false)  String? device, @JsonKey(includeIfNull: false)  String? appVersion)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String subject,  String body, @JsonKey(includeIfNull: false)  String? replyTo, @JsonKey(includeIfNull: false)  Map<String, String>? meta)  $default,) {final _that = this;
 switch (_that) {
 case _SupportRequest():
-return $default(_that.subject,_that.message,_that.device,_that.appVersion);case _:
+return $default(_that.subject,_that.body,_that.replyTo,_that.meta);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -197,10 +197,10 @@ return $default(_that.subject,_that.message,_that.device,_that.appVersion);case 
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String subject,  String message, @JsonKey(includeIfNull: false)  String? device, @JsonKey(includeIfNull: false)  String? appVersion)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String subject,  String body, @JsonKey(includeIfNull: false)  String? replyTo, @JsonKey(includeIfNull: false)  Map<String, String>? meta)?  $default,) {final _that = this;
 switch (_that) {
 case _SupportRequest() when $default != null:
-return $default(_that.subject,_that.message,_that.device,_that.appVersion);case _:
+return $default(_that.subject,_that.body,_that.replyTo,_that.meta);case _:
   return null;
 
 }
@@ -212,13 +212,13 @@ return $default(_that.subject,_that.message,_that.device,_that.appVersion);case 
 @JsonSerializable()
 
 class _SupportRequest implements SupportRequest {
-  const _SupportRequest({required this.subject, required this.message, @JsonKey(includeIfNull: false) this.device, @JsonKey(includeIfNull: false) this.appVersion});
+  const _SupportRequest({required this.subject, required this.body, @JsonKey(includeIfNull: false) this.replyTo, @JsonKey(includeIfNull: false) this.meta});
   factory _SupportRequest.fromJson(Map<String, dynamic> json) => _$SupportRequestFromJson(json);
 
 @override final  String subject;
-@override final  String message;
-@override@JsonKey(includeIfNull: false) final  String? device;
-@override@JsonKey(includeIfNull: false) final  String? appVersion;
+@override final  String body;
+@override@JsonKey(includeIfNull: false) final  String? replyTo;
+@override@JsonKey(includeIfNull: false) final  Map<String, String>? meta;
 
 /// Create a copy of SupportRequest
 /// with the given fields replaced by the non-null parameter values.
@@ -233,16 +233,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SupportRequest&&(identical(other.subject, subject) || other.subject == subject)&&(identical(other.message, message) || other.message == message)&&(identical(other.device, device) || other.device == device)&&(identical(other.appVersion, appVersion) || other.appVersion == appVersion));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SupportRequest&&(identical(other.subject, subject) || other.subject == subject)&&(identical(other.body, body) || other.body == body)&&(identical(other.replyTo, replyTo) || other.replyTo == replyTo)&&const DeepCollectionEquality().equals(other.meta, meta));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,subject,message,device,appVersion);
+int get hashCode => Object.hash(runtimeType,subject,body,replyTo,const DeepCollectionEquality().hash(meta));
 
 @override
 String toString() {
-  return 'SupportRequest(subject: $subject, message: $message, device: $device, appVersion: $appVersion)';
+  return 'SupportRequest(subject: $subject, body: $body, replyTo: $replyTo, meta: $meta)';
 }
 
 
@@ -253,7 +253,7 @@ abstract mixin class _$SupportRequestCopyWith<$Res> implements $SupportRequestCo
   factory _$SupportRequestCopyWith(_SupportRequest value, $Res Function(_SupportRequest) _then) = __$SupportRequestCopyWithImpl;
 @override @useResult
 $Res call({
- String subject, String message,@JsonKey(includeIfNull: false) String? device,@JsonKey(includeIfNull: false) String? appVersion
+ String subject, String body,@JsonKey(includeIfNull: false) String? replyTo,@JsonKey(includeIfNull: false) Map<String, String>? meta
 });
 
 
@@ -270,13 +270,13 @@ class __$SupportRequestCopyWithImpl<$Res>
 
 /// Create a copy of SupportRequest
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? subject = null,Object? message = null,Object? device = freezed,Object? appVersion = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? subject = null,Object? body = null,Object? replyTo = freezed,Object? meta = freezed,}) {
   return _then(_SupportRequest(
 subject: null == subject ? _self.subject : subject // ignore: cast_nullable_to_non_nullable
-as String,message: null == message ? _self.message : message // ignore: cast_nullable_to_non_nullable
-as String,device: freezed == device ? _self.device : device // ignore: cast_nullable_to_non_nullable
-as String?,appVersion: freezed == appVersion ? _self.appVersion : appVersion // ignore: cast_nullable_to_non_nullable
-as String?,
+as String,body: null == body ? _self.body : body // ignore: cast_nullable_to_non_nullable
+as String,replyTo: freezed == replyTo ? _self.replyTo : replyTo // ignore: cast_nullable_to_non_nullable
+as String?,meta: freezed == meta ? _self.meta : meta // ignore: cast_nullable_to_non_nullable
+as Map<String, String>?,
   ));
 }
 

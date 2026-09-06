@@ -28,14 +28,24 @@ void main() {
     return DioSupportRepository(dio);
   }
 
-  test('sendContact posts subject, message, and optional context', () async {
-    repository = buildRepository([const HttpScript(statusCode: 204)]);
+  test('sendContact posts WARDROBE-38 contact contract', () async {
+    repository = buildRepository([
+      const HttpScript(
+        statusCode: 202,
+        body: {'status': 'sent', 'kind': 'contact', 'id': 'email_1'},
+      ),
+    ]);
 
     await repository.sendContact(
       subject: 'Hello',
-      message: 'Please help with my wardrobe.',
-      device: 'Pixel 8 (Android 14)',
-      appVersion: '1.0.0+1',
+      body: 'Please help with my wardrobe.',
+      replyTo: 'user@example.com',
+      meta: {
+        'appVersion': '1.0.0+1',
+        'platform': 'android',
+        'deviceModel': 'Pixel 8',
+        'osVersion': '14',
+      },
     );
 
     expect(adapter.requests.single.method, 'POST');
@@ -43,46 +53,63 @@ void main() {
     expect(adapter.requests.single.headers['Authorization'], 'Bearer token');
     expect(_requestBody(adapter.requests.single), {
       'subject': 'Hello',
-      'message': 'Please help with my wardrobe.',
-      'device': 'Pixel 8 (Android 14)',
-      'appVersion': '1.0.0+1',
+      'body': 'Please help with my wardrobe.',
+      'replyTo': 'user@example.com',
+      'meta': {
+        'appVersion': '1.0.0+1',
+        'platform': 'android',
+        'deviceModel': 'Pixel 8',
+        'osVersion': '14',
+      },
     });
   });
 
-  test('sendBug posts to /support/bug with bug context', () async {
+  test('sendBug posts WARDROBE-38 bug contract', () async {
     repository = buildRepository([
-      const HttpScript(statusCode: 201, body: {'id': 'sup_1'}),
+      const HttpScript(
+        statusCode: 202,
+        body: {'status': 'sent', 'kind': 'bug'},
+      ),
     ]);
 
     await repository.sendBug(
       subject: 'Crash',
-      message: 'The add-item screen froze after picking a photo.',
-      device: 'iOS 18.0',
-      appVersion: '1.0.0+1',
+      body: 'The add-item screen froze after picking a photo.',
+      replyTo: 'user@example.com',
+      meta: {'appVersion': '1.0.0+1', 'platform': 'ios'},
     );
 
     expect(adapter.requests.single.method, 'POST');
     expect(adapter.requests.single.path, '/support/bug');
     expect(_requestBody(adapter.requests.single), {
       'subject': 'Crash',
-      'message': 'The add-item screen froze after picking a photo.',
-      'device': 'iOS 18.0',
-      'appVersion': '1.0.0+1',
+      'body': 'The add-item screen froze after picking a photo.',
+      'replyTo': 'user@example.com',
+      'meta': {'appVersion': '1.0.0+1', 'platform': 'ios'},
     });
   });
 
   test('omits optional fields when they are null', () async {
-    repository = buildRepository([const HttpScript(statusCode: 200, body: {})]);
+    repository = buildRepository([
+      const HttpScript(
+        statusCode: 202,
+        body: {'status': 'sent', 'kind': 'contact'},
+      ),
+    ]);
 
     await repository.sendContact(
       subject: 'Hello',
-      message: 'Please help with my wardrobe.',
+      body: 'Please help with my wardrobe.',
     );
 
     expect(_requestBody(adapter.requests.single), {
       'subject': 'Hello',
-      'message': 'Please help with my wardrobe.',
+      'body': 'Please help with my wardrobe.',
     });
+    expect(
+      _requestBody(adapter.requests.single).containsKey('message'),
+      isFalse,
+    );
   });
 
   test('maps nested backend error envelope to ApiException', () async {
@@ -98,7 +125,7 @@ void main() {
     expect(
       () => repository.sendContact(
         subject: 'Hello',
-        message: 'Please help with my wardrobe.',
+        body: 'Please help with my wardrobe.',
       ),
       throwsA(
         isA<ApiException>()

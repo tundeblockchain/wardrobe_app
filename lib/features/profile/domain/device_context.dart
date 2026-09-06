@@ -1,24 +1,43 @@
-/// Optional device + app version attached to support POSTs.
+/// Optional app / device fields sent as WARDROBE-38 `meta`.
 class DeviceAppInfo {
-  const DeviceAppInfo({this.device, this.appVersion});
+  const DeviceAppInfo({
+    this.appVersion,
+    this.platform,
+    this.deviceModel,
+    this.osVersion,
+  });
 
-  final String? device;
   final String? appVersion;
+  final String? platform;
+  final String? deviceModel;
+  final String? osVersion;
 
-  bool get isEmpty =>
-      (device == null || device!.isEmpty) &&
-      (appVersion == null || appVersion!.isEmpty);
+  /// String map for `meta` (max 20 keys on the backend). Omits blanks.
+  Map<String, String>? toMeta() {
+    final meta = <String, String>{
+      if (_present(appVersion)) 'appVersion': appVersion!.trim(),
+      if (_present(platform)) 'platform': platform!.trim(),
+      if (_present(deviceModel)) 'deviceModel': deviceModel!.trim(),
+      if (_present(osVersion)) 'osVersion': osVersion!.trim(),
+    };
+    return meta.isEmpty ? null : meta;
+  }
 
   String get summary {
     final parts = <String>[
-      if (device != null && device!.isNotEmpty) device!,
-      if (appVersion != null && appVersion!.isNotEmpty) appVersion!,
+      if (_present(platform)) platform!,
+      if (_present(deviceModel)) deviceModel!,
+      if (_present(osVersion)) osVersion!,
+      if (_present(appVersion)) appVersion!,
     ];
     return parts.join(' · ');
   }
+
+  static bool _present(String? value) =>
+      value != null && value.trim().isNotEmpty;
 }
 
-/// Loads device / app version for support forms. Override in tests.
+/// Loads device / app version for support `meta`. Override in tests.
 abstract interface class DeviceContext {
   Future<DeviceAppInfo> load();
 }

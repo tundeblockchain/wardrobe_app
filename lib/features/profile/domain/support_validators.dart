@@ -1,8 +1,9 @@
 /// Presentation-level validators for contact / bug-report forms.
 abstract final class SupportValidators {
-  static const maxSubjectLength = 120;
+  /// Matches Backend WARDROBE-38 (`subject` 1–200, `body` 1–10000).
+  static const maxSubjectLength = 200;
   static const minMessageLength = 10;
-  static const maxMessageLength = 4000;
+  static const maxMessageLength = 10000;
 
   static String? subject(String? value) {
     final trimmed = value?.trim() ?? '';

@@ -1,5 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../auth/application/auth_controller.dart';
+import '../../auth/domain/auth_validators.dart';
 import '../data/dio_support_repository.dart';
 import '../data/package_info_device_context.dart';
 import '../domain/device_context.dart';
@@ -16,7 +18,7 @@ class SupportController extends Notifier<SupportState> {
 
   @override
   SupportState build() {
-    Future<void>.microtask(_loadDeviceContext);
+    Future<void>.microtask(_loadContext);
     return const SupportState();
   }
 
@@ -24,40 +26,51 @@ class SupportController extends Notifier<SupportState> {
 
   DeviceContext get _deviceContext => ref.read(deviceContextProvider);
 
-  Future<void> _loadDeviceContext() async {
+  Future<void> _loadContext() async {
     try {
       final info = await _deviceContext.load();
       if (!ref.mounted) {
         return;
       }
-      state = state.copyWith(device: info.device, appVersion: info.appVersion);
+      state = state.copyWith(
+        replyTo: _replyToFromSession(),
+        meta: info.toMeta(),
+      );
     } catch (_) {
-      // Optional context — the form still submits without it.
+      if (!ref.mounted) {
+        return;
+      }
+      state = state.copyWith(replyTo: _replyToFromSession());
     }
   }
 
-  Future<bool> submit({
-    required String subject,
-    required String message,
-  }) async {
+  String? _replyToFromSession() {
+    final email = ref.read(authControllerProvider).user?.email?.trim();
+    if (email == null || !AuthValidators.emailRegExp.hasMatch(email)) {
+      return null;
+    }
+    return email;
+  }
+
+  Future<bool> submit({required String subject, required String body}) async {
     state = state.copyWith(isSubmitting: true, clearError: true);
     try {
       final trimmedSubject = subject.trim();
-      final trimmedMessage = message.trim();
+      final trimmedBody = body.trim();
       switch (kind) {
         case SupportFormKind.contact:
           await _repository.sendContact(
             subject: trimmedSubject,
-            message: trimmedMessage,
-            device: state.device,
-            appVersion: state.appVersion,
+            body: trimmedBody,
+            replyTo: state.replyTo,
+            meta: state.meta,
           );
         case SupportFormKind.bug:
           await _repository.sendBug(
             subject: trimmedSubject,
-            message: trimmedMessage,
-            device: state.device,
-            appVersion: state.appVersion,
+            body: trimmedBody,
+            replyTo: state.replyTo,
+            meta: state.meta,
           );
       }
       if (!ref.mounted) {
