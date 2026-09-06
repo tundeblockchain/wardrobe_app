@@ -17,16 +17,18 @@ AI outfit recommendations
 profile menu / support forms
 ([WARDROBE-34](https://tundetunde000.atlassian.net/browse/WARDROBE-34)), and
 clear-all / delete-account flows
-([WARDROBE-35](https://tundetunde000.atlassian.net/browse/WARDROBE-35)).
+([WARDROBE-35](https://tundetunde000.atlassian.net/browse/WARDROBE-35)), and
+Phase-3 AI profile setup / generic-model picker
+([WARDROBE-50](https://tundetunde000.atlassian.net/browse/WARDROBE-50)).
 
 ## Architecture
 
 Layers (dependencies point downward only):
 
-1. **Presentation** — screens (`login`, `signup`, `forgot-password`, splash, wardrobes list / create / detail, add item / item detail / edit item, outfits list / create / detail / edit, profile / contact us / report a bug)
-2. **Controller / Provider** — Riverpod auth, wardrobe, item, outfit, recommendation, support / rate-app, and account controllers
-3. **Repository** — `AuthRepository`, `WardrobeRepository`, `ItemRepository`, `UploadRepository`, `OutfitRepository`, `RecommendationRepository`, `SupportRepository`, `AccountRepository`
-4. **API client / Firebase** — `FirebaseAuthRepository` (email/password + Google), Dio + ID-token interceptor, wardrobe/item/upload/outfit/recommendation/support/account Dio repositories, `image_picker` behind `ItemImagePicker`, `in_app_review` behind `AppReviewer`
+1. **Presentation** — screens (`login`, `signup`, `forgot-password`, splash, wardrobes list / create / detail, add item / item detail / edit item, outfits list / create / detail / edit, profile / contact us / report a bug / AI try-on)
+2. **Controller / Provider** — Riverpod auth, wardrobe, item, outfit, recommendation, support / rate-app, account, and AI-profile controllers
+3. **Repository** — `AuthRepository`, `WardrobeRepository`, `ItemRepository`, `UploadRepository`, `OutfitRepository`, `RecommendationRepository`, `SupportRepository`, `AccountRepository`, `AiProfileRepository`
+4. **API client / Firebase** — `FirebaseAuthRepository` (email/password + Google), Dio + ID-token interceptor, wardrobe/item/upload/outfit/recommendation/support/account/AI-profile Dio repositories, `image_picker` behind `ItemImagePicker`, `in_app_review` behind `AppReviewer`
 
 ## Auth shell
 
@@ -41,7 +43,8 @@ Layers (dependencies point downward only):
 
 Authenticated routes:
 
-- `/profile` — account info, Rate the app, Contact us, Report a bug, Clear all, Delete account
+- `/profile` — account info, AI try-on, Rate the app, Contact us, Report a bug, Clear all, Delete account
+- `/profile/ai-try-on` — PERSONAL AI profile + GENERIC_MODEL catalog
 - `/profile/contact` — in-app form → `POST /support/contact`
 - `/profile/report-bug` — in-app form → `POST /support/bug` (optional `replyTo` + `meta`)
 - `/wardrobes` — list + empty state (account icon → `/profile`)
@@ -118,13 +121,41 @@ Suggestions are never auto-saved. The feature is additive: if
 `GET /wardrobes/{wardrobeId}/recommendations` fails, wardrobe/item/outfit
 flows still work and the suggestions entry shows an unavailable state.
 
-No Phase-3 virtual try-on.
+No Phase-3 virtual try-on inference (that is WARDROBE-51).
+
+## AI profiles (WARDROBE-50)
+
+Authenticated route from the profile menu:
+
+- `/profile/ai-try-on` — create / manage a PERSONAL AI profile and browse seeded GENERIC_MODEL looks
+
+Flutter talks to the WARDROBE-43/44/45 contract through the shared Dio client (Firebase ID token interceptor). **No try-on API** and **no Resend**.
+
+```http
+POST   /ai-profiles
+GET    /ai-profiles
+GET    /ai-profiles/models
+GET    /ai-profiles/{aiProfileId}
+DELETE /ai-profiles/{aiProfileId}
+POST   /ai-profiles/{aiProfileId}/uploads
+POST   /ai-profiles/{aiProfileId}/reference-images
+```
+
+PERSONAL create starts `READY` with empty `referenceImages`. Reference photos reuse the WARDROBE-40 Photo Picker (`ItemImagePicker`), then:
+
+1. `POST /ai-profiles/{aiProfileId}/uploads` with `{ "contentType", "purpose": "AI_PROFILE_REFERENCE" }`
+2. `PUT` bytes to `uploadUrl` (no Firebase Bearer header)
+3. `POST /ai-profiles/{aiProfileId}/reference-images` with `{ "objectKey" }`
+
+Status chips show `PENDING` / `PROCESSING` / `READY` / `FAILED`. Users can delete their own PERSONAL profiles only.
+
+The catalog (`GET /ai-profiles/models`) is expected to include seeded models Alex, Jordan, Sam, and Riley (`profile_generic_01`–`04`). Tapping a model (or a personal profile) stores `selectedAiProfileId` for WARDROBE-51 try-on. This ticket does not call a render API.
 
 ## Profile and support
 
 Authenticated routes:
 
-- `/profile` — Firebase account card (email, display name, provider) plus menu items
+- `/profile` — Firebase account card (email, display name, provider) plus menu items, including AI try-on
 - `/profile/contact` → `POST /support/contact`
 - `/profile/report-bug` → `POST /support/bug`
 

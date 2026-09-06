@@ -130,9 +130,11 @@ void main() {
     expect(find.byType(ProfileScreen), findsOneWidget);
     expect(find.text('user@example.com'), findsOneWidget);
     expect(find.text('Signed in with Email'), findsOneWidget);
+    expect(find.text('AI try-on'), findsOneWidget);
     expect(find.text('Rate the app'), findsOneWidget);
     expect(find.text('Contact us'), findsOneWidget);
     expect(find.text('Report a bug'), findsOneWidget);
+    await tester.scrollUntilVisible(find.text('Delete account'), 80);
     expect(find.text('Clear all content'), findsOneWidget);
     expect(find.text('Delete account'), findsOneWidget);
   });

@@ -1,6 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/network/api_exception.dart';
+import '../../ai_profiles/application/generic_models_controller.dart';
+import '../../ai_profiles/application/personal_ai_profiles_controller.dart';
+import '../../ai_profiles/application/selected_ai_profile.dart';
 import '../../auth/application/auth_controller.dart';
 import '../../auth/domain/auth_failure.dart';
 import '../../items/application/items_controller.dart';
@@ -91,6 +94,9 @@ class AccountController extends Notifier<AccountState> {
 
   Future<void> _refreshLocalLists() async {
     ref.read(wardrobesControllerProvider.notifier).clearLocal();
+    ref.invalidate(personalAiProfilesControllerProvider);
+    ref.invalidate(genericModelsControllerProvider);
+    ref.invalidate(selectedAiProfileProvider);
     ref.invalidate(wardrobeDetailControllerProvider);
     ref.invalidate(itemsControllerProvider);
     ref.invalidate(outfitsControllerProvider);

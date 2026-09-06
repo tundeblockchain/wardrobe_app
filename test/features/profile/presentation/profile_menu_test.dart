@@ -9,14 +9,19 @@ import 'package:wardrobe_app/features/account/data/dio_account_repository.dart';
 import 'package:wardrobe_app/features/profile/data/dio_support_repository.dart';
 import 'package:wardrobe_app/features/profile/data/in_app_reviewer.dart';
 import 'package:wardrobe_app/features/profile/data/package_info_device_context.dart';
+import 'package:wardrobe_app/features/ai_profiles/data/dio_ai_profile_repository.dart';
+import 'package:wardrobe_app/features/ai_profiles/presentation/ai_try_on_screen.dart';
+import 'package:wardrobe_app/features/items/data/image_picker_item_image_picker.dart';
 import 'package:wardrobe_app/features/profile/presentation/contact_us_screen.dart';
 import 'package:wardrobe_app/features/profile/presentation/profile_screen.dart';
 import 'package:wardrobe_app/features/profile/presentation/report_bug_screen.dart';
 
 import '../../../helpers/fake_account_repository.dart';
+import '../../../helpers/fake_ai_profile_repository.dart';
 import '../../../helpers/fake_app_reviewer.dart';
 import '../../../helpers/fake_auth_repository.dart';
 import '../../../helpers/fake_device_context.dart';
+import '../../../helpers/fake_item_image_picker.dart';
 import '../../../helpers/fake_support_repository.dart';
 
 void main() {
@@ -55,6 +60,10 @@ void main() {
               path: 'report-bug',
               builder: (context, state) => const ReportBugScreen(),
             ),
+            GoRoute(
+              path: 'ai-try-on',
+              builder: (context, state) => const AiTryOnScreen(),
+            ),
           ],
         ),
       ],
@@ -67,6 +76,10 @@ void main() {
           accountRepositoryProvider.overrideWithValue(FakeAccountRepository()),
           appReviewerProvider.overrideWithValue(reviewer),
           supportRepositoryProvider.overrideWithValue(support),
+          aiProfileRepositoryProvider.overrideWithValue(
+            FakeAiProfileRepository(),
+          ),
+          itemImagePickerProvider.overrideWithValue(FakeItemImagePicker()),
           deviceContextProvider.overrideWithValue(const FakeDeviceContext()),
         ],
         child: MaterialApp.router(routerConfig: router),
@@ -82,9 +95,14 @@ void main() {
     expect(find.text('Ada Lovelace'), findsOneWidget);
     expect(find.text('ada@example.com'), findsOneWidget);
     expect(find.text('Signed in with Google'), findsOneWidget);
+    expect(find.byKey(ProfileScreen.aiTryOnTileKey), findsOneWidget);
     expect(find.byKey(ProfileScreen.rateTileKey), findsOneWidget);
     expect(find.byKey(ProfileScreen.contactTileKey), findsOneWidget);
     expect(find.byKey(ProfileScreen.reportBugTileKey), findsOneWidget);
+    await tester.scrollUntilVisible(
+      find.byKey(ProfileScreen.deleteAccountButtonKey),
+      80,
+    );
     expect(find.byKey(ProfileScreen.clearContentButtonKey), findsOneWidget);
     expect(find.byKey(ProfileScreen.deleteAccountButtonKey), findsOneWidget);
   });
@@ -109,6 +127,16 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Unable to open the store right now.'), findsOneWidget);
+  });
+
+  testWidgets('AI try-on opens the profile setup screen', (tester) async {
+    await pumpMenu(tester);
+
+    await tester.tap(find.byKey(ProfileScreen.aiTryOnTileKey));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(AiTryOnScreen), findsOneWidget);
+    expect(find.text('AI try-on'), findsWidgets);
   });
 
   testWidgets('Contact us opens the support form', (tester) async {

@@ -9,6 +9,7 @@ abstract final class AppRoutes {
   static const profile = '/profile';
   static const contactUs = '/profile/contact';
   static const reportBug = '/profile/report-bug';
+  static const aiTryOn = '/profile/ai-try-on';
 
   static String wardrobeDetail(String wardrobeId) => '/wardrobes/$wardrobeId';
 

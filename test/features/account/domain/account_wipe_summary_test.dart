@@ -16,6 +16,7 @@ void main() {
     expect(summary.deletedWardrobes, 1);
     expect(summary.deletedItems, 2);
     expect(summary.deletedOutfits, 1);
+    expect(summary.deletedAiProfiles, 0);
     expect(summary.deletedS3Objects, 3);
     expect(summary.s3Failures, 0);
     expect(summary.hadS3Failures, isFalse);
@@ -30,6 +31,21 @@ void main() {
     expect(summary.deletedOutfits, 0);
     expect(summary.deletedS3Objects, 0);
     expect(summary.s3Failures, 0);
+  });
+
+  test('fromJson maps deletedAiProfiles when present', () {
+    final summary = AccountWipeSummary.fromJson(const {
+      'keepAccount': true,
+      'deletedWardrobes': 0,
+      'deletedItems': 0,
+      'deletedOutfits': 0,
+      'deletedAiProfiles': 1,
+      'deletedS3Objects': 2,
+      's3Failures': 0,
+    });
+
+    expect(summary.deletedAiProfiles, 1);
+    expect(summary.feedbackMessage, contains('1 AI profile'));
   });
 
   test('feedbackMessage mentions S3 failures', () {
