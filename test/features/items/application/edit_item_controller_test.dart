@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wardrobe_app/features/items/application/edit_item_controller.dart';
 import 'package:wardrobe_app/features/items/application/item_detail_controller.dart';
+import 'package:wardrobe_app/features/items/application/item_local_preview_cache.dart';
 import 'package:wardrobe_app/features/items/application/item_scope.dart';
 import 'package:wardrobe_app/features/items/application/items_controller.dart';
 import 'package:wardrobe_app/features/items/data/dio_item_repository.dart';
@@ -73,5 +74,9 @@ void main() {
     expect(uploads.createCalls, 1);
     expect(uploads.uploadCalls, 1);
     expect(items.lastImageKey, 'users/uid/uploads/uuid.jpg');
+    expect(
+      container.read(itemLocalPreviewCacheProvider)[updated!.id],
+      picker.image!.bytes,
+    );
   });
 }

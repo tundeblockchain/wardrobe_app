@@ -53,6 +53,8 @@ _ItemResponse _$ItemResponseFromJson(Map<String, dynamic> json) =>
           ? null
           : ItemImageResponse.fromJson(json['image'] as Map<String, dynamic>),
       imageKey: json['imageKey'] as String?,
+      originalImageUrl: json['originalImageUrl'] as String?,
+      processedImageUrl: json['processedImageUrl'] as String?,
       processingStatus: json['processingStatus'] as String?,
       processingError: json['processingError'] as String?,
       failureReason: json['failureReason'] as String?,
@@ -75,6 +77,8 @@ Map<String, dynamic> _$ItemResponseToJson(_ItemResponse instance) =>
       'brand': instance.brand,
       'image': instance.image,
       'imageKey': instance.imageKey,
+      'originalImageUrl': instance.originalImageUrl,
+      'processedImageUrl': instance.processedImageUrl,
       'processingStatus': instance.processingStatus,
       'processingError': instance.processingError,
       'failureReason': instance.failureReason,

@@ -2,16 +2,18 @@ import 'item.dart';
 
 /// Which clothing-item photo the browse UI should show.
 ///
-/// Prefers the processed (background-removed) key when present, otherwise the
-/// original upload. HTTP(S) values are treated as network URLs so cards can
-/// render photos from the existing item payload without a new backend API.
+/// Prefers a processed HTTP(S) URL when the worker has finished, otherwise the
+/// original upload URL. A processed *object key* never hides an original URL
+/// while status is still PENDING / PROCESSING (or whenever no processed GET
+/// exists yet). HTTP(S) values are treated as network URLs so cards can render
+/// photos from the existing item payload without inventing a backend API.
 class ItemImageSource {
   const ItemImageSource({this.key, this.networkUrl});
 
   /// Preferred object key or URL after processed-vs-original resolution.
   final String? key;
 
-  /// [key] when it is already an `http(s)` URL.
+  /// First usable `http(s)` photo among processed, then original.
   final String? networkUrl;
 
   bool get hasImage => key != null && key!.isNotEmpty;
@@ -19,9 +21,11 @@ class ItemImageSource {
   bool get isNetwork => networkUrl != null;
 
   factory ItemImageSource.fromItem(Item item) {
-    final preferred =
-        _nonEmpty(item.processedImageKey) ?? _nonEmpty(item.originalImageKey);
-    return ItemImageSource(key: preferred, networkUrl: _asHttpUrl(preferred));
+    final processed = _nonEmpty(item.processedImageKey);
+    final original = _nonEmpty(item.originalImageKey);
+    final preferredUrl = _asHttpUrl(processed) ?? _asHttpUrl(original);
+    final preferredKey = preferredUrl ?? processed ?? original;
+    return ItemImageSource(key: preferredKey, networkUrl: preferredUrl);
   }
 }
 

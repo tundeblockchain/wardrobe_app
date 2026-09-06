@@ -347,6 +347,7 @@ void main() {
     expect(find.text('No wardrobes yet'), findsOneWidget);
     expect(find.textContaining('Signed in as'), findsNothing);
     expect(find.text('Sign out'), findsNothing);
+    expect(find.byKey(WardrobesScreen.profileButtonKey), findsOneWidget);
   });
 
   testWidgets('Apple sign-in from iOS signup follows the auth redirect shell', (
@@ -390,6 +391,7 @@ void main() {
     expect(find.text('No wardrobes yet'), findsOneWidget);
     expect(find.textContaining('Signed in as'), findsNothing);
     expect(find.text('Sign out'), findsNothing);
+    expect(find.byKey(WardrobesScreen.profileButtonKey), findsOneWidget);
   });
 
   testWidgets('Apple cancel on iOS login stays on the form without an error', (

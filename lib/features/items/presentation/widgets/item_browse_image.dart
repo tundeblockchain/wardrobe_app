@@ -1,14 +1,24 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_spacing.dart';
 import '../../domain/item.dart';
 import '../../domain/item_image_source.dart';
 
-/// Full-bleed item photo: processed key when present, otherwise original.
+/// Full-bleed item photo: processed URL when present, otherwise original.
+///
+/// A PENDING / PROCESSING chip or thin bar never replaces the photo. Local
+/// upload bytes fill in when the payload only has S3 object keys.
 class ItemBrowseImage extends StatelessWidget {
-  const ItemBrowseImage({super.key, required this.item});
+  const ItemBrowseImage({
+    super.key,
+    required this.item,
+    this.localPreviewBytes,
+  });
 
   final Item item;
+  final Uint8List? localPreviewBytes;
 
   static Key imageKey(String itemId) => Key('item_browse_image_$itemId');
 
@@ -17,33 +27,93 @@ class ItemBrowseImage extends StatelessWidget {
 
   static const missingSourceKey = Key('item_browse_image_source_none');
 
+  static Key localSourceKey(String itemId) =>
+      Key('item_browse_image_source_local_$itemId');
+
+  static Key processingIndicatorKey(String itemId) =>
+      Key('item_browse_processing_$itemId');
+
+  bool get _isInProgress =>
+      item.processingStatus == ItemProcessingStatus.pending ||
+      item.processingStatus == ItemProcessingStatus.processing;
+
   @override
   Widget build(BuildContext context) {
     final source = ItemImageSource.fromItem(item);
-    final child = source.networkUrl == null
-        ? _ItemImagePlaceholder(item: item)
-        : Image.network(
-            source.networkUrl!,
-            fit: BoxFit.cover,
-            width: double.infinity,
-            height: double.infinity,
-            errorBuilder: (context, error, stackTrace) {
-              return _ItemImagePlaceholder(item: item);
-            },
-            loadingBuilder: (context, child, progress) {
-              if (progress == null) {
-                return child;
-              }
-              return const Center(child: CircularProgressIndicator());
-            },
-          );
+    final preview = localPreviewBytes;
+    final hasLocal = preview != null && preview.isNotEmpty;
+    final Widget photo;
+    final Key sourceSubtreeKey;
+    if (source.networkUrl != null) {
+      sourceSubtreeKey = sourceKey(source.key!);
+      photo = Image.network(
+        source.networkUrl!,
+        fit: BoxFit.cover,
+        width: double.infinity,
+        height: double.infinity,
+        errorBuilder: (context, error, stackTrace) {
+          if (hasLocal) {
+            return _localImage(preview);
+          }
+          return _ItemImagePlaceholder(item: item);
+        },
+        loadingBuilder: (context, child, progress) {
+          if (progress == null) {
+            return child;
+          }
+          if (hasLocal) {
+            return _localImage(preview);
+          }
+          return const Center(child: CircularProgressIndicator());
+        },
+      );
+    } else if (hasLocal) {
+      sourceSubtreeKey = localSourceKey(item.id);
+      photo = _localImage(preview);
+    } else {
+      sourceSubtreeKey = source.key == null
+          ? missingSourceKey
+          : sourceKey(source.key!);
+      photo = _ItemImagePlaceholder(item: item);
+    }
 
     return KeyedSubtree(
       key: imageKey(item.id),
       child: KeyedSubtree(
-        key: source.key == null ? missingSourceKey : sourceKey(source.key!),
-        child: child,
+        key: sourceSubtreeKey,
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            photo,
+            if (_isInProgress)
+              Positioned(
+                key: processingIndicatorKey(item.id),
+                top: 0,
+                left: 0,
+                right: 0,
+                child: SizedBox(
+                  height: 2,
+                  child: ColoredBox(
+                    color: Theme.of(context).colorScheme.secondary,
+                  ),
+                ),
+              ),
+          ],
+        ),
       ),
+    );
+  }
+
+  Widget _localImage(Uint8List bytes) {
+    return Image.memory(
+      bytes,
+      fit: BoxFit.cover,
+      width: double.infinity,
+      height: double.infinity,
+      gaplessPlayback: true,
+      errorBuilder: (context, error, stackTrace) {
+        return _ItemImagePlaceholder(item: item);
+      },
     );
   }
 }
