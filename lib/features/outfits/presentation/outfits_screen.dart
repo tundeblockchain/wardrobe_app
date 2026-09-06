@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/router/app_routes.dart';
+import '../../../core/theme/app_spacing.dart';
+import '../../../core/widgets/app_empty_state.dart';
 import '../application/outfits_controller.dart';
 import '../domain/outfit.dart';
 
@@ -45,26 +47,35 @@ class OutfitsScreen extends ConsumerWidget {
             ref.read(outfitsControllerProvider(wardrobeId).notifier).refresh(),
         child: ListView(
           physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.all(24),
+          padding: AppSpacing.pageInsets,
           children: [
             if (state.isLoading && state.outfits.isEmpty)
               const Padding(
-                padding: EdgeInsets.symmetric(vertical: 48),
+                padding: EdgeInsets.symmetric(vertical: AppSpacing.xxl),
                 child: Center(child: CircularProgressIndicator()),
               )
             else if (state.errorMessage != null && state.outfits.isEmpty)
-              _ErrorBody(
+              AppErrorState(
                 message: state.errorMessage!,
+                retryKey: OutfitsScreen.retryButtonKey,
                 onRetry: () => ref
                     .read(outfitsControllerProvider(wardrobeId).notifier)
                     .refresh(),
               )
             else if (state.isEmpty)
-              _EmptyBody(wardrobeId: wardrobeId)
+              AppEmptyState(
+                key: OutfitsScreen.emptyStateKey,
+                icon: Icons.checkroom_outlined,
+                title: 'No outfits yet',
+                message: 'Build a look from items in this wardrobe.',
+                actionLabel: 'Create outfit',
+                onAction: () =>
+                    context.push(AppRoutes.createOutfit(wardrobeId)),
+              )
             else ...[
               if (state.errorMessage != null)
                 Padding(
-                  padding: const EdgeInsets.only(bottom: 16),
+                  padding: const EdgeInsets.only(bottom: AppSpacing.md),
                   child: Text(
                     state.errorMessage!,
                     style: TextStyle(
@@ -77,68 +88,6 @@ class OutfitsScreen extends ConsumerWidget {
             ],
           ],
         ),
-      ),
-    );
-  }
-}
-
-class _EmptyBody extends StatelessWidget {
-  const _EmptyBody({required this.wardrobeId});
-
-  final String wardrobeId;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      key: OutfitsScreen.emptyStateKey,
-      padding: const EdgeInsets.symmetric(vertical: 32),
-      child: Column(
-        children: [
-          Text(
-            'No outfits yet',
-            style: Theme.of(context).textTheme.headlineSmall,
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 8),
-          const Text(
-            'Build a look from items in this wardrobe.',
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 24),
-          FilledButton(
-            onPressed: () => context.push(AppRoutes.createOutfit(wardrobeId)),
-            child: const Text('Create outfit'),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _ErrorBody extends StatelessWidget {
-  const _ErrorBody({required this.message, required this.onRetry});
-
-  final String message;
-  final VoidCallback onRetry;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 32),
-      child: Column(
-        children: [
-          Text(
-            message,
-            style: TextStyle(color: Theme.of(context).colorScheme.error),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 16),
-          FilledButton(
-            key: OutfitsScreen.retryButtonKey,
-            onPressed: onRetry,
-            child: const Text('Retry'),
-          ),
-        ],
       ),
     );
   }

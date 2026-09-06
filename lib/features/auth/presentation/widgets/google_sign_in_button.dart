@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/widgets/app_empty_state.dart';
+
 /// Shared Google / Gmail sign-in control for login and signup.
 class GoogleSignInButton extends StatelessWidget {
   const GoogleSignInButton({
@@ -18,11 +20,7 @@ class GoogleSignInButton extends StatelessWidget {
     return OutlinedButton(
       onPressed: enabled && !busy ? onPressed : null,
       child: busy
-          ? const SizedBox(
-              height: 20,
-              width: 20,
-              child: CircularProgressIndicator(strokeWidth: 2),
-            )
+          ? AppButtonSpinner(color: Theme.of(context).colorScheme.primary)
           : const Text('Continue with Google'),
     );
   }

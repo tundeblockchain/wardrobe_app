@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/theme/app_spacing.dart';
+import '../../../core/widgets/app_empty_state.dart';
 import '../application/edit_outfit_controller.dart';
 import '../application/outfit_detail_controller.dart';
 import '../application/outfit_scope.dart';
@@ -88,7 +90,7 @@ class _EditOutfitScreenState extends ConsumerState<EditOutfitScreen> {
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 480),
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24),
+              padding: AppSpacing.pageInsets,
               child: Form(
                 key: _formKey,
                 child: Column(
@@ -99,10 +101,7 @@ class _EditOutfitScreenState extends ConsumerState<EditOutfitScreen> {
                       controller: _nameController,
                       textCapitalization: TextCapitalization.words,
                       maxLength: OutfitValidators.maxNameLength,
-                      decoration: const InputDecoration(
-                        labelText: 'Name',
-                        border: OutlineInputBorder(),
-                      ),
+                      decoration: const InputDecoration(labelText: 'Name'),
                       validator: OutfitValidators.name,
                       enabled: !state.isSaving,
                     ),
@@ -137,11 +136,7 @@ class _EditOutfitScreenState extends ConsumerState<EditOutfitScreen> {
                       key: EditOutfitScreen.submitButtonKey,
                       onPressed: state.isSaving ? null : _submit,
                       child: state.isSaving
-                          ? const SizedBox(
-                              height: 20,
-                              width: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
+                          ? const AppButtonSpinner()
                           : const Text('Save changes'),
                     ),
                   ],

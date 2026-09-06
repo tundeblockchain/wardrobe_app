@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/router/app_routes.dart';
+import '../../../core/theme/app_spacing.dart';
+import '../../../core/widgets/app_empty_state.dart';
 import '../../auth/application/auth_controller.dart';
 import '../application/wardrobes_controller.dart';
 import '../domain/wardrobe.dart';
@@ -45,27 +47,40 @@ class WardrobesScreen extends ConsumerWidget {
             ref.read(wardrobesControllerProvider.notifier).refresh(),
         child: ListView(
           physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.all(24),
+          padding: AppSpacing.pageInsets,
           children: [
-            Text('Signed in as $email'),
-            const SizedBox(height: 16),
+            Text(
+              'Signed in as $email',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.md),
             if (state.isLoading && state.wardrobes.isEmpty)
               const Padding(
-                padding: EdgeInsets.symmetric(vertical: 48),
+                padding: EdgeInsets.symmetric(vertical: AppSpacing.xxl),
                 child: Center(child: CircularProgressIndicator()),
               )
             else if (state.errorMessage != null && state.wardrobes.isEmpty)
-              _ErrorBody(
+              AppErrorState(
                 message: state.errorMessage!,
+                retryKey: WardrobesScreen.retryButtonKey,
                 onRetry: () =>
                     ref.read(wardrobesControllerProvider.notifier).refresh(),
               )
             else if (state.isEmpty)
-              const _EmptyBody()
+              AppEmptyState(
+                key: WardrobesScreen.emptyStateKey,
+                icon: Icons.checkroom_outlined,
+                title: 'No wardrobes yet',
+                message: 'Create a wardrobe to get started.',
+                actionLabel: 'Create wardrobe',
+                onAction: () => context.push(AppRoutes.createWardrobe),
+              )
             else ...[
               if (state.errorMessage != null)
                 Padding(
-                  padding: const EdgeInsets.only(bottom: 16),
+                  padding: const EdgeInsets.only(bottom: AppSpacing.md),
                   child: Text(
                     state.errorMessage!,
                     style: TextStyle(
@@ -78,66 +93,6 @@ class WardrobesScreen extends ConsumerWidget {
             ],
           ],
         ),
-      ),
-    );
-  }
-}
-
-class _EmptyBody extends StatelessWidget {
-  const _EmptyBody();
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      key: WardrobesScreen.emptyStateKey,
-      padding: const EdgeInsets.symmetric(vertical: 32),
-      child: Column(
-        children: [
-          Text(
-            'No wardrobes yet',
-            style: Theme.of(context).textTheme.headlineSmall,
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 8),
-          const Text(
-            'Create a wardrobe to get started.',
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 24),
-          FilledButton(
-            onPressed: () => context.push(AppRoutes.createWardrobe),
-            child: const Text('Create wardrobe'),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _ErrorBody extends StatelessWidget {
-  const _ErrorBody({required this.message, required this.onRetry});
-
-  final String message;
-  final VoidCallback onRetry;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 32),
-      child: Column(
-        children: [
-          Text(
-            message,
-            style: TextStyle(color: Theme.of(context).colorScheme.error),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 16),
-          FilledButton(
-            key: WardrobesScreen.retryButtonKey,
-            onPressed: onRetry,
-            child: const Text('Retry'),
-          ),
-        ],
       ),
     );
   }

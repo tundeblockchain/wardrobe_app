@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/router/app_routes.dart';
+import '../../../core/widgets/app_empty_state.dart';
 import '../application/auth_controller.dart';
 import '../domain/auth_validators.dart';
 import 'widgets/auth_scaffold.dart';
@@ -55,10 +56,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
               controller: _emailController,
               keyboardType: TextInputType.emailAddress,
               autofillHints: const [AutofillHints.email],
-              decoration: const InputDecoration(
-                labelText: 'Email',
-                border: OutlineInputBorder(),
-              ),
+              decoration: const InputDecoration(labelText: 'Email'),
               validator: AuthValidators.email,
               enabled: !auth.isBusy,
               onFieldSubmitted: (_) => _submit(),
@@ -79,11 +77,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
               key: ForgotPasswordScreen.submitButtonKey,
               onPressed: auth.isBusy ? null : _submit,
               child: auth.isBusy
-                  ? const SizedBox(
-                      height: 20,
-                      width: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
+                  ? const AppButtonSpinner()
                   : const Text('Send reset email'),
             ),
             const SizedBox(height: 8),

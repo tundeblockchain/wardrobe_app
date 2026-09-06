@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/router/app_routes.dart';
+import '../../../core/theme/app_spacing.dart';
+import '../../../core/widgets/app_empty_state.dart';
 import '../application/recommendations_controller.dart';
 import '../domain/recommendation.dart';
 
@@ -28,16 +30,19 @@ class RecommendationsScreen extends ConsumerWidget {
             .refresh(),
         child: ListView(
           physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.all(24),
+          padding: AppSpacing.pageInsets,
           children: [
             if (state.isLoading && state.recommendations.isEmpty)
               const Padding(
-                padding: EdgeInsets.symmetric(vertical: 48),
+                padding: EdgeInsets.symmetric(vertical: AppSpacing.xxl),
                 child: Center(child: CircularProgressIndicator()),
               )
             else if (state.isUnavailable)
-              _ErrorBody(
+              AppErrorState(
+                key: RecommendationsScreen.unavailableKey,
                 message: state.errorMessage!,
+                detail: 'Your wardrobe and saved outfits still work without suggestions.',
+                retryKey: RecommendationsScreen.retryButtonKey,
                 onRetry: () => ref
                     .read(
                       recommendationsControllerProvider(wardrobeId).notifier,
@@ -45,11 +50,17 @@ class RecommendationsScreen extends ConsumerWidget {
                     .refresh(),
               )
             else if (state.isEmpty)
-              const _EmptyBody()
+              const AppEmptyState(
+                key: RecommendationsScreen.emptyStateKey,
+                icon: Icons.auto_awesome_outlined,
+                title: 'No suggestions yet',
+                message:
+                    'Add more items to this wardrobe, then pull to refresh.',
+              )
             else ...[
               if (state.errorMessage != null)
                 Padding(
-                  padding: const EdgeInsets.only(bottom: 16),
+                  padding: const EdgeInsets.only(bottom: AppSpacing.md),
                   child: Text(
                     state.errorMessage!,
                     style: TextStyle(
@@ -66,67 +77,6 @@ class RecommendationsScreen extends ConsumerWidget {
             ],
           ],
         ),
-      ),
-    );
-  }
-}
-
-class _EmptyBody extends StatelessWidget {
-  const _EmptyBody();
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      key: RecommendationsScreen.emptyStateKey,
-      padding: const EdgeInsets.symmetric(vertical: 32),
-      child: Column(
-        children: [
-          Text(
-            'No suggestions yet',
-            style: Theme.of(context).textTheme.headlineSmall,
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 8),
-          const Text(
-            'Add more items to this wardrobe, then pull to refresh.',
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _ErrorBody extends StatelessWidget {
-  const _ErrorBody({required this.message, required this.onRetry});
-
-  final String message;
-  final VoidCallback onRetry;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      key: RecommendationsScreen.unavailableKey,
-      padding: const EdgeInsets.symmetric(vertical: 32),
-      child: Column(
-        children: [
-          Text(
-            message,
-            style: TextStyle(color: Theme.of(context).colorScheme.error),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 8),
-          const Text(
-            'Your wardrobe and saved outfits still work without suggestions.',
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 16),
-          FilledButton(
-            key: RecommendationsScreen.retryButtonKey,
-            onPressed: onRetry,
-            child: const Text('Retry'),
-          ),
-        ],
       ),
     );
   }

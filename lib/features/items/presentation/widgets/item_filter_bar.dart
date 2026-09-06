@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/theme/app_spacing.dart';
 import '../../domain/item.dart';
 import '../../domain/item_list_filters.dart';
 import '../../domain/item_taxonomy.dart';
@@ -59,7 +60,7 @@ class ItemFilterBar extends StatelessWidget {
               ),
           ],
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: AppSpacing.sm),
         _ChipRow(
           rowKey: colourRowKey,
           label: 'Colour',
@@ -81,7 +82,7 @@ class ItemFilterBar extends StatelessWidget {
           ],
         ),
         if (subcategories.isNotEmpty) ...[
-          const SizedBox(height: 8),
+          const SizedBox(height: AppSpacing.sm),
           _ChipRow(
             rowKey: subcategoryRowKey,
             label: 'Subcategory',
@@ -135,13 +136,13 @@ class _ChipRow extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(label, style: Theme.of(context).textTheme.labelLarge),
-        const SizedBox(height: 8),
+        const SizedBox(height: AppSpacing.sm),
         SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           child: Row(
             children: [
               for (var i = 0; i < children.length; i++) ...[
-                if (i > 0) const SizedBox(width: 8),
+                if (i > 0) const SizedBox(width: AppSpacing.sm),
                 children[i],
               ],
             ],

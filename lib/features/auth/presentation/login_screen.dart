@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/router/app_routes.dart';
 import '../application/auth_controller.dart';
 import '../domain/auth_validators.dart';
+import '../../../core/widgets/app_empty_state.dart';
 import 'widgets/auth_scaffold.dart';
 import 'widgets/google_sign_in_button.dart';
 
@@ -74,10 +75,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               controller: _emailController,
               keyboardType: TextInputType.emailAddress,
               autofillHints: const [AutofillHints.email],
-              decoration: const InputDecoration(
-                labelText: 'Email',
-                border: OutlineInputBorder(),
-              ),
+              decoration: const InputDecoration(labelText: 'Email'),
               validator: AuthValidators.email,
               enabled: !auth.isBusy,
             ),
@@ -87,10 +85,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               controller: _passwordController,
               obscureText: true,
               autofillHints: const [AutofillHints.password],
-              decoration: const InputDecoration(
-                labelText: 'Password',
-                border: OutlineInputBorder(),
-              ),
+              decoration: const InputDecoration(labelText: 'Password'),
               validator: AuthValidators.password,
               enabled: !auth.isBusy,
               onFieldSubmitted: (_) => _submit(),
@@ -107,11 +102,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               key: LoginScreen.submitButtonKey,
               onPressed: auth.isBusy ? null : _submit,
               child: auth.isBusy && !_googleBusy
-                  ? const SizedBox(
-                      height: 20,
-                      width: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
+                  ? const AppButtonSpinner()
                   : const Text('Sign in'),
             ),
             const AuthOrDivider(),

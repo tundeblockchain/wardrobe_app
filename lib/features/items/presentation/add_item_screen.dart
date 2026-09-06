@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/router/app_routes.dart';
+import '../../../core/theme/app_spacing.dart';
+import '../../../core/widgets/app_empty_state.dart';
 import '../application/add_item_controller.dart';
 import '../domain/item.dart';
 import '../domain/item_validators.dart';
@@ -70,7 +72,7 @@ class _AddItemScreenState extends ConsumerState<AddItemScreen> {
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 480),
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24),
+              padding: AppSpacing.pageInsets,
               child: Form(
                 key: _formKey,
                 child: Column(
@@ -121,7 +123,7 @@ class _AddItemScreenState extends ConsumerState<AddItemScreen> {
                     const SizedBox(height: 16),
                     if (state.pickedImage != null)
                       ClipRRect(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: AppRadii.card,
                         child: Image.memory(
                           state.pickedImage!.bytes,
                           height: 220,
@@ -133,9 +135,12 @@ class _AddItemScreenState extends ConsumerState<AddItemScreen> {
                         height: 160,
                         alignment: Alignment.center,
                         decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: AppRadii.card,
+                          color: Theme.of(context)
+                              .colorScheme
+                              .surfaceContainerLow,
                           border: Border.all(
-                            color: Theme.of(context).colorScheme.outline,
+                            color: Theme.of(context).colorScheme.outlineVariant,
                           ),
                         ),
                         child: const Text('No photo selected'),
@@ -146,10 +151,7 @@ class _AddItemScreenState extends ConsumerState<AddItemScreen> {
                       controller: _nameController,
                       textCapitalization: TextCapitalization.words,
                       maxLength: ItemValidators.maxNameLength,
-                      decoration: const InputDecoration(
-                        labelText: 'Name',
-                        border: OutlineInputBorder(),
-                      ),
+                      decoration: const InputDecoration(labelText: 'Name'),
                       validator: ItemValidators.name,
                       enabled: !busy,
                     ),
@@ -157,10 +159,7 @@ class _AddItemScreenState extends ConsumerState<AddItemScreen> {
                     DropdownButtonFormField<ItemCategory>(
                       key: AddItemScreen.categoryFieldKey,
                       initialValue: _category,
-                      decoration: const InputDecoration(
-                        labelText: 'Category',
-                        border: OutlineInputBorder(),
-                      ),
+                      decoration: const InputDecoration(labelText: 'Category'),
                       items: [
                         for (final category in ItemCategory.values)
                           DropdownMenuItem(
@@ -181,7 +180,6 @@ class _AddItemScreenState extends ConsumerState<AddItemScreen> {
                       decoration: const InputDecoration(
                         labelText: 'Subcategory (optional)',
                         hintText: 'T-shirt, jeans…',
-                        border: OutlineInputBorder(),
                       ),
                       validator: ItemValidators.subcategory,
                       enabled: !busy,
@@ -192,7 +190,6 @@ class _AddItemScreenState extends ConsumerState<AddItemScreen> {
                       decoration: const InputDecoration(
                         labelText: 'Colours (optional)',
                         hintText: 'black, white',
-                        border: OutlineInputBorder(),
                       ),
                       enabled: !busy,
                     ),
@@ -203,7 +200,6 @@ class _AddItemScreenState extends ConsumerState<AddItemScreen> {
                       maxLength: ItemValidators.maxBrandLength,
                       decoration: const InputDecoration(
                         labelText: 'Brand (optional)',
-                        border: OutlineInputBorder(),
                       ),
                       validator: ItemValidators.brand,
                       enabled: !busy,
@@ -226,11 +222,7 @@ class _AddItemScreenState extends ConsumerState<AddItemScreen> {
                       key: AddItemScreen.submitButtonKey,
                       onPressed: busy ? null : _submit,
                       child: state.isSubmitting
-                          ? const SizedBox(
-                              height: 20,
-                              width: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
+                          ? const AppButtonSpinner()
                           : const Text('Save item'),
                     ),
                   ],
