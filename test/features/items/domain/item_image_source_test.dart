@@ -1,5 +1,4 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:wardrobe_app/features/items/domain/item.dart';
 import 'package:wardrobe_app/features/items/domain/item_image_source.dart';
 
 import '../../../helpers/fake_item_repository.dart';

@@ -18,6 +18,7 @@ void main() {
     subcategory: 'JEANS',
     colours: const ['BLUE'],
     brand: 'Levi\'s',
+    originalImageKey: 'users/uid/uploads/jeans.jpg',
     processedImageKey: 'users/uid/items/item_jeans/processed.png',
   );
   final sneakers = testItem(
