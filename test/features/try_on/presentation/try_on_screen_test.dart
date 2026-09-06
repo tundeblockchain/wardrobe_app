@@ -12,6 +12,7 @@ import 'package:wardrobe_app/features/try_on/presentation/try_on_screen.dart';
 import 'package:wardrobe_app/features/try_on/presentation/widgets/try_on_result_image.dart';
 import 'package:wardrobe_app/features/try_on/presentation/widgets/try_on_status_banner.dart';
 
+import '../../../helpers/date_stamp_matchers.dart';
 import '../../../helpers/fake_ai_profile_repository.dart';
 import '../../../helpers/fake_outfit_repository.dart';
 
@@ -77,6 +78,7 @@ void main() {
     await pumpScreen(tester);
 
     expect(find.byType(TryOnScreen), findsOneWidget);
+    expectNoCreatedUpdatedDateStamps();
     expect(find.byKey(TryOnScreen.profileEmptyKey), findsOneWidget);
     expect(find.text('No profile selected'), findsOneWidget);
     expect(

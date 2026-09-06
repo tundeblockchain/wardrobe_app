@@ -109,9 +109,6 @@ class OutfitDetailScreen extends ConsumerWidget {
     return ListView(
       children: [
         Text(outfit.name, style: Theme.of(context).textTheme.headlineSmall),
-        const SizedBox(height: 8),
-        Text('Added ${_formatTimestamp(outfit.createdAt)}'),
-        Text('Updated ${_formatTimestamp(outfit.updatedAt)}'),
         const SizedBox(height: 24),
         FilledButton.icon(
           key: tryOnButtonKey,
@@ -177,14 +174,4 @@ class OutfitDetailScreen extends ConsumerWidget {
     }
     await ref.read(outfitDetailControllerProvider(_scope).notifier).delete();
   }
-}
-
-String _formatTimestamp(DateTime value) {
-  final local = value.toLocal();
-  final year = local.year.toString().padLeft(4, '0');
-  final month = local.month.toString().padLeft(2, '0');
-  final day = local.day.toString().padLeft(2, '0');
-  final hour = local.hour.toString().padLeft(2, '0');
-  final minute = local.minute.toString().padLeft(2, '0');
-  return '$year-$month-$day $hour:$minute';
 }

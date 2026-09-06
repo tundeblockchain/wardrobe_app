@@ -11,6 +11,7 @@ import 'package:wardrobe_app/features/recommendations/data/dio_recommendation_re
 import 'package:wardrobe_app/features/wardrobes/data/dio_wardrobe_repository.dart';
 import 'package:wardrobe_app/features/wardrobes/presentation/wardrobe_detail_screen.dart';
 
+import '../../../helpers/date_stamp_matchers.dart';
 import '../../../helpers/fake_item_repository.dart';
 import '../../../helpers/fake_outfit_repository.dart';
 import '../../../helpers/fake_recommendation_repository.dart';
@@ -52,8 +53,7 @@ void main() {
 
     expect(find.byType(WardrobeDetailScreen), findsOneWidget);
     expect(find.text('Summer Clothes'), findsWidgets);
-    expect(find.textContaining('Created'), findsNothing);
-    expect(find.textContaining('Updated'), findsNothing);
+    expectNoCreatedUpdatedDateStamps();
     expect(find.text('Outfits'), findsOneWidget);
     expect(find.text('Suggestions'), findsOneWidget);
     expect(find.text('Items'), findsOneWidget);
