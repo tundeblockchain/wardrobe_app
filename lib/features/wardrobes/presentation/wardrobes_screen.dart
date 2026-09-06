@@ -2,14 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/router/app_router.dart';
 import '../../../core/router/app_routes.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/app_empty_state.dart';
+import '../application/wardrobe_cover_provider.dart';
 import '../application/wardrobes_controller.dart';
-import '../domain/wardrobe.dart';
+import 'widgets/wardrobe_list_card.dart';
 
-/// Authenticated wardrobe list with empty state and create navigation.
-class WardrobesScreen extends ConsumerWidget {
+/// Authenticated wardrobe card list with empty state and create navigation.
+class WardrobesScreen extends ConsumerStatefulWidget {
   const WardrobesScreen({super.key});
 
   static const profileButtonKey = Key('wardrobes_profile');
@@ -18,7 +20,51 @@ class WardrobesScreen extends ConsumerWidget {
   static const retryButtonKey = Key('wardrobes_retry');
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<WardrobesScreen> createState() => _WardrobesScreenState();
+}
+
+class _WardrobesScreenState extends ConsumerState<WardrobesScreen>
+    with RouteAware {
+  RouteObserver<ModalRoute<void>>? _observer;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final observer = ref.read(routeObserverProvider);
+    final route = ModalRoute.of(context);
+    if (!identical(_observer, observer)) {
+      _observer?.unsubscribe(this);
+      _observer = observer;
+    }
+    if (route != null) {
+      observer.subscribe(this, route);
+    }
+  }
+
+  @override
+  void dispose() {
+    _observer?.unsubscribe(this);
+    super.dispose();
+  }
+
+  @override
+  void didPopNext() {
+    _refreshCovers();
+  }
+
+  Future<void> _refreshList() async {
+    await ref.read(wardrobesControllerProvider.notifier).refresh();
+    _refreshCovers();
+  }
+
+  void _refreshCovers() {
+    for (final wardrobe in ref.read(wardrobesControllerProvider).wardrobes) {
+      ref.invalidate(wardrobeCoverProvider(wardrobe.id));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final state = ref.watch(wardrobesControllerProvider);
 
     return Scaffold(
@@ -26,7 +72,7 @@ class WardrobesScreen extends ConsumerWidget {
         title: const Text('Wardrobes'),
         actions: [
           IconButton(
-            key: profileButtonKey,
+            key: WardrobesScreen.profileButtonKey,
             tooltip: 'Account',
             onPressed: () => context.push(AppRoutes.profile),
             icon: const Icon(Icons.account_circle_outlined),
@@ -34,14 +80,13 @@ class WardrobesScreen extends ConsumerWidget {
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        key: createButtonKey,
+        key: WardrobesScreen.createButtonKey,
         onPressed: () => context.push(AppRoutes.createWardrobe),
         tooltip: 'Create wardrobe',
         child: const Icon(Icons.add),
       ),
       body: RefreshIndicator(
-        onRefresh: () =>
-            ref.read(wardrobesControllerProvider.notifier).refresh(),
+        onRefresh: _refreshList,
         child: ListView(
           physics: const AlwaysScrollableScrollPhysics(),
           padding: AppSpacing.pageInsets,
@@ -55,8 +100,7 @@ class WardrobesScreen extends ConsumerWidget {
               AppErrorState(
                 message: state.errorMessage!,
                 retryKey: WardrobesScreen.retryButtonKey,
-                onRetry: () =>
-                    ref.read(wardrobesControllerProvider.notifier).refresh(),
+                onRetry: _refreshList,
               )
             else if (state.isEmpty)
               AppEmptyState(
@@ -79,28 +123,10 @@ class WardrobesScreen extends ConsumerWidget {
                   ),
                 ),
               for (final wardrobe in state.wardrobes)
-                _WardrobeTile(wardrobe: wardrobe),
+                WardrobeListCard(wardrobe: wardrobe),
             ],
           ],
         ),
-      ),
-    );
-  }
-}
-
-class _WardrobeTile extends StatelessWidget {
-  const _WardrobeTile({required this.wardrobe});
-
-  final Wardrobe wardrobe;
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      child: ListTile(
-        key: Key('wardrobe_tile_${wardrobe.id}'),
-        title: Text(wardrobe.name),
-        trailing: const Icon(Icons.chevron_right),
-        onTap: () => context.push(AppRoutes.wardrobeDetail(wardrobe.id)),
       ),
     );
   }

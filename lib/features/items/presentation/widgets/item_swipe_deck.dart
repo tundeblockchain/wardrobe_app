@@ -24,6 +24,9 @@ class ItemSwipeDeck extends StatefulWidget {
   static const nextButtonKey = Key('item_swipe_next');
   static const openButtonKey = Key('item_swipe_open');
   static const counterKey = Key('item_swipe_counter');
+  static const swipeHintKey = Key('item_swipe_hint');
+  static const swipeLayerKey = Key('item_swipe_layer');
+  static const swipeHintText = 'Swipe left, right, or up for the next item';
 
   @override
   State<ItemSwipeDeck> createState() => _ItemSwipeDeckState();
@@ -42,6 +45,8 @@ class _ItemSwipeDeckState extends State<ItemSwipeDeck>
   List<Item> get _items => widget.items;
 
   bool get _atEnd => _items.isEmpty || _index >= _items.length;
+
+  bool get _swipeEnabled => itemBrowseSwipeEnabled(_items.length);
 
   Item? get _current => _atEnd ? null : _items[_index];
 
@@ -110,14 +115,14 @@ class _ItemSwipeDeckState extends State<ItemSwipeDeck>
   }
 
   void _onPanUpdate(DragUpdateDetails details) {
-    if (_atEnd || _controller.isAnimating) {
+    if (!_swipeEnabled || _atEnd || _controller.isAnimating) {
       return;
     }
     setState(() => _drag += details.delta);
   }
 
   void _onPanEnd(DragEndDetails details, Size size) {
-    if (_atEnd || _controller.isAnimating) {
+    if (!_swipeEnabled || _atEnd || _controller.isAnimating) {
       return;
     }
     final direction = resolveItemSwipe(
@@ -152,7 +157,7 @@ class _ItemSwipeDeckState extends State<ItemSwipeDeck>
   }
 
   void _advance() {
-    if (_atEnd || _controller.isAnimating) {
+    if (!_swipeEnabled || _atEnd || _controller.isAnimating) {
       return;
     }
     final size = context.size ?? const Size(320, 420);
@@ -204,38 +209,52 @@ class _ItemSwipeDeckState extends State<ItemSwipeDeck>
               color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
           ),
-          const SizedBox(height: AppSpacing.sm),
-          Text(
-            'Swipe left, right, or up for the next item',
-            textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.bodySmall,
-          ),
+          if (_swipeEnabled) ...[
+            const SizedBox(height: AppSpacing.sm),
+            Text(
+              key: ItemSwipeDeck.swipeHintKey,
+              ItemSwipeDeck.swipeHintText,
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+          ],
           const SizedBox(height: AppSpacing.md),
-          Row(
-            children: [
-              Expanded(
-                child: OutlinedButton(
-                  key: ItemSwipeDeck.nextButtonKey,
-                  onPressed: _advance,
-                  child: const Text('Next item'),
+          if (_swipeEnabled)
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    key: ItemSwipeDeck.nextButtonKey,
+                    onPressed: _advance,
+                    child: const Text('Next item'),
+                  ),
                 ),
-              ),
-              const SizedBox(width: AppSpacing.sm),
-              Expanded(
-                child: FilledButton(
-                  key: ItemSwipeDeck.openButtonKey,
-                  onPressed: _openCurrent,
-                  child: const Text('View details'),
+                const SizedBox(width: AppSpacing.sm),
+                Expanded(
+                  child: FilledButton(
+                    key: ItemSwipeDeck.openButtonKey,
+                    onPressed: _openCurrent,
+                    child: const Text('View details'),
+                  ),
                 ),
-              ),
-            ],
-          ),
+              ],
+            )
+          else
+            FilledButton(
+              key: ItemSwipeDeck.openButtonKey,
+              onPressed: _openCurrent,
+              child: const Text('View details'),
+            ),
         ],
       ],
     );
   }
 
   Widget _buildStack(BuildContext context) {
+    if (!_swipeEnabled) {
+      return ItemSwipeCard(item: _items[_index], onTap: _openCurrent);
+    }
+
     final remaining = _items.length - _index;
     final backCount = remaining > 3 ? 2 : remaining - 1;
 
@@ -243,6 +262,7 @@ class _ItemSwipeDeckState extends State<ItemSwipeDeck>
       builder: (context, constraints) {
         final size = Size(constraints.maxWidth, constraints.maxHeight);
         return RawGestureDetector(
+          key: ItemSwipeDeck.swipeLayerKey,
           gestures: {
             _EagerPanGestureRecognizer:
                 GestureRecognizerFactoryWithHandlers<
