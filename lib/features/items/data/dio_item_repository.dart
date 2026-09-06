@@ -7,6 +7,7 @@ import '../domain/item.dart';
 import '../domain/item_list_filters.dart';
 import '../domain/item_repository.dart';
 import 'item_dtos.dart';
+import 'item_image_urls.dart';
 
 /// Dio implementation of [ItemRepository] against `/wardrobes/{id}/items`.
 class DioItemRepository implements ItemRepository {
@@ -116,11 +117,15 @@ class DioItemRepository implements ItemRepository {
 /// Parses `GET /wardrobes/{id}/items` as `{ "items": [...] }` or a bare array.
 List<Item> parseItemList(dynamic data) {
   if (data is List) {
-    return data.whereType<Map>().map((item) => parseItem(item)).toList();
+    return data.whereType<Map>().map(parseItem).toList();
   }
   if (data is Map) {
-    return ItemListResponse.fromJson(Map<String, dynamic>.from(data))
-        .toDomain();
+    final json = Map<String, dynamic>.from(data);
+    final items = json['items'];
+    if (items is List) {
+      return items.whereType<Map>().map(parseItem).toList();
+    }
+    return ItemListResponse.fromJson(json).toDomain();
   }
   throw const ApiException(
     message: 'Unexpected items response.',
@@ -130,11 +135,26 @@ List<Item> parseItemList(dynamic data) {
 
 Item parseItem(dynamic data) {
   if (data is Map) {
-    return ItemResponse.fromJson(Map<String, dynamic>.from(data)).toDomain();
+    final json = Map<String, dynamic>.from(data);
+    final item = ItemResponse.fromJson(json).toDomain();
+    return applyItemImageUrls(item, json);
   }
   throw const ApiException(
     message: 'Unexpected item response.',
     code: 'INVALID_RESPONSE',
+  );
+}
+
+/// Overlay http(s) photo fields onto domain keys without inventing URLs.
+Item applyItemImageUrls(Item item, Map<String, dynamic> json) {
+  final originalUrl = extractOriginalImageUrl(json);
+  final processedUrl = extractProcessedImageUrl(json);
+  if (originalUrl == null && processedUrl == null) {
+    return item;
+  }
+  return item.copyWith(
+    originalImageKey: originalUrl ?? item.originalImageKey,
+    processedImageKey: processedUrl ?? item.processedImageKey,
   );
 }
 

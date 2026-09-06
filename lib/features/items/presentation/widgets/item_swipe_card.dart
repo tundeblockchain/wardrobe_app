@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/theme/app_spacing.dart';
+import '../../application/item_local_preview_cache.dart';
 import '../../domain/item.dart';
 import 'item_browse_image.dart';
 import 'processing_status_chip.dart';
 
 /// Large Tinder-style clothing card: photo, status badge, and metadata.
-class ItemSwipeCard extends StatelessWidget {
+class ItemSwipeCard extends ConsumerWidget {
   const ItemSwipeCard({
     super.key,
     required this.item,
@@ -23,9 +25,10 @@ class ItemSwipeCard extends StatelessWidget {
   static Key swipeCardKey(String itemId) => Key('item_swipe_card_$itemId');
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
+    final localPreview = ref.watch(itemLocalPreviewCacheProvider)[item.id];
     return Card(
       key: swipeCardKey(item.id),
       margin: EdgeInsets.zero,
@@ -37,7 +40,7 @@ class ItemSwipeCard extends StatelessWidget {
         child: Stack(
           fit: StackFit.expand,
           children: [
-            ItemBrowseImage(item: item),
+            ItemBrowseImage(item: item, localPreviewBytes: localPreview),
             DecoratedBox(
               decoration: BoxDecoration(
                 gradient: LinearGradient(

@@ -11,6 +11,7 @@ import '../domain/picked_image.dart';
 import '../domain/upload_repository.dart';
 import 'edit_item_state.dart';
 import 'item_detail_controller.dart';
+import 'item_local_preview_cache.dart';
 import 'item_scope.dart';
 import 'items_controller.dart';
 
@@ -81,6 +82,11 @@ class EditItemController extends Notifier<EditItemState> {
       );
       if (!ref.mounted) {
         return item;
+      }
+      if (replacement != null) {
+        ref
+            .read(itemLocalPreviewCacheProvider.notifier)
+            .store(item.id, replacement.bytes);
       }
       ref.read(itemsControllerProvider(scope.wardrobeId).notifier).upsert(item);
       ref.read(itemDetailControllerProvider(scope).notifier).replace(item);

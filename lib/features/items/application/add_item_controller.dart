@@ -10,6 +10,7 @@ import '../domain/item_repository.dart';
 import '../domain/picked_image.dart';
 import '../domain/upload_repository.dart';
 import 'add_item_state.dart';
+import 'item_local_preview_cache.dart';
 import 'items_controller.dart';
 
 /// Pick photo → pre-signed upload → create item, then refresh the list cache.
@@ -84,6 +85,9 @@ class AddItemController extends Notifier<AddItemState> {
       if (!ref.mounted) {
         return item;
       }
+      ref
+          .read(itemLocalPreviewCacheProvider.notifier)
+          .store(item.id, image.bytes);
       ref.read(itemsControllerProvider(wardrobeId).notifier).upsert(item);
       state = state.copyWith(isSubmitting: false, phase: AddItemPhase.idle);
       return item;

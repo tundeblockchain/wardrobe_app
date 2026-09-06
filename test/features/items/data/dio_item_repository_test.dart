@@ -138,6 +138,49 @@ void main() {
     );
   });
 
+  test('parseItem keeps PROCESSING keys and overlays originalImageUrl', () {
+    const processingPayload = {
+      'itemId': 'item_xyz123',
+      'wardrobeId': 'wd_abc123',
+      'name': 'Black Nike T-Shirt',
+      'category': 'TOP',
+      'subcategory': 'TSHIRT',
+      'colours': ['BLACK'],
+      'brand': 'Nike',
+      'image': {'originalKey': 'users/uid/uploads/uuid.jpg'},
+      'processingStatus': 'PROCESSING',
+      'createdAt': '2026-09-03T18:45:00Z',
+      'updatedAt': '2026-09-03T18:45:00Z',
+    };
+
+    final keysOnly = parseItem(processingPayload);
+    expect(keysOnly.processingStatus, ItemProcessingStatus.processing);
+    expect(keysOnly.originalImageKey, 'users/uid/uploads/uuid.jpg');
+    expect(keysOnly.processedImageKey, isNull);
+
+    final withUrl = parseItem({
+      ...processingPayload,
+      'originalImageUrl': 'https://cdn.example.com/original.jpg',
+    });
+    expect(withUrl.originalImageKey, 'https://cdn.example.com/original.jpg');
+    expect(withUrl.processingStatus, ItemProcessingStatus.processing);
+  });
+
+  test('parseItem prefers processedImageUrl when READY', () {
+    final item = parseItem({
+      ...payload,
+      'image': {
+        'originalKey': 'users/uid/uploads/uuid.jpg',
+        'processedKey': 'users/uid/items/item_xyz123/processed.png',
+      },
+      'processedImageUrl': 'https://cdn.example.com/processed.png',
+      'originalImageUrl': 'https://cdn.example.com/original.jpg',
+    });
+
+    expect(item.processedImageKey, 'https://cdn.example.com/processed.png');
+    expect(item.originalImageKey, 'https://cdn.example.com/original.jpg');
+  });
+
   test('createItem posts contract body and maps the response', () async {
     repository = buildRepository([
       const HttpScript(statusCode: 201, body: payload),

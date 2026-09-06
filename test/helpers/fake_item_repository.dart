@@ -72,7 +72,7 @@ class FakeItemRepository implements ItemRepository {
       colours: [...?colours],
       brand: brand,
       originalImageKey: imageKey,
-      processingStatus: ItemProcessingStatus.ready,
+      processingStatus: ItemProcessingStatus.pending,
       createdAt: now,
       updatedAt: now,
     );
@@ -167,6 +167,8 @@ Item testItem({
   String? originalImageKey = 'users/uid/uploads/uuid.jpg',
   String? processedImageKey,
   ItemProcessingStatus processingStatus = ItemProcessingStatus.ready,
+  String? originalImageUrl,
+  String? processedImageUrl,
 }) {
   return Item(
     id: id,
@@ -176,8 +178,8 @@ Item testItem({
     subcategory: subcategory,
     colours: colours,
     brand: brand,
-    originalImageKey: originalImageKey,
-    processedImageKey: processedImageKey,
+    originalImageKey: originalImageUrl ?? originalImageKey,
+    processedImageKey: processedImageUrl ?? processedImageKey,
     processingStatus: processingStatus,
     createdAt: DateTime.utc(2026, 9, 3, 18, 45),
     updatedAt: DateTime.utc(2026, 9, 3, 18, 45),

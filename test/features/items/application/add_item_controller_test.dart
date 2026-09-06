@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wardrobe_app/core/network/api_exception.dart';
 import 'package:wardrobe_app/features/items/application/add_item_controller.dart';
+import 'package:wardrobe_app/features/items/application/item_local_preview_cache.dart';
 import 'package:wardrobe_app/features/items/application/items_controller.dart';
 import 'package:wardrobe_app/features/items/data/dio_item_repository.dart';
 import 'package:wardrobe_app/features/items/data/dio_upload_repository.dart';
@@ -73,6 +74,11 @@ void main() {
     expect(
       container.read(addItemControllerProvider('wd_abc123')).isSubmitting,
       isFalse,
+    );
+    expect(created?.processingStatus, ItemProcessingStatus.pending);
+    expect(
+      container.read(itemLocalPreviewCacheProvider)[created!.id],
+      picker.image!.bytes,
     );
   });
 

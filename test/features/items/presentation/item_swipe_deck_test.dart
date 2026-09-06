@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wardrobe_app/core/theme/app_theme.dart';
 import 'package:wardrobe_app/features/items/domain/item.dart';
@@ -44,15 +45,17 @@ void main() {
 
     final opened = <Item>[];
     await tester.pumpWidget(
-      MaterialApp(
-        theme: AppTheme.light(),
-        home: Scaffold(
-          body: SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.all(24),
-              child: ItemSwipeDeck(
-                items: items,
-                onOpenItem: onOpen ?? opened.add,
+      ProviderScope(
+        child: MaterialApp(
+          theme: AppTheme.light(),
+          home: Scaffold(
+            body: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: ItemSwipeDeck(
+                  items: items,
+                  onOpenItem: onOpen ?? opened.add,
+                ),
               ),
             ),
           ),
@@ -100,6 +103,11 @@ void main() {
       findsOneWidget,
     );
     expect(find.text('Processing'), findsOneWidget);
+    expect(
+      find.byKey(ItemBrowseImage.processingIndicatorKey(sneakers.id)),
+      findsOneWidget,
+    );
+    expect(find.text('White sneakers'), findsOneWidget);
   });
 
   testWidgets('single item is a static large card with no swipe affordance', (
@@ -237,10 +245,12 @@ void main() {
 
     var items = [shirt, jeans, sneakers];
     await tester.pumpWidget(
-      MaterialApp(
-        theme: AppTheme.light(),
-        home: Scaffold(
-          body: ItemSwipeDeck(items: items, onOpenItem: (_) {}),
+      ProviderScope(
+        child: MaterialApp(
+          theme: AppTheme.light(),
+          home: Scaffold(
+            body: ItemSwipeDeck(items: items, onOpenItem: (_) {}),
+          ),
         ),
       ),
     );
@@ -249,10 +259,12 @@ void main() {
 
     items = [jeans];
     await tester.pumpWidget(
-      MaterialApp(
-        theme: AppTheme.light(),
-        home: Scaffold(
-          body: ItemSwipeDeck(items: items, onOpenItem: (_) {}),
+      ProviderScope(
+        child: MaterialApp(
+          theme: AppTheme.light(),
+          home: Scaffold(
+            body: ItemSwipeDeck(items: items, onOpenItem: (_) {}),
+          ),
         ),
       ),
     );

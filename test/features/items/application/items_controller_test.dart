@@ -1,7 +1,10 @@
+import 'dart:typed_data';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wardrobe_app/core/lifecycle/app_lifecycle.dart';
 import 'package:wardrobe_app/core/network/api_exception.dart';
+import 'package:wardrobe_app/features/items/application/item_local_preview_cache.dart';
 import 'package:wardrobe_app/features/items/application/items_controller.dart';
 import 'package:wardrobe_app/features/items/data/dio_item_repository.dart';
 import 'package:wardrobe_app/features/items/domain/item.dart';
@@ -103,6 +106,49 @@ void main() {
     expect(
       repository.lastListFilters,
       const ItemListFilters(category: ItemCategory.bottom),
+    );
+  });
+
+  test('upsert keeps a PROCESSING item and swaps in the READY photo', () async {
+    final processing = testItem(
+      processingStatus: ItemProcessingStatus.processing,
+    );
+    repository.items.add(processing);
+    container.read(itemsControllerProvider('wd_abc123'));
+    await settle();
+
+    final ready = processing.copyWith(
+      processingStatus: ItemProcessingStatus.ready,
+      processedImageKey: 'https://cdn.example.com/processed.png',
+    );
+    container.read(itemsControllerProvider('wd_abc123').notifier).upsert(ready);
+
+    final items = container.read(itemsControllerProvider('wd_abc123')).items;
+    expect(items, hasLength(1));
+    expect(items.single.id, processing.id);
+    expect(items.single.processingStatus, ItemProcessingStatus.ready);
+    expect(
+      items.single.processedImageKey,
+      'https://cdn.example.com/processed.png',
+    );
+  });
+
+  test('remove evicts the local upload preview', () async {
+    repository.items.add(testItem());
+    container.read(itemsControllerProvider('wd_abc123'));
+    await settle();
+    container
+        .read(itemLocalPreviewCacheProvider.notifier)
+        .store('item_xyz123', Uint8List.fromList(const [1, 2, 3]));
+
+    container
+        .read(itemsControllerProvider('wd_abc123').notifier)
+        .remove('item_xyz123');
+
+    expect(container.read(itemsControllerProvider('wd_abc123')).items, isEmpty);
+    expect(
+      container.read(itemLocalPreviewCacheProvider)['item_xyz123'],
+      isNull,
     );
   });
 }

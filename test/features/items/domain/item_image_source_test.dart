@@ -58,5 +58,29 @@ void main() {
       expect(source.hasImage, isFalse);
       expect(source.isNetwork, isFalse);
     });
+
+    test('uses an original URL when processed is only an object key', () {
+      final source = ItemImageSource.fromItem(
+        testItem(
+          originalImageKey: 'https://cdn.example.com/original.jpg',
+          processedImageKey: 'users/uid/items/item_xyz123/processed.png',
+          processingStatus: ItemProcessingStatus.processing,
+        ),
+      );
+
+      expect(source.networkUrl, 'https://cdn.example.com/original.jpg');
+      expect(source.key, 'https://cdn.example.com/original.jpg');
+    });
+
+    test('switches to a processed URL when one is available', () {
+      final source = ItemImageSource.fromItem(
+        testItem(
+          originalImageKey: 'https://cdn.example.com/original.jpg',
+          processedImageKey: 'https://cdn.example.com/processed.png',
+        ),
+      );
+
+      expect(source.networkUrl, 'https://cdn.example.com/processed.png');
+    });
   });
 }

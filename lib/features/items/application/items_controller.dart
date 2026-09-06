@@ -6,6 +6,7 @@ import '../data/dio_item_repository.dart';
 import '../domain/item.dart';
 import '../domain/item_list_filters.dart';
 import '../domain/item_repository.dart';
+import 'item_local_preview_cache.dart';
 import 'items_state.dart';
 
 /// Loads and maintains clothing items for one wardrobe.
@@ -74,6 +75,7 @@ class ItemsController extends Notifier<ItemsState> {
   }
 
   void remove(String itemId) {
+    ref.read(itemLocalPreviewCacheProvider.notifier).evict(itemId);
     state = state.copyWith(
       items: [
         for (final item in state.items)

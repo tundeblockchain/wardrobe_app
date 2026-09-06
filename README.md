@@ -85,8 +85,14 @@ Response `itemId` maps to domain `id`. Image keys stay on the domain as
 `originalImageKey` / `processedImageKey`. Wardrobe item browse is a
 Tinder-style card stack (WARDROBE-41): swipe left / right / up (or Next item)
 to advance; tap the card or View details to open the existing item screen.
-Cards prefer the processed image when present, otherwise the original, and
-still show `processingStatus` (`PENDING` / `PROCESSING` / `READY` / `FAILED`).
+Cards prefer a processed HTTP(S) photo when present, otherwise the original
+upload (network URL or the just-uploaded local bytes). They still show
+`processingStatus` (`PENDING` / `PROCESSING` / `READY` / `FAILED`) as a chip
+and a thin progress bar — never a processing-only placeholder that hides the
+photo. Backend item JSON currently returns `image.originalKey` /
+`image.processedKey` (S3 keys), not GET URLs; Flutter also reads
+`originalImageUrl` / `rawImageUrl` / `imageUrl` / `processedImageUrl` when
+present.
 An empty wardrobe keeps the existing empty state. Category / colour /
 subcategory chips still send WARDROBE-21 query params to
 `GET /wardrobes/{wardrobeId}/items` and filter the card deck. The client
