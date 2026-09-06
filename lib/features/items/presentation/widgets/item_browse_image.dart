@@ -91,7 +91,12 @@ class ItemBrowseImage extends StatelessWidget {
                 top: 0,
                 left: 0,
                 right: 0,
-                child: const LinearProgressIndicator(minHeight: 2),
+                child: SizedBox(
+                  height: 2,
+                  child: ColoredBox(
+                    color: Theme.of(context).colorScheme.secondary,
+                  ),
+                ),
               ),
           ],
         ),
