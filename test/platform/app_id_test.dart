@@ -28,9 +28,9 @@ void main() {
   test('iOS Runner PRODUCT_BUNDLE_IDENTIFIER is the canonical app id', () {
     final pbx = File('ios/Runner.xcodeproj/project.pbxproj').readAsStringSync();
     expect(
-      RegExp(
-        r'PRODUCT_BUNDLE_IDENTIFIER = com\.tundetunde\.wardrobe;',
-      ).allMatches(pbx).length,
+      RegExp(r'PRODUCT_BUNDLE_IDENTIFIER = com\.tundetunde\.wardrobe;')
+          .allMatches(pbx)
+          .length,
       3,
     );
     expect(pbx, contains('PRODUCT_BUNDLE_IDENTIFIER = $kCanonicalAppId;'));
