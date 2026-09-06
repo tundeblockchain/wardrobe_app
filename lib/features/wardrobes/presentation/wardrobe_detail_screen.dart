@@ -197,9 +197,6 @@ class _WardrobeDetailScreenState extends ConsumerState<WardrobeDetailScreen>
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text(wardrobe.name, style: Theme.of(context).textTheme.headlineSmall),
-        const SizedBox(height: 8),
-        Text('Created ${_formatTimestamp(wardrobe.createdAt)}'),
-        Text('Updated ${_formatTimestamp(wardrobe.updatedAt)}'),
         if (state.errorMessage != null) ...[
           const SizedBox(height: 16),
           Text(
@@ -538,14 +535,4 @@ class _ItemsSection extends ConsumerWidget {
       ],
     );
   }
-}
-
-String _formatTimestamp(DateTime value) {
-  final local = value.toLocal();
-  final year = local.year.toString().padLeft(4, '0');
-  final month = local.month.toString().padLeft(2, '0');
-  final day = local.day.toString().padLeft(2, '0');
-  final hour = local.hour.toString().padLeft(2, '0');
-  final minute = local.minute.toString().padLeft(2, '0');
-  return '$year-$month-$day $hour:$minute';
 }
