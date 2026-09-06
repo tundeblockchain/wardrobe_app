@@ -3,6 +3,7 @@ import 'package:wardrobe_app/core/network/api_exception.dart';
 import 'package:wardrobe_app/features/items/domain/item.dart';
 import 'package:wardrobe_app/features/outfits/data/outfit_dtos.dart';
 import 'package:wardrobe_app/features/outfits/domain/outfit.dart';
+import 'package:wardrobe_app/features/outfits/domain/outfit_render.dart';
 
 void main() {
   final json = {
@@ -89,6 +90,77 @@ void main() {
       expect(const UpdateOutfitRequest(name: 'Saturday Brunch').toJson(), {
         'name': 'Saturday Brunch',
       });
+    });
+  });
+
+  group('OutfitRenderResponse', () {
+    test('maps READY fields including imageUrl for display', () {
+      final domain = OutfitRenderResponse.fromJson({
+        'status': 'READY',
+        'aiProfileId': 'profile_generic_01',
+        'imageKey': 'users/uid/outfits/outfit_123/render.png',
+        'imageUrl': 'https://cdn.example.com/try-on.png',
+      }).toDomain();
+
+      expect(domain.status, OutfitRenderStatus.ready);
+      expect(domain.aiProfileId, 'profile_generic_01');
+      expect(domain.imageUrl, 'https://cdn.example.com/try-on.png');
+      expect(domain.hasDisplayImage, isTrue);
+    });
+
+    test('maps FAILED error without leaking empty strings', () {
+      final domain = OutfitRenderResponse.fromJson({
+        'status': 'FAILED',
+        'aiProfileId': 'profile_personal_1',
+        'error': '  Profile is not ready.  ',
+        'imageUrl': '',
+      }).toDomain();
+
+      expect(domain.status, OutfitRenderStatus.failed);
+      expect(domain.error, 'Profile is not ready.');
+      expect(domain.imageUrl, isNull);
+      expect(domain.hasDisplayImage, isFalse);
+    });
+  });
+
+  group('RequestOutfitRenderRequest', () {
+    test('serializes aiProfileId and optional items', () {
+      expect(
+        RequestOutfitRenderRequest(
+          aiProfileId: 'profile_generic_01',
+          items: [
+            OutfitItemRequest.fromDomain(
+              const OutfitItem(itemId: 'item_top123', slot: ItemCategory.top),
+            ),
+          ],
+        ).toJson(),
+        {
+          'aiProfileId': 'profile_generic_01',
+          'items': [
+            {'itemId': 'item_top123', 'slot': 'TOP'},
+          ],
+        },
+      );
+    });
+
+    test('omits optional items and itemIds when null', () {
+      expect(
+        const RequestOutfitRenderRequest(aiProfileId: 'profile_generic_01')
+            .toJson(),
+        {'aiProfileId': 'profile_generic_01'},
+      );
+    });
+  });
+
+  group('OutfitResponse with render', () {
+    test('maps nested render onto the outfit domain', () {
+      final domain = OutfitResponse.fromJson({
+        ...json,
+        'render': {'status': 'PENDING', 'aiProfileId': 'profile_generic_01'},
+      }).toDomain();
+
+      expect(domain.render?.status, OutfitRenderStatus.pending);
+      expect(domain.render?.aiProfileId, 'profile_generic_01');
     });
   });
 }

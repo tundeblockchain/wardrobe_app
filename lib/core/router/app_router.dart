@@ -20,6 +20,8 @@ import '../../features/profile/presentation/profile_screen.dart';
 import '../../features/profile/presentation/report_bug_screen.dart';
 import '../../features/recommendations/presentation/recommendation_detail_screen.dart';
 import '../../features/recommendations/presentation/recommendations_screen.dart';
+import '../../features/try_on/presentation/dressing_room_screen.dart';
+import '../../features/try_on/presentation/try_on_screen.dart';
 import '../../features/wardrobes/presentation/create_wardrobe_screen.dart';
 import '../../features/wardrobes/presentation/wardrobe_detail_screen.dart';
 import '../../features/wardrobes/presentation/wardrobes_screen.dart';
@@ -110,6 +112,13 @@ final routerProvider = Provider<GoRouter>((ref) {
             },
             routes: [
               GoRoute(
+                path: 'try-on',
+                builder: (context, state) {
+                  final wardrobeId = state.pathParameters['wardrobeId']!;
+                  return DressingRoomScreen(wardrobeId: wardrobeId);
+                },
+              ),
+              GoRoute(
                 path: 'recommendations',
                 builder: (context, state) {
                   final wardrobeId = state.pathParameters['wardrobeId']!;
@@ -163,6 +172,18 @@ final routerProvider = Provider<GoRouter>((ref) {
                               state.pathParameters['wardrobeId']!;
                           final outfitId = state.pathParameters['outfitId']!;
                           return EditOutfitScreen(
+                            wardrobeId: wardrobeId,
+                            outfitId: outfitId,
+                          );
+                        },
+                      ),
+                      GoRoute(
+                        path: 'try-on',
+                        builder: (context, state) {
+                          final wardrobeId =
+                              state.pathParameters['wardrobeId']!;
+                          final outfitId = state.pathParameters['outfitId']!;
+                          return TryOnScreen(
                             wardrobeId: wardrobeId,
                             outfitId: outfitId,
                           );

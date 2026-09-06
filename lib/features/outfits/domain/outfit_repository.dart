@@ -1,4 +1,5 @@
 import 'outfit.dart';
+import 'outfit_render.dart';
 
 /// Outfit CRUD nested under a wardrobe.
 abstract interface class OutfitRepository {
@@ -23,6 +24,21 @@ abstract interface class OutfitRepository {
   });
 
   Future<void> deleteOutfit({
+    required String wardrobeId,
+    required String outfitId,
+  });
+
+  /// `POST /wardrobes/{wardrobeId}/outfits/{outfitId}/render` → 202 Outfit.
+  Future<Outfit> requestRender({
+    required String wardrobeId,
+    required String outfitId,
+    required String aiProfileId,
+    List<OutfitItem>? items,
+    List<String>? itemIds,
+  });
+
+  /// `GET /wardrobes/{wardrobeId}/outfits/{outfitId}/render` for polling.
+  Future<OutfitRender> getRender({
     required String wardrobeId,
     required String outfitId,
   });

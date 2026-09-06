@@ -15,8 +15,7 @@ import 'widgets/personal_ai_profile_card.dart';
 
 /// Phase-3 hub: manage a PERSONAL AI profile and pick a GENERIC_MODEL look.
 ///
-/// Try-on rendering is WARDROBE-51. Selection is stored in
-/// [selectedAiProfileIdProvider] as the extension point.
+/// Selection is stored in [selectedAiProfileIdProvider] for the dressing room.
 class AiTryOnScreen extends ConsumerWidget {
   const AiTryOnScreen({super.key});
 
@@ -78,7 +77,7 @@ class AiTryOnScreen extends ConsumerWidget {
             ),
             const SizedBox(height: AppSpacing.sm),
             Text(
-              'Pick a generic look to use when virtual try-on ships.',
+              'Pick a generic look for virtual try-on.',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
@@ -88,8 +87,8 @@ class AiTryOnScreen extends ConsumerWidget {
             const SizedBox(height: AppSpacing.lg),
             Text(
               key: comingSoonKey,
-              'Virtual try-on is next (WARDROBE-51). Your selected profile id '
-              'is kept ready for that flow.',
+              'Open a wardrobe outfit and tap Try on. Your selected profile '
+              'is sent as aiProfileId to the render API.',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),

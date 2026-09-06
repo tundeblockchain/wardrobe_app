@@ -19,14 +19,16 @@ profile menu / support forms
 clear-all / delete-account flows
 ([WARDROBE-35](https://tundetunde000.atlassian.net/browse/WARDROBE-35)), and
 Phase-3 AI profile setup / generic-model picker
-([WARDROBE-50](https://tundetunde000.atlassian.net/browse/WARDROBE-50)).
+([WARDROBE-50](https://tundetunde000.atlassian.net/browse/WARDROBE-50)), and
+virtual try-on / dressing room
+([WARDROBE-51](https://tundetunde000.atlassian.net/browse/WARDROBE-51)).
 
 ## Architecture
 
 Layers (dependencies point downward only):
 
-1. **Presentation** — screens (`login`, `signup`, `forgot-password`, splash, wardrobes list / create / detail, add item / item detail / edit item, outfits list / create / detail / edit, profile / contact us / report a bug / AI try-on)
-2. **Controller / Provider** — Riverpod auth, wardrobe, item, outfit, recommendation, support / rate-app, account, and AI-profile controllers
+1. **Presentation** — screens (`login`, `signup`, `forgot-password`, splash, wardrobes list / create / detail, add item / item detail / edit item, outfits list / create / detail / edit, dressing room / try-on, profile / contact us / report a bug / AI try-on)
+2. **Controller / Provider** — Riverpod auth, wardrobe, item, outfit, try-on, recommendation, support / rate-app, account, and AI-profile controllers
 3. **Repository** — `AuthRepository`, `WardrobeRepository`, `ItemRepository`, `UploadRepository`, `OutfitRepository`, `RecommendationRepository`, `SupportRepository`, `AccountRepository`, `AiProfileRepository`
 4. **API client / Firebase** — `FirebaseAuthRepository` (email/password + Google), Dio + ID-token interceptor, wardrobe/item/upload/outfit/recommendation/support/account/AI-profile Dio repositories, `image_picker` behind `ItemImagePicker`, `in_app_review` behind `AppReviewer`
 
@@ -97,8 +99,10 @@ Authenticated routes nested under a wardrobe:
 
 - `/wardrobes/:wardrobeId/outfits` — list + empty state
 - `/wardrobes/:wardrobeId/outfits/create` — name + pick items into slots
-- `/wardrobes/:wardrobeId/outfits/:outfitId` — detail, delete
+- `/wardrobes/:wardrobeId/outfits/:outfitId` — detail, delete, Try on
 - `/wardrobes/:wardrobeId/outfits/:outfitId/edit` — rename and change slots
+- `/wardrobes/:wardrobeId/outfits/:outfitId/try-on` — virtual try-on
+- `/wardrobes/:wardrobeId/try-on` — dressing room (pick an outfit)
 
 Slots use the same categories as items (`TOP`, `BOTTOM`, `DRESS`, `OUTERWEAR`,
 `SHOES`, `ACCESSORY`, `BAG`). The create/edit forms reuse the wardrobe items
@@ -106,7 +110,7 @@ list so only items from that wardrobe can be assigned. Response `outfitId`
 maps to domain `id`.
 
 Backend outfits API (WARDROBE-7) may not be live yet; the client is scaffolded
-against the contract with mocked unit tests. No AI try-on.
+against the contract with mocked unit tests. Virtual try-on is WARDROBE-51.
 
 ## Recommendations
 
@@ -121,7 +125,7 @@ Suggestions are never auto-saved. The feature is additive: if
 `GET /wardrobes/{wardrobeId}/recommendations` fails, wardrobe/item/outfit
 flows still work and the suggestions entry shows an unavailable state.
 
-No Phase-3 virtual try-on inference (that is WARDROBE-51).
+Virtual try-on inference is WARDROBE-51 (outfit render API).
 
 ## AI profiles (WARDROBE-50)
 
@@ -149,7 +153,25 @@ PERSONAL create starts `READY` with empty `referenceImages`. Reference photos re
 
 Status chips show `PENDING` / `PROCESSING` / `READY` / `FAILED`. Users can delete their own PERSONAL profiles only.
 
-The catalog (`GET /ai-profiles/models`) is expected to include seeded models Alex, Jordan, Sam, and Riley (`profile_generic_01`–`04`). Tapping a model (or a personal profile) stores `selectedAiProfileId` for WARDROBE-51 try-on. This ticket does not call a render API.
+The catalog (`GET /ai-profiles/models`) is expected to include seeded models Alex, Jordan, Sam, and Riley (`profile_generic_01`–`04`). Tapping a model (or a personal profile) stores `selectedAiProfileId` for the dressing room.
+
+## Virtual try-on (WARDROBE-51)
+
+Authenticated routes:
+
+- `/wardrobes/:wardrobeId/try-on` — dressing room; pick a saved outfit
+- `/wardrobes/:wardrobeId/outfits/:outfitId/try-on` — pick a READY PERSONAL or GENERIC_MODEL profile, request a render, poll until `READY` / `FAILED`
+
+Entry points: outfit detail **Try on**, wardrobe **Virtual try-on**, outfits list dressing-room icon. The profile picker stays at `/profile/ai-try-on` and writes `selectedAiProfileIdProvider`.
+
+```http
+POST /wardrobes/{wardrobeId}/outfits/{outfitId}/render
+GET  /wardrobes/{wardrobeId}/outfits/{outfitId}/render
+```
+
+POST body: `{ "aiProfileId": "profile_…" }` (optional `items` / `itemIds`). POST returns `202` with an `Outfit` whose `render.status` is `PENDING`. The client polls GET `/render` every 2s (90s timeout) and shows `imageUrl` when `READY`. **No Gemini keys in the app** — the backend worker owns inference.
+
+GET `/render` before any POST is `404 RENDER_NOT_FOUND`. Profile must be READY PERSONAL (with a reference photo) or GENERIC_MODEL.
 
 ## Profile and support
 

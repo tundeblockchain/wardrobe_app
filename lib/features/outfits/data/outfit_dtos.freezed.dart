@@ -545,9 +545,284 @@ as String,
 
 
 /// @nodoc
+mixin _$OutfitRenderResponse {
+
+ String get status; String get aiProfileId; String? get imageKey; String? get imageUrl; String? get error;
+/// Create a copy of OutfitRenderResponse
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$OutfitRenderResponseCopyWith<OutfitRenderResponse> get copyWith => _$OutfitRenderResponseCopyWithImpl<OutfitRenderResponse>(this as OutfitRenderResponse, _$identity);
+
+  /// Serializes this OutfitRenderResponse to a JSON map.
+  Map<String, dynamic> toJson();
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is OutfitRenderResponse&&(identical(other.status, status) || other.status == status)&&(identical(other.aiProfileId, aiProfileId) || other.aiProfileId == aiProfileId)&&(identical(other.imageKey, imageKey) || other.imageKey == imageKey)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl)&&(identical(other.error, error) || other.error == error));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,status,aiProfileId,imageKey,imageUrl,error);
+
+@override
+String toString() {
+  return 'OutfitRenderResponse(status: $status, aiProfileId: $aiProfileId, imageKey: $imageKey, imageUrl: $imageUrl, error: $error)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $OutfitRenderResponseCopyWith<$Res>  {
+  factory $OutfitRenderResponseCopyWith(OutfitRenderResponse value, $Res Function(OutfitRenderResponse) _then) = _$OutfitRenderResponseCopyWithImpl;
+@useResult
+$Res call({
+ String status, String aiProfileId, String? imageKey, String? imageUrl, String? error
+});
+
+
+
+
+}
+/// @nodoc
+class _$OutfitRenderResponseCopyWithImpl<$Res>
+    implements $OutfitRenderResponseCopyWith<$Res> {
+  _$OutfitRenderResponseCopyWithImpl(this._self, this._then);
+
+  final OutfitRenderResponse _self;
+  final $Res Function(OutfitRenderResponse) _then;
+
+/// Create a copy of OutfitRenderResponse
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? status = null,Object? aiProfileId = null,Object? imageKey = freezed,Object? imageUrl = freezed,Object? error = freezed,}) {
+  return _then(_self.copyWith(
+status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
+as String,aiProfileId: null == aiProfileId ? _self.aiProfileId : aiProfileId // ignore: cast_nullable_to_non_nullable
+as String,imageKey: freezed == imageKey ? _self.imageKey : imageKey // ignore: cast_nullable_to_non_nullable
+as String?,imageUrl: freezed == imageUrl ? _self.imageUrl : imageUrl // ignore: cast_nullable_to_non_nullable
+as String?,error: freezed == error ? _self.error : error // ignore: cast_nullable_to_non_nullable
+as String?,
+  ));
+}
+
+}
+
+
+/// Adds pattern-matching-related methods to [OutfitRenderResponse].
+extension OutfitRenderResponsePatterns on OutfitRenderResponse {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _OutfitRenderResponse value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _OutfitRenderResponse() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _OutfitRenderResponse value)  $default,){
+final _that = this;
+switch (_that) {
+case _OutfitRenderResponse():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _OutfitRenderResponse value)?  $default,){
+final _that = this;
+switch (_that) {
+case _OutfitRenderResponse() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String status,  String aiProfileId,  String? imageKey,  String? imageUrl,  String? error)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _OutfitRenderResponse() when $default != null:
+return $default(_that.status,_that.aiProfileId,_that.imageKey,_that.imageUrl,_that.error);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String status,  String aiProfileId,  String? imageKey,  String? imageUrl,  String? error)  $default,) {final _that = this;
+switch (_that) {
+case _OutfitRenderResponse():
+return $default(_that.status,_that.aiProfileId,_that.imageKey,_that.imageUrl,_that.error);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String status,  String aiProfileId,  String? imageKey,  String? imageUrl,  String? error)?  $default,) {final _that = this;
+switch (_that) {
+case _OutfitRenderResponse() when $default != null:
+return $default(_that.status,_that.aiProfileId,_that.imageKey,_that.imageUrl,_that.error);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+@JsonSerializable()
+
+class _OutfitRenderResponse extends OutfitRenderResponse {
+  const _OutfitRenderResponse({required this.status, required this.aiProfileId, this.imageKey, this.imageUrl, this.error}): super._();
+  factory _OutfitRenderResponse.fromJson(Map<String, dynamic> json) => _$OutfitRenderResponseFromJson(json);
+
+@override final  String status;
+@override final  String aiProfileId;
+@override final  String? imageKey;
+@override final  String? imageUrl;
+@override final  String? error;
+
+/// Create a copy of OutfitRenderResponse
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$OutfitRenderResponseCopyWith<_OutfitRenderResponse> get copyWith => __$OutfitRenderResponseCopyWithImpl<_OutfitRenderResponse>(this, _$identity);
+
+@override
+Map<String, dynamic> toJson() {
+  return _$OutfitRenderResponseToJson(this, );
+}
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _OutfitRenderResponse&&(identical(other.status, status) || other.status == status)&&(identical(other.aiProfileId, aiProfileId) || other.aiProfileId == aiProfileId)&&(identical(other.imageKey, imageKey) || other.imageKey == imageKey)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl)&&(identical(other.error, error) || other.error == error));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,status,aiProfileId,imageKey,imageUrl,error);
+
+@override
+String toString() {
+  return 'OutfitRenderResponse(status: $status, aiProfileId: $aiProfileId, imageKey: $imageKey, imageUrl: $imageUrl, error: $error)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$OutfitRenderResponseCopyWith<$Res> implements $OutfitRenderResponseCopyWith<$Res> {
+  factory _$OutfitRenderResponseCopyWith(_OutfitRenderResponse value, $Res Function(_OutfitRenderResponse) _then) = __$OutfitRenderResponseCopyWithImpl;
+@override @useResult
+$Res call({
+ String status, String aiProfileId, String? imageKey, String? imageUrl, String? error
+});
+
+
+
+
+}
+/// @nodoc
+class __$OutfitRenderResponseCopyWithImpl<$Res>
+    implements _$OutfitRenderResponseCopyWith<$Res> {
+  __$OutfitRenderResponseCopyWithImpl(this._self, this._then);
+
+  final _OutfitRenderResponse _self;
+  final $Res Function(_OutfitRenderResponse) _then;
+
+/// Create a copy of OutfitRenderResponse
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? status = null,Object? aiProfileId = null,Object? imageKey = freezed,Object? imageUrl = freezed,Object? error = freezed,}) {
+  return _then(_OutfitRenderResponse(
+status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
+as String,aiProfileId: null == aiProfileId ? _self.aiProfileId : aiProfileId // ignore: cast_nullable_to_non_nullable
+as String,imageKey: freezed == imageKey ? _self.imageKey : imageKey // ignore: cast_nullable_to_non_nullable
+as String?,imageUrl: freezed == imageUrl ? _self.imageUrl : imageUrl // ignore: cast_nullable_to_non_nullable
+as String?,error: freezed == error ? _self.error : error // ignore: cast_nullable_to_non_nullable
+as String?,
+  ));
+}
+
+
+}
+
+
+/// @nodoc
 mixin _$OutfitResponse {
 
- String get outfitId; String get wardrobeId; String get name; List<OutfitItemResponse> get items; DateTime get createdAt; DateTime get updatedAt;
+ String get outfitId; String get wardrobeId; String get name; List<OutfitItemResponse> get items; OutfitRenderResponse? get render; DateTime get createdAt; DateTime get updatedAt;
 /// Create a copy of OutfitResponse
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -560,16 +835,16 @@ $OutfitResponseCopyWith<OutfitResponse> get copyWith => _$OutfitResponseCopyWith
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is OutfitResponse&&(identical(other.outfitId, outfitId) || other.outfitId == outfitId)&&(identical(other.wardrobeId, wardrobeId) || other.wardrobeId == wardrobeId)&&(identical(other.name, name) || other.name == name)&&const DeepCollectionEquality().equals(other.items, items)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is OutfitResponse&&(identical(other.outfitId, outfitId) || other.outfitId == outfitId)&&(identical(other.wardrobeId, wardrobeId) || other.wardrobeId == wardrobeId)&&(identical(other.name, name) || other.name == name)&&const DeepCollectionEquality().equals(other.items, items)&&(identical(other.render, render) || other.render == render)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,outfitId,wardrobeId,name,const DeepCollectionEquality().hash(items),createdAt,updatedAt);
+int get hashCode => Object.hash(runtimeType,outfitId,wardrobeId,name,const DeepCollectionEquality().hash(items),render,createdAt,updatedAt);
 
 @override
 String toString() {
-  return 'OutfitResponse(outfitId: $outfitId, wardrobeId: $wardrobeId, name: $name, items: $items, createdAt: $createdAt, updatedAt: $updatedAt)';
+  return 'OutfitResponse(outfitId: $outfitId, wardrobeId: $wardrobeId, name: $name, items: $items, render: $render, createdAt: $createdAt, updatedAt: $updatedAt)';
 }
 
 
@@ -580,11 +855,11 @@ abstract mixin class $OutfitResponseCopyWith<$Res>  {
   factory $OutfitResponseCopyWith(OutfitResponse value, $Res Function(OutfitResponse) _then) = _$OutfitResponseCopyWithImpl;
 @useResult
 $Res call({
- String outfitId, String wardrobeId, String name, List<OutfitItemResponse> items, DateTime createdAt, DateTime updatedAt
+ String outfitId, String wardrobeId, String name, List<OutfitItemResponse> items, OutfitRenderResponse? render, DateTime createdAt, DateTime updatedAt
 });
 
 
-
+$OutfitRenderResponseCopyWith<$Res>? get render;
 
 }
 /// @nodoc
@@ -597,18 +872,31 @@ class _$OutfitResponseCopyWithImpl<$Res>
 
 /// Create a copy of OutfitResponse
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? outfitId = null,Object? wardrobeId = null,Object? name = null,Object? items = null,Object? createdAt = null,Object? updatedAt = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? outfitId = null,Object? wardrobeId = null,Object? name = null,Object? items = null,Object? render = freezed,Object? createdAt = null,Object? updatedAt = null,}) {
   return _then(_self.copyWith(
 outfitId: null == outfitId ? _self.outfitId : outfitId // ignore: cast_nullable_to_non_nullable
 as String,wardrobeId: null == wardrobeId ? _self.wardrobeId : wardrobeId // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,items: null == items ? _self.items : items // ignore: cast_nullable_to_non_nullable
-as List<OutfitItemResponse>,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
+as List<OutfitItemResponse>,render: freezed == render ? _self.render : render // ignore: cast_nullable_to_non_nullable
+as OutfitRenderResponse?,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime,updatedAt: null == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
 as DateTime,
   ));
 }
+/// Create a copy of OutfitResponse
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$OutfitRenderResponseCopyWith<$Res>? get render {
+    if (_self.render == null) {
+    return null;
+  }
 
+  return $OutfitRenderResponseCopyWith<$Res>(_self.render!, (value) {
+    return _then(_self.copyWith(render: value));
+  });
+}
 }
 
 
@@ -690,10 +978,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String outfitId,  String wardrobeId,  String name,  List<OutfitItemResponse> items,  DateTime createdAt,  DateTime updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String outfitId,  String wardrobeId,  String name,  List<OutfitItemResponse> items,  OutfitRenderResponse? render,  DateTime createdAt,  DateTime updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _OutfitResponse() when $default != null:
-return $default(_that.outfitId,_that.wardrobeId,_that.name,_that.items,_that.createdAt,_that.updatedAt);case _:
+return $default(_that.outfitId,_that.wardrobeId,_that.name,_that.items,_that.render,_that.createdAt,_that.updatedAt);case _:
   return orElse();
 
 }
@@ -711,10 +999,10 @@ return $default(_that.outfitId,_that.wardrobeId,_that.name,_that.items,_that.cre
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String outfitId,  String wardrobeId,  String name,  List<OutfitItemResponse> items,  DateTime createdAt,  DateTime updatedAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String outfitId,  String wardrobeId,  String name,  List<OutfitItemResponse> items,  OutfitRenderResponse? render,  DateTime createdAt,  DateTime updatedAt)  $default,) {final _that = this;
 switch (_that) {
 case _OutfitResponse():
-return $default(_that.outfitId,_that.wardrobeId,_that.name,_that.items,_that.createdAt,_that.updatedAt);case _:
+return $default(_that.outfitId,_that.wardrobeId,_that.name,_that.items,_that.render,_that.createdAt,_that.updatedAt);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -731,10 +1019,10 @@ return $default(_that.outfitId,_that.wardrobeId,_that.name,_that.items,_that.cre
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String outfitId,  String wardrobeId,  String name,  List<OutfitItemResponse> items,  DateTime createdAt,  DateTime updatedAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String outfitId,  String wardrobeId,  String name,  List<OutfitItemResponse> items,  OutfitRenderResponse? render,  DateTime createdAt,  DateTime updatedAt)?  $default,) {final _that = this;
 switch (_that) {
 case _OutfitResponse() when $default != null:
-return $default(_that.outfitId,_that.wardrobeId,_that.name,_that.items,_that.createdAt,_that.updatedAt);case _:
+return $default(_that.outfitId,_that.wardrobeId,_that.name,_that.items,_that.render,_that.createdAt,_that.updatedAt);case _:
   return null;
 
 }
@@ -746,13 +1034,14 @@ return $default(_that.outfitId,_that.wardrobeId,_that.name,_that.items,_that.cre
 @JsonSerializable()
 
 class _OutfitResponse extends OutfitResponse {
-  const _OutfitResponse({required this.outfitId, required this.wardrobeId, required this.name, this.items = const [], required this.createdAt, required this.updatedAt}): super._();
+  const _OutfitResponse({required this.outfitId, required this.wardrobeId, required this.name, this.items = const [], this.render, required this.createdAt, required this.updatedAt}): super._();
   factory _OutfitResponse.fromJson(Map<String, dynamic> json) => _$OutfitResponseFromJson(json);
 
 @override final  String outfitId;
 @override final  String wardrobeId;
 @override final  String name;
 @override@JsonKey() final  List<OutfitItemResponse> items;
+@override final  OutfitRenderResponse? render;
 @override final  DateTime createdAt;
 @override final  DateTime updatedAt;
 
@@ -769,16 +1058,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _OutfitResponse&&(identical(other.outfitId, outfitId) || other.outfitId == outfitId)&&(identical(other.wardrobeId, wardrobeId) || other.wardrobeId == wardrobeId)&&(identical(other.name, name) || other.name == name)&&const DeepCollectionEquality().equals(other.items, items)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _OutfitResponse&&(identical(other.outfitId, outfitId) || other.outfitId == outfitId)&&(identical(other.wardrobeId, wardrobeId) || other.wardrobeId == wardrobeId)&&(identical(other.name, name) || other.name == name)&&const DeepCollectionEquality().equals(other.items, items)&&(identical(other.render, render) || other.render == render)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,outfitId,wardrobeId,name,const DeepCollectionEquality().hash(items),createdAt,updatedAt);
+int get hashCode => Object.hash(runtimeType,outfitId,wardrobeId,name,const DeepCollectionEquality().hash(items),render,createdAt,updatedAt);
 
 @override
 String toString() {
-  return 'OutfitResponse(outfitId: $outfitId, wardrobeId: $wardrobeId, name: $name, items: $items, createdAt: $createdAt, updatedAt: $updatedAt)';
+  return 'OutfitResponse(outfitId: $outfitId, wardrobeId: $wardrobeId, name: $name, items: $items, render: $render, createdAt: $createdAt, updatedAt: $updatedAt)';
 }
 
 
@@ -789,11 +1078,11 @@ abstract mixin class _$OutfitResponseCopyWith<$Res> implements $OutfitResponseCo
   factory _$OutfitResponseCopyWith(_OutfitResponse value, $Res Function(_OutfitResponse) _then) = __$OutfitResponseCopyWithImpl;
 @override @useResult
 $Res call({
- String outfitId, String wardrobeId, String name, List<OutfitItemResponse> items, DateTime createdAt, DateTime updatedAt
+ String outfitId, String wardrobeId, String name, List<OutfitItemResponse> items, OutfitRenderResponse? render, DateTime createdAt, DateTime updatedAt
 });
 
 
-
+@override $OutfitRenderResponseCopyWith<$Res>? get render;
 
 }
 /// @nodoc
@@ -806,19 +1095,32 @@ class __$OutfitResponseCopyWithImpl<$Res>
 
 /// Create a copy of OutfitResponse
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? outfitId = null,Object? wardrobeId = null,Object? name = null,Object? items = null,Object? createdAt = null,Object? updatedAt = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? outfitId = null,Object? wardrobeId = null,Object? name = null,Object? items = null,Object? render = freezed,Object? createdAt = null,Object? updatedAt = null,}) {
   return _then(_OutfitResponse(
 outfitId: null == outfitId ? _self.outfitId : outfitId // ignore: cast_nullable_to_non_nullable
 as String,wardrobeId: null == wardrobeId ? _self.wardrobeId : wardrobeId // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,items: null == items ? _self.items : items // ignore: cast_nullable_to_non_nullable
-as List<OutfitItemResponse>,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
+as List<OutfitItemResponse>,render: freezed == render ? _self.render : render // ignore: cast_nullable_to_non_nullable
+as OutfitRenderResponse?,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime,updatedAt: null == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
 as DateTime,
   ));
 }
 
+/// Create a copy of OutfitResponse
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$OutfitRenderResponseCopyWith<$Res>? get render {
+    if (_self.render == null) {
+    return null;
+  }
 
+  return $OutfitRenderResponseCopyWith<$Res>(_self.render!, (value) {
+    return _then(_self.copyWith(render: value));
+  });
+}
 }
 
 
@@ -1610,6 +1912,275 @@ class __$UpdateOutfitRequestCopyWithImpl<$Res>
 name: freezed == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String?,items: freezed == items ? _self.items : items // ignore: cast_nullable_to_non_nullable
 as List<OutfitItemRequest>?,
+  ));
+}
+
+
+}
+
+
+/// @nodoc
+mixin _$RequestOutfitRenderRequest {
+
+ String get aiProfileId;@JsonKey(includeIfNull: false) List<OutfitItemRequest>? get items;@JsonKey(includeIfNull: false) List<String>? get itemIds;
+/// Create a copy of RequestOutfitRenderRequest
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$RequestOutfitRenderRequestCopyWith<RequestOutfitRenderRequest> get copyWith => _$RequestOutfitRenderRequestCopyWithImpl<RequestOutfitRenderRequest>(this as RequestOutfitRenderRequest, _$identity);
+
+  /// Serializes this RequestOutfitRenderRequest to a JSON map.
+  Map<String, dynamic> toJson();
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is RequestOutfitRenderRequest&&(identical(other.aiProfileId, aiProfileId) || other.aiProfileId == aiProfileId)&&const DeepCollectionEquality().equals(other.items, items)&&const DeepCollectionEquality().equals(other.itemIds, itemIds));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,aiProfileId,const DeepCollectionEquality().hash(items),const DeepCollectionEquality().hash(itemIds));
+
+@override
+String toString() {
+  return 'RequestOutfitRenderRequest(aiProfileId: $aiProfileId, items: $items, itemIds: $itemIds)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $RequestOutfitRenderRequestCopyWith<$Res>  {
+  factory $RequestOutfitRenderRequestCopyWith(RequestOutfitRenderRequest value, $Res Function(RequestOutfitRenderRequest) _then) = _$RequestOutfitRenderRequestCopyWithImpl;
+@useResult
+$Res call({
+ String aiProfileId,@JsonKey(includeIfNull: false) List<OutfitItemRequest>? items,@JsonKey(includeIfNull: false) List<String>? itemIds
+});
+
+
+
+
+}
+/// @nodoc
+class _$RequestOutfitRenderRequestCopyWithImpl<$Res>
+    implements $RequestOutfitRenderRequestCopyWith<$Res> {
+  _$RequestOutfitRenderRequestCopyWithImpl(this._self, this._then);
+
+  final RequestOutfitRenderRequest _self;
+  final $Res Function(RequestOutfitRenderRequest) _then;
+
+/// Create a copy of RequestOutfitRenderRequest
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? aiProfileId = null,Object? items = freezed,Object? itemIds = freezed,}) {
+  return _then(_self.copyWith(
+aiProfileId: null == aiProfileId ? _self.aiProfileId : aiProfileId // ignore: cast_nullable_to_non_nullable
+as String,items: freezed == items ? _self.items : items // ignore: cast_nullable_to_non_nullable
+as List<OutfitItemRequest>?,itemIds: freezed == itemIds ? _self.itemIds : itemIds // ignore: cast_nullable_to_non_nullable
+as List<String>?,
+  ));
+}
+
+}
+
+
+/// Adds pattern-matching-related methods to [RequestOutfitRenderRequest].
+extension RequestOutfitRenderRequestPatterns on RequestOutfitRenderRequest {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _RequestOutfitRenderRequest value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _RequestOutfitRenderRequest() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _RequestOutfitRenderRequest value)  $default,){
+final _that = this;
+switch (_that) {
+case _RequestOutfitRenderRequest():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _RequestOutfitRenderRequest value)?  $default,){
+final _that = this;
+switch (_that) {
+case _RequestOutfitRenderRequest() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String aiProfileId, @JsonKey(includeIfNull: false)  List<OutfitItemRequest>? items, @JsonKey(includeIfNull: false)  List<String>? itemIds)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _RequestOutfitRenderRequest() when $default != null:
+return $default(_that.aiProfileId,_that.items,_that.itemIds);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String aiProfileId, @JsonKey(includeIfNull: false)  List<OutfitItemRequest>? items, @JsonKey(includeIfNull: false)  List<String>? itemIds)  $default,) {final _that = this;
+switch (_that) {
+case _RequestOutfitRenderRequest():
+return $default(_that.aiProfileId,_that.items,_that.itemIds);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String aiProfileId, @JsonKey(includeIfNull: false)  List<OutfitItemRequest>? items, @JsonKey(includeIfNull: false)  List<String>? itemIds)?  $default,) {final _that = this;
+switch (_that) {
+case _RequestOutfitRenderRequest() when $default != null:
+return $default(_that.aiProfileId,_that.items,_that.itemIds);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+
+@JsonSerializable(explicitToJson: true)
+class _RequestOutfitRenderRequest implements RequestOutfitRenderRequest {
+  const _RequestOutfitRenderRequest({required this.aiProfileId, @JsonKey(includeIfNull: false) this.items, @JsonKey(includeIfNull: false) this.itemIds});
+  factory _RequestOutfitRenderRequest.fromJson(Map<String, dynamic> json) => _$RequestOutfitRenderRequestFromJson(json);
+
+@override final  String aiProfileId;
+@override@JsonKey(includeIfNull: false) final  List<OutfitItemRequest>? items;
+@override@JsonKey(includeIfNull: false) final  List<String>? itemIds;
+
+/// Create a copy of RequestOutfitRenderRequest
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$RequestOutfitRenderRequestCopyWith<_RequestOutfitRenderRequest> get copyWith => __$RequestOutfitRenderRequestCopyWithImpl<_RequestOutfitRenderRequest>(this, _$identity);
+
+@override
+Map<String, dynamic> toJson() {
+  return _$RequestOutfitRenderRequestToJson(this, );
+}
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _RequestOutfitRenderRequest&&(identical(other.aiProfileId, aiProfileId) || other.aiProfileId == aiProfileId)&&const DeepCollectionEquality().equals(other.items, items)&&const DeepCollectionEquality().equals(other.itemIds, itemIds));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,aiProfileId,const DeepCollectionEquality().hash(items),const DeepCollectionEquality().hash(itemIds));
+
+@override
+String toString() {
+  return 'RequestOutfitRenderRequest(aiProfileId: $aiProfileId, items: $items, itemIds: $itemIds)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$RequestOutfitRenderRequestCopyWith<$Res> implements $RequestOutfitRenderRequestCopyWith<$Res> {
+  factory _$RequestOutfitRenderRequestCopyWith(_RequestOutfitRenderRequest value, $Res Function(_RequestOutfitRenderRequest) _then) = __$RequestOutfitRenderRequestCopyWithImpl;
+@override @useResult
+$Res call({
+ String aiProfileId,@JsonKey(includeIfNull: false) List<OutfitItemRequest>? items,@JsonKey(includeIfNull: false) List<String>? itemIds
+});
+
+
+
+
+}
+/// @nodoc
+class __$RequestOutfitRenderRequestCopyWithImpl<$Res>
+    implements _$RequestOutfitRenderRequestCopyWith<$Res> {
+  __$RequestOutfitRenderRequestCopyWithImpl(this._self, this._then);
+
+  final _RequestOutfitRenderRequest _self;
+  final $Res Function(_RequestOutfitRenderRequest) _then;
+
+/// Create a copy of RequestOutfitRenderRequest
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? aiProfileId = null,Object? items = freezed,Object? itemIds = freezed,}) {
+  return _then(_RequestOutfitRenderRequest(
+aiProfileId: null == aiProfileId ? _self.aiProfileId : aiProfileId // ignore: cast_nullable_to_non_nullable
+as String,items: freezed == items ? _self.items : items // ignore: cast_nullable_to_non_nullable
+as List<OutfitItemRequest>?,itemIds: freezed == itemIds ? _self.itemIds : itemIds // ignore: cast_nullable_to_non_nullable
+as List<String>?,
   ));
 }
 

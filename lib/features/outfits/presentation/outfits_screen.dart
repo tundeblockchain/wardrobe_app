@@ -18,6 +18,7 @@ class OutfitsScreen extends ConsumerWidget {
   static const emptyStateKey = Key('outfits_empty');
   static const retryButtonKey = Key('outfits_retry');
   static const recommendationsButtonKey = Key('outfits_recommendations');
+  static const dressingRoomButtonKey = Key('outfits_dressing_room');
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -27,6 +28,12 @@ class OutfitsScreen extends ConsumerWidget {
       appBar: AppBar(
         title: const Text('Outfits'),
         actions: [
+          IconButton(
+            key: dressingRoomButtonKey,
+            tooltip: 'Dressing room',
+            onPressed: () => context.push(AppRoutes.dressingRoom(wardrobeId)),
+            icon: const Icon(Icons.face_retouching_natural_outlined),
+          ),
           IconButton(
             key: recommendationsButtonKey,
             tooltip: 'Suggested outfits',

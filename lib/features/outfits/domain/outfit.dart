@@ -1,6 +1,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 import '../../items/domain/item.dart';
+import 'outfit_render.dart';
 
 part 'outfit.freezed.dart';
 
@@ -25,6 +26,7 @@ abstract class Outfit with _$Outfit {
     required String wardrobeId,
     required String name,
     @Default([]) List<OutfitItem> items,
+    OutfitRender? render,
     required DateTime createdAt,
     required DateTime updatedAt,
   }) = _Outfit;
