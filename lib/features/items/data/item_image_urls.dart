@@ -1,9 +1,9 @@
-/// HTTP(S) clothing-item photo URLs that may appear on create/list/get payloads.
+/// HTTP(S) clothing-item photo URLs on create / list / get / PATCH.
 ///
-/// Backend `ClothingItem` today only serializes `image.originalKey` /
-/// `image.processedKey` (S3 object keys) plus `processingStatus`. These helpers
-/// still inspect common URL aliases so a later contract addition works without
-/// another Flutter mapper change. `uploadUrl` is a PUT presign from `POST /uploads`
+/// Backend WARDROBE-54 locks top-level `originalImageUrl` (presigned GET,
+/// TTL 900s, whenever `image.originalKey` exists) and `processedImageUrl`
+/// (whenever `image.processedKey` exists). S3 keys stay on `image`. Extra
+/// aliases remain as fallbacks. `uploadUrl` from `POST /uploads` is PUT-only
 /// and is never treated as a display GET.
 const itemOriginalImageUrlFields = <String>[
   'originalImageUrl',

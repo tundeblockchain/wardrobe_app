@@ -556,7 +556,7 @@ as String?,
 /// @nodoc
 mixin _$ItemResponse {
 
- String get itemId; String get wardrobeId; String get name; String get category; String? get subcategory; List<String>? get colours; String? get brand; ItemImageResponse? get image; String? get imageKey; String? get processingStatus; String? get processingError; String? get failureReason; String? get errorMessage; ItemAiResponse? get ai; DateTime get createdAt; DateTime get updatedAt;
+ String get itemId; String get wardrobeId; String get name; String get category; String? get subcategory; List<String>? get colours; String? get brand; ItemImageResponse? get image; String? get imageKey; String? get originalImageUrl; String? get processedImageUrl; String? get processingStatus; String? get processingError; String? get failureReason; String? get errorMessage; ItemAiResponse? get ai; DateTime get createdAt; DateTime get updatedAt;
 /// Create a copy of ItemResponse
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -569,16 +569,16 @@ $ItemResponseCopyWith<ItemResponse> get copyWith => _$ItemResponseCopyWithImpl<I
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ItemResponse&&(identical(other.itemId, itemId) || other.itemId == itemId)&&(identical(other.wardrobeId, wardrobeId) || other.wardrobeId == wardrobeId)&&(identical(other.name, name) || other.name == name)&&(identical(other.category, category) || other.category == category)&&(identical(other.subcategory, subcategory) || other.subcategory == subcategory)&&const DeepCollectionEquality().equals(other.colours, colours)&&(identical(other.brand, brand) || other.brand == brand)&&(identical(other.image, image) || other.image == image)&&(identical(other.imageKey, imageKey) || other.imageKey == imageKey)&&(identical(other.processingStatus, processingStatus) || other.processingStatus == processingStatus)&&(identical(other.processingError, processingError) || other.processingError == processingError)&&(identical(other.failureReason, failureReason) || other.failureReason == failureReason)&&(identical(other.errorMessage, errorMessage) || other.errorMessage == errorMessage)&&(identical(other.ai, ai) || other.ai == ai)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ItemResponse&&(identical(other.itemId, itemId) || other.itemId == itemId)&&(identical(other.wardrobeId, wardrobeId) || other.wardrobeId == wardrobeId)&&(identical(other.name, name) || other.name == name)&&(identical(other.category, category) || other.category == category)&&(identical(other.subcategory, subcategory) || other.subcategory == subcategory)&&const DeepCollectionEquality().equals(other.colours, colours)&&(identical(other.brand, brand) || other.brand == brand)&&(identical(other.image, image) || other.image == image)&&(identical(other.imageKey, imageKey) || other.imageKey == imageKey)&&(identical(other.originalImageUrl, originalImageUrl) || other.originalImageUrl == originalImageUrl)&&(identical(other.processedImageUrl, processedImageUrl) || other.processedImageUrl == processedImageUrl)&&(identical(other.processingStatus, processingStatus) || other.processingStatus == processingStatus)&&(identical(other.processingError, processingError) || other.processingError == processingError)&&(identical(other.failureReason, failureReason) || other.failureReason == failureReason)&&(identical(other.errorMessage, errorMessage) || other.errorMessage == errorMessage)&&(identical(other.ai, ai) || other.ai == ai)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,itemId,wardrobeId,name,category,subcategory,const DeepCollectionEquality().hash(colours),brand,image,imageKey,processingStatus,processingError,failureReason,errorMessage,ai,createdAt,updatedAt);
+int get hashCode => Object.hash(runtimeType,itemId,wardrobeId,name,category,subcategory,const DeepCollectionEquality().hash(colours),brand,image,imageKey,originalImageUrl,processedImageUrl,processingStatus,processingError,failureReason,errorMessage,ai,createdAt,updatedAt);
 
 @override
 String toString() {
-  return 'ItemResponse(itemId: $itemId, wardrobeId: $wardrobeId, name: $name, category: $category, subcategory: $subcategory, colours: $colours, brand: $brand, image: $image, imageKey: $imageKey, processingStatus: $processingStatus, processingError: $processingError, failureReason: $failureReason, errorMessage: $errorMessage, ai: $ai, createdAt: $createdAt, updatedAt: $updatedAt)';
+  return 'ItemResponse(itemId: $itemId, wardrobeId: $wardrobeId, name: $name, category: $category, subcategory: $subcategory, colours: $colours, brand: $brand, image: $image, imageKey: $imageKey, originalImageUrl: $originalImageUrl, processedImageUrl: $processedImageUrl, processingStatus: $processingStatus, processingError: $processingError, failureReason: $failureReason, errorMessage: $errorMessage, ai: $ai, createdAt: $createdAt, updatedAt: $updatedAt)';
 }
 
 
@@ -589,7 +589,7 @@ abstract mixin class $ItemResponseCopyWith<$Res>  {
   factory $ItemResponseCopyWith(ItemResponse value, $Res Function(ItemResponse) _then) = _$ItemResponseCopyWithImpl;
 @useResult
 $Res call({
- String itemId, String wardrobeId, String name, String category, String? subcategory, List<String>? colours, String? brand, ItemImageResponse? image, String? imageKey, String? processingStatus, String? processingError, String? failureReason, String? errorMessage, ItemAiResponse? ai, DateTime createdAt, DateTime updatedAt
+ String itemId, String wardrobeId, String name, String category, String? subcategory, List<String>? colours, String? brand, ItemImageResponse? image, String? imageKey, String? originalImageUrl, String? processedImageUrl, String? processingStatus, String? processingError, String? failureReason, String? errorMessage, ItemAiResponse? ai, DateTime createdAt, DateTime updatedAt
 });
 
 
@@ -606,7 +606,7 @@ class _$ItemResponseCopyWithImpl<$Res>
 
 /// Create a copy of ItemResponse
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? itemId = null,Object? wardrobeId = null,Object? name = null,Object? category = null,Object? subcategory = freezed,Object? colours = freezed,Object? brand = freezed,Object? image = freezed,Object? imageKey = freezed,Object? processingStatus = freezed,Object? processingError = freezed,Object? failureReason = freezed,Object? errorMessage = freezed,Object? ai = freezed,Object? createdAt = null,Object? updatedAt = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? itemId = null,Object? wardrobeId = null,Object? name = null,Object? category = null,Object? subcategory = freezed,Object? colours = freezed,Object? brand = freezed,Object? image = freezed,Object? imageKey = freezed,Object? originalImageUrl = freezed,Object? processedImageUrl = freezed,Object? processingStatus = freezed,Object? processingError = freezed,Object? failureReason = freezed,Object? errorMessage = freezed,Object? ai = freezed,Object? createdAt = null,Object? updatedAt = null,}) {
   return _then(_self.copyWith(
 itemId: null == itemId ? _self.itemId : itemId // ignore: cast_nullable_to_non_nullable
 as String,wardrobeId: null == wardrobeId ? _self.wardrobeId : wardrobeId // ignore: cast_nullable_to_non_nullable
@@ -617,6 +617,8 @@ as String?,colours: freezed == colours ? _self.colours : colours // ignore: cast
 as List<String>?,brand: freezed == brand ? _self.brand : brand // ignore: cast_nullable_to_non_nullable
 as String?,image: freezed == image ? _self.image : image // ignore: cast_nullable_to_non_nullable
 as ItemImageResponse?,imageKey: freezed == imageKey ? _self.imageKey : imageKey // ignore: cast_nullable_to_non_nullable
+as String?,originalImageUrl: freezed == originalImageUrl ? _self.originalImageUrl : originalImageUrl // ignore: cast_nullable_to_non_nullable
+as String?,processedImageUrl: freezed == processedImageUrl ? _self.processedImageUrl : processedImageUrl // ignore: cast_nullable_to_non_nullable
 as String?,processingStatus: freezed == processingStatus ? _self.processingStatus : processingStatus // ignore: cast_nullable_to_non_nullable
 as String?,processingError: freezed == processingError ? _self.processingError : processingError // ignore: cast_nullable_to_non_nullable
 as String?,failureReason: freezed == failureReason ? _self.failureReason : failureReason // ignore: cast_nullable_to_non_nullable
@@ -733,10 +735,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String itemId,  String wardrobeId,  String name,  String category,  String? subcategory,  List<String>? colours,  String? brand,  ItemImageResponse? image,  String? imageKey,  String? processingStatus,  String? processingError,  String? failureReason,  String? errorMessage,  ItemAiResponse? ai,  DateTime createdAt,  DateTime updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String itemId,  String wardrobeId,  String name,  String category,  String? subcategory,  List<String>? colours,  String? brand,  ItemImageResponse? image,  String? imageKey,  String? originalImageUrl,  String? processedImageUrl,  String? processingStatus,  String? processingError,  String? failureReason,  String? errorMessage,  ItemAiResponse? ai,  DateTime createdAt,  DateTime updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _ItemResponse() when $default != null:
-return $default(_that.itemId,_that.wardrobeId,_that.name,_that.category,_that.subcategory,_that.colours,_that.brand,_that.image,_that.imageKey,_that.processingStatus,_that.processingError,_that.failureReason,_that.errorMessage,_that.ai,_that.createdAt,_that.updatedAt);case _:
+return $default(_that.itemId,_that.wardrobeId,_that.name,_that.category,_that.subcategory,_that.colours,_that.brand,_that.image,_that.imageKey,_that.originalImageUrl,_that.processedImageUrl,_that.processingStatus,_that.processingError,_that.failureReason,_that.errorMessage,_that.ai,_that.createdAt,_that.updatedAt);case _:
   return orElse();
 
 }
@@ -754,10 +756,10 @@ return $default(_that.itemId,_that.wardrobeId,_that.name,_that.category,_that.su
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String itemId,  String wardrobeId,  String name,  String category,  String? subcategory,  List<String>? colours,  String? brand,  ItemImageResponse? image,  String? imageKey,  String? processingStatus,  String? processingError,  String? failureReason,  String? errorMessage,  ItemAiResponse? ai,  DateTime createdAt,  DateTime updatedAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String itemId,  String wardrobeId,  String name,  String category,  String? subcategory,  List<String>? colours,  String? brand,  ItemImageResponse? image,  String? imageKey,  String? originalImageUrl,  String? processedImageUrl,  String? processingStatus,  String? processingError,  String? failureReason,  String? errorMessage,  ItemAiResponse? ai,  DateTime createdAt,  DateTime updatedAt)  $default,) {final _that = this;
 switch (_that) {
 case _ItemResponse():
-return $default(_that.itemId,_that.wardrobeId,_that.name,_that.category,_that.subcategory,_that.colours,_that.brand,_that.image,_that.imageKey,_that.processingStatus,_that.processingError,_that.failureReason,_that.errorMessage,_that.ai,_that.createdAt,_that.updatedAt);case _:
+return $default(_that.itemId,_that.wardrobeId,_that.name,_that.category,_that.subcategory,_that.colours,_that.brand,_that.image,_that.imageKey,_that.originalImageUrl,_that.processedImageUrl,_that.processingStatus,_that.processingError,_that.failureReason,_that.errorMessage,_that.ai,_that.createdAt,_that.updatedAt);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -774,10 +776,10 @@ return $default(_that.itemId,_that.wardrobeId,_that.name,_that.category,_that.su
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String itemId,  String wardrobeId,  String name,  String category,  String? subcategory,  List<String>? colours,  String? brand,  ItemImageResponse? image,  String? imageKey,  String? processingStatus,  String? processingError,  String? failureReason,  String? errorMessage,  ItemAiResponse? ai,  DateTime createdAt,  DateTime updatedAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String itemId,  String wardrobeId,  String name,  String category,  String? subcategory,  List<String>? colours,  String? brand,  ItemImageResponse? image,  String? imageKey,  String? originalImageUrl,  String? processedImageUrl,  String? processingStatus,  String? processingError,  String? failureReason,  String? errorMessage,  ItemAiResponse? ai,  DateTime createdAt,  DateTime updatedAt)?  $default,) {final _that = this;
 switch (_that) {
 case _ItemResponse() when $default != null:
-return $default(_that.itemId,_that.wardrobeId,_that.name,_that.category,_that.subcategory,_that.colours,_that.brand,_that.image,_that.imageKey,_that.processingStatus,_that.processingError,_that.failureReason,_that.errorMessage,_that.ai,_that.createdAt,_that.updatedAt);case _:
+return $default(_that.itemId,_that.wardrobeId,_that.name,_that.category,_that.subcategory,_that.colours,_that.brand,_that.image,_that.imageKey,_that.originalImageUrl,_that.processedImageUrl,_that.processingStatus,_that.processingError,_that.failureReason,_that.errorMessage,_that.ai,_that.createdAt,_that.updatedAt);case _:
   return null;
 
 }
@@ -789,7 +791,7 @@ return $default(_that.itemId,_that.wardrobeId,_that.name,_that.category,_that.su
 @JsonSerializable()
 
 class _ItemResponse extends ItemResponse {
-  const _ItemResponse({required this.itemId, required this.wardrobeId, required this.name, required this.category, this.subcategory, this.colours, this.brand, this.image, this.imageKey, this.processingStatus, this.processingError, this.failureReason, this.errorMessage, this.ai, required this.createdAt, required this.updatedAt}): super._();
+  const _ItemResponse({required this.itemId, required this.wardrobeId, required this.name, required this.category, this.subcategory, this.colours, this.brand, this.image, this.imageKey, this.originalImageUrl, this.processedImageUrl, this.processingStatus, this.processingError, this.failureReason, this.errorMessage, this.ai, required this.createdAt, required this.updatedAt}): super._();
   factory _ItemResponse.fromJson(Map<String, dynamic> json) => _$ItemResponseFromJson(json);
 
 @override final  String itemId;
@@ -801,6 +803,8 @@ class _ItemResponse extends ItemResponse {
 @override final  String? brand;
 @override final  ItemImageResponse? image;
 @override final  String? imageKey;
+@override final  String? originalImageUrl;
+@override final  String? processedImageUrl;
 @override final  String? processingStatus;
 @override final  String? processingError;
 @override final  String? failureReason;
@@ -822,16 +826,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ItemResponse&&(identical(other.itemId, itemId) || other.itemId == itemId)&&(identical(other.wardrobeId, wardrobeId) || other.wardrobeId == wardrobeId)&&(identical(other.name, name) || other.name == name)&&(identical(other.category, category) || other.category == category)&&(identical(other.subcategory, subcategory) || other.subcategory == subcategory)&&const DeepCollectionEquality().equals(other.colours, colours)&&(identical(other.brand, brand) || other.brand == brand)&&(identical(other.image, image) || other.image == image)&&(identical(other.imageKey, imageKey) || other.imageKey == imageKey)&&(identical(other.processingStatus, processingStatus) || other.processingStatus == processingStatus)&&(identical(other.processingError, processingError) || other.processingError == processingError)&&(identical(other.failureReason, failureReason) || other.failureReason == failureReason)&&(identical(other.errorMessage, errorMessage) || other.errorMessage == errorMessage)&&(identical(other.ai, ai) || other.ai == ai)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ItemResponse&&(identical(other.itemId, itemId) || other.itemId == itemId)&&(identical(other.wardrobeId, wardrobeId) || other.wardrobeId == wardrobeId)&&(identical(other.name, name) || other.name == name)&&(identical(other.category, category) || other.category == category)&&(identical(other.subcategory, subcategory) || other.subcategory == subcategory)&&const DeepCollectionEquality().equals(other.colours, colours)&&(identical(other.brand, brand) || other.brand == brand)&&(identical(other.image, image) || other.image == image)&&(identical(other.imageKey, imageKey) || other.imageKey == imageKey)&&(identical(other.originalImageUrl, originalImageUrl) || other.originalImageUrl == originalImageUrl)&&(identical(other.processedImageUrl, processedImageUrl) || other.processedImageUrl == processedImageUrl)&&(identical(other.processingStatus, processingStatus) || other.processingStatus == processingStatus)&&(identical(other.processingError, processingError) || other.processingError == processingError)&&(identical(other.failureReason, failureReason) || other.failureReason == failureReason)&&(identical(other.errorMessage, errorMessage) || other.errorMessage == errorMessage)&&(identical(other.ai, ai) || other.ai == ai)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,itemId,wardrobeId,name,category,subcategory,const DeepCollectionEquality().hash(colours),brand,image,imageKey,processingStatus,processingError,failureReason,errorMessage,ai,createdAt,updatedAt);
+int get hashCode => Object.hash(runtimeType,itemId,wardrobeId,name,category,subcategory,const DeepCollectionEquality().hash(colours),brand,image,imageKey,originalImageUrl,processedImageUrl,processingStatus,processingError,failureReason,errorMessage,ai,createdAt,updatedAt);
 
 @override
 String toString() {
-  return 'ItemResponse(itemId: $itemId, wardrobeId: $wardrobeId, name: $name, category: $category, subcategory: $subcategory, colours: $colours, brand: $brand, image: $image, imageKey: $imageKey, processingStatus: $processingStatus, processingError: $processingError, failureReason: $failureReason, errorMessage: $errorMessage, ai: $ai, createdAt: $createdAt, updatedAt: $updatedAt)';
+  return 'ItemResponse(itemId: $itemId, wardrobeId: $wardrobeId, name: $name, category: $category, subcategory: $subcategory, colours: $colours, brand: $brand, image: $image, imageKey: $imageKey, originalImageUrl: $originalImageUrl, processedImageUrl: $processedImageUrl, processingStatus: $processingStatus, processingError: $processingError, failureReason: $failureReason, errorMessage: $errorMessage, ai: $ai, createdAt: $createdAt, updatedAt: $updatedAt)';
 }
 
 
@@ -842,7 +846,7 @@ abstract mixin class _$ItemResponseCopyWith<$Res> implements $ItemResponseCopyWi
   factory _$ItemResponseCopyWith(_ItemResponse value, $Res Function(_ItemResponse) _then) = __$ItemResponseCopyWithImpl;
 @override @useResult
 $Res call({
- String itemId, String wardrobeId, String name, String category, String? subcategory, List<String>? colours, String? brand, ItemImageResponse? image, String? imageKey, String? processingStatus, String? processingError, String? failureReason, String? errorMessage, ItemAiResponse? ai, DateTime createdAt, DateTime updatedAt
+ String itemId, String wardrobeId, String name, String category, String? subcategory, List<String>? colours, String? brand, ItemImageResponse? image, String? imageKey, String? originalImageUrl, String? processedImageUrl, String? processingStatus, String? processingError, String? failureReason, String? errorMessage, ItemAiResponse? ai, DateTime createdAt, DateTime updatedAt
 });
 
 
@@ -859,7 +863,7 @@ class __$ItemResponseCopyWithImpl<$Res>
 
 /// Create a copy of ItemResponse
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? itemId = null,Object? wardrobeId = null,Object? name = null,Object? category = null,Object? subcategory = freezed,Object? colours = freezed,Object? brand = freezed,Object? image = freezed,Object? imageKey = freezed,Object? processingStatus = freezed,Object? processingError = freezed,Object? failureReason = freezed,Object? errorMessage = freezed,Object? ai = freezed,Object? createdAt = null,Object? updatedAt = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? itemId = null,Object? wardrobeId = null,Object? name = null,Object? category = null,Object? subcategory = freezed,Object? colours = freezed,Object? brand = freezed,Object? image = freezed,Object? imageKey = freezed,Object? originalImageUrl = freezed,Object? processedImageUrl = freezed,Object? processingStatus = freezed,Object? processingError = freezed,Object? failureReason = freezed,Object? errorMessage = freezed,Object? ai = freezed,Object? createdAt = null,Object? updatedAt = null,}) {
   return _then(_ItemResponse(
 itemId: null == itemId ? _self.itemId : itemId // ignore: cast_nullable_to_non_nullable
 as String,wardrobeId: null == wardrobeId ? _self.wardrobeId : wardrobeId // ignore: cast_nullable_to_non_nullable
@@ -870,6 +874,8 @@ as String?,colours: freezed == colours ? _self.colours : colours // ignore: cast
 as List<String>?,brand: freezed == brand ? _self.brand : brand // ignore: cast_nullable_to_non_nullable
 as String?,image: freezed == image ? _self.image : image // ignore: cast_nullable_to_non_nullable
 as ItemImageResponse?,imageKey: freezed == imageKey ? _self.imageKey : imageKey // ignore: cast_nullable_to_non_nullable
+as String?,originalImageUrl: freezed == originalImageUrl ? _self.originalImageUrl : originalImageUrl // ignore: cast_nullable_to_non_nullable
+as String?,processedImageUrl: freezed == processedImageUrl ? _self.processedImageUrl : processedImageUrl // ignore: cast_nullable_to_non_nullable
 as String?,processingStatus: freezed == processingStatus ? _self.processingStatus : processingStatus // ignore: cast_nullable_to_non_nullable
 as String?,processingError: freezed == processingError ? _self.processingError : processingError // ignore: cast_nullable_to_non_nullable
 as String?,failureReason: freezed == failureReason ? _self.failureReason : failureReason // ignore: cast_nullable_to_non_nullable

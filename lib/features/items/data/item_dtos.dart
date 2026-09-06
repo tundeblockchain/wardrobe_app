@@ -2,6 +2,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 
 import '../../../core/network/api_exception.dart';
 import '../domain/item.dart';
+import 'item_image_urls.dart';
 
 part 'item_dtos.freezed.dart';
 part 'item_dtos.g.dart';
@@ -59,6 +60,8 @@ abstract class ItemResponse with _$ItemResponse {
     String? brand,
     ItemImageResponse? image,
     String? imageKey,
+    String? originalImageUrl,
+    String? processedImageUrl,
     String? processingStatus,
     String? processingError,
     String? failureReason,
@@ -87,8 +90,12 @@ abstract class ItemResponse with _$ItemResponse {
       subcategory: subcategory,
       colours: [...?colours],
       brand: brand,
-      originalImageKey: image?.originalKey ?? imageKey,
-      processedImageKey: image?.processedKey ?? ai?.processedImageKey,
+      originalImageKey:
+          asHttpUrl(originalImageUrl) ?? image?.originalKey ?? imageKey,
+      processedImageKey:
+          asHttpUrl(processedImageUrl) ??
+          image?.processedKey ??
+          ai?.processedImageKey,
       processingStatus: ItemProcessingStatus.parse(processingStatus),
       processingError: _optionalError(
         processingError ?? failureReason ?? errorMessage,

@@ -75,6 +75,40 @@ void main() {
       expect(domain.processingError, 'Classifier unavailable.');
     });
 
+    test('maps Backend WARDROBE-54 originalImageUrl and processedImageUrl', () {
+      final processing = ItemResponse.fromJson({
+        ...json,
+        'image': {'originalKey': 'users/uid/uploads/uuid.jpg'},
+        'originalImageUrl':
+            'https://cdn.example.com/original.jpg?X-Amz-Expires=900',
+        'processingStatus': 'PROCESSING',
+      }).toDomain();
+
+      expect(processing.processingStatus, ItemProcessingStatus.processing);
+      expect(
+        processing.originalImageKey,
+        'https://cdn.example.com/original.jpg?X-Amz-Expires=900',
+      );
+      expect(processing.processedImageKey, isNull);
+
+      final ready = ItemResponse.fromJson({
+        ...json,
+        'originalImageUrl':
+            'https://cdn.example.com/original.jpg?X-Amz-Expires=900',
+        'processedImageUrl':
+            'https://cdn.example.com/processed.png?X-Amz-Expires=900',
+      }).toDomain();
+
+      expect(
+        ready.originalImageKey,
+        'https://cdn.example.com/original.jpg?X-Amz-Expires=900',
+      );
+      expect(
+        ready.processedImageKey,
+        'https://cdn.example.com/processed.png?X-Amz-Expires=900',
+      );
+    });
+
     test('falls back to flat imageKey when nested image is absent', () {
       final domain = ItemResponse.fromJson({
         ...json,

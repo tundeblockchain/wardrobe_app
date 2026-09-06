@@ -89,10 +89,11 @@ Cards prefer a processed HTTP(S) photo when present, otherwise the original
 upload (network URL or the just-uploaded local bytes). They still show
 `processingStatus` (`PENDING` / `PROCESSING` / `READY` / `FAILED`) as a chip
 and a thin progress bar — never a processing-only placeholder that hides the
-photo. Backend item JSON currently returns `image.originalKey` /
-`image.processedKey` (S3 keys), not GET URLs; Flutter also reads
-`originalImageUrl` / `rawImageUrl` / `imageUrl` / `processedImageUrl` when
-present.
+photo. Backend WARDROBE-54 item JSON keeps `image.originalKey` /
+`image.processedKey` and adds short-lived GET URLs: `originalImageUrl`
+(while the original key exists) and `processedImageUrl` (when a processed
+key exists). Flutter maps those two fields first; aliases such as
+`rawImageUrl` / `imageUrl` remain as fallbacks.
 An empty wardrobe keeps the existing empty state. Category / colour /
 subcategory chips still send WARDROBE-21 query params to
 `GET /wardrobes/{wardrobeId}/items` and filter the card deck. The client

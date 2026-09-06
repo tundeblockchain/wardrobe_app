@@ -166,6 +166,27 @@ void main() {
     expect(withUrl.processingStatus, ItemProcessingStatus.processing);
   });
 
+  test('parseItem maps Backend #26 PROCESSING contract', () {
+    final item = parseItem({
+      'itemId': 'item_xyz123abcd',
+      'wardrobeId': 'wd_abc123xyz0',
+      'name': 'Black T-Shirt',
+      'category': 'TOP',
+      'image': {'originalKey': 'users/uid/uploads/photo.jpg'},
+      'originalImageUrl': 'https://s3.example.com/users/uid/uploads/photo.jpg?X-Amz-Expires=900',
+      'processingStatus': 'PROCESSING',
+      'createdAt': '2026-09-03T18:45:00Z',
+      'updatedAt': '2026-09-03T18:45:00Z',
+    });
+
+    expect(item.processingStatus, ItemProcessingStatus.processing);
+    expect(
+      item.originalImageKey,
+      'https://s3.example.com/users/uid/uploads/photo.jpg?X-Amz-Expires=900',
+    );
+    expect(item.processedImageKey, isNull);
+  });
+
   test('parseItem prefers processedImageUrl when READY', () {
     final item = parseItem({
       ...payload,
