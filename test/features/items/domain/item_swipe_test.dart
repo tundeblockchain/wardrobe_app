@@ -5,6 +5,18 @@ void main() {
   const width = 320.0;
   const height = 400.0;
 
+  group('itemBrowseSwipeEnabled', () {
+    test('is false for an empty or single-item list', () {
+      expect(itemBrowseSwipeEnabled(0), isFalse);
+      expect(itemBrowseSwipeEnabled(1), isFalse);
+    });
+
+    test('is true when two or more items can be browsed', () {
+      expect(itemBrowseSwipeEnabled(2), isTrue);
+      expect(itemBrowseSwipeEnabled(5), isTrue);
+    });
+  });
+
   group('resolveItemSwipe', () {
     test('advances on a left swipe past the distance threshold', () {
       expect(

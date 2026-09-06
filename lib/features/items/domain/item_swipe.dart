@@ -1,6 +1,9 @@
 /// Swipe directions that advance the wardrobe item card stack.
 enum ItemSwipeDirection { left, right, up }
 
+/// A single item stays a static large card (WARDROBE-55). Swipe needs 2+.
+bool itemBrowseSwipeEnabled(int itemCount) => itemCount > 1;
+
 /// Distance fraction of the card size that counts as a completed swipe.
 const itemSwipeDistanceFraction = 0.25;
 

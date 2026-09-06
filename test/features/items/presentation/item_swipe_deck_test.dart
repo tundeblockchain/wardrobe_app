@@ -102,6 +102,45 @@ void main() {
     expect(find.text('Processing'), findsOneWidget);
   });
 
+  testWidgets('single item is a static large card with no swipe affordance', (
+    tester,
+  ) async {
+    await pumpDeck(tester, items: [shirt]);
+
+    expect(find.byKey(ItemSwipeCard.cardKey(shirt.id)), findsOneWidget);
+    expect(find.byKey(ItemBrowseImage.imageKey(shirt.id)), findsOneWidget);
+    expect(find.text('1 of 1'), findsOneWidget);
+    expect(find.byKey(ItemSwipeDeck.swipeHintKey), findsNothing);
+    expect(find.text(ItemSwipeDeck.swipeHintText), findsNothing);
+    expect(find.byKey(ItemSwipeDeck.nextButtonKey), findsNothing);
+    expect(find.byKey(ItemSwipeDeck.swipeLayerKey), findsNothing);
+    expect(find.byKey(ItemSwipeDeck.openButtonKey), findsOneWidget);
+    expect(find.byKey(ItemSwipeDeck.endKey), findsNothing);
+
+    await tester.fling(
+      find.byKey(ItemSwipeCard.cardKey(shirt.id)),
+      const Offset(-300, 0),
+      1200,
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(ItemSwipeCard.cardKey(shirt.id)), findsOneWidget);
+    expect(find.text('Black Nike T-Shirt'), findsOneWidget);
+    expect(find.byKey(ItemSwipeDeck.endKey), findsNothing);
+    expect(find.text('No more items'), findsNothing);
+  });
+
+  testWidgets('multi-item deck keeps swipe hint and next-item controls', (
+    tester,
+  ) async {
+    await pumpDeck(tester, items: [shirt, jeans]);
+
+    expect(find.byKey(ItemSwipeDeck.swipeHintKey), findsOneWidget);
+    expect(find.text(ItemSwipeDeck.swipeHintText), findsOneWidget);
+    expect(find.byKey(ItemSwipeDeck.nextButtonKey), findsOneWidget);
+    expect(find.byKey(ItemSwipeDeck.swipeLayerKey), findsOneWidget);
+  });
+
   testWidgets('swipe left advances to the next item', (tester) async {
     await pumpDeck(tester, items: [shirt, jeans]);
 
@@ -170,8 +209,10 @@ void main() {
   });
 
   testWidgets('end of stack shows a reset affordance', (tester) async {
-    await pumpDeck(tester, items: [shirt]);
+    await pumpDeck(tester, items: [shirt, jeans]);
 
+    await tester.tap(find.byKey(ItemSwipeDeck.nextButtonKey));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(ItemSwipeDeck.nextButtonKey));
     await tester.pumpAndSettle();
 
@@ -183,7 +224,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Black Nike T-Shirt'), findsOneWidget);
-    expect(find.text('1 of 1'), findsOneWidget);
+    expect(find.text('1 of 2'), findsOneWidget);
   });
 
   testWidgets('rebuilding with a filtered list resets to the filtered deck', (
@@ -220,5 +261,7 @@ void main() {
     expect(find.text('Blue jeans'), findsOneWidget);
     expect(find.text('1 of 1'), findsOneWidget);
     expect(find.text('Black Nike T-Shirt'), findsNothing);
+    expect(find.byKey(ItemSwipeDeck.swipeHintKey), findsNothing);
+    expect(find.byKey(ItemSwipeDeck.nextButtonKey), findsNothing);
   });
 }

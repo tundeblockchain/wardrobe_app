@@ -74,9 +74,7 @@ void main() {
     expect(find.byType(ItemFilterBar), findsNothing);
   });
 
-  testWidgets('populated wardrobe browses items with a swipe card deck', (
-    tester,
-  ) async {
+  testWidgets('single item stays a large card without swipe', (tester) async {
     await pumpDetail(tester, items: [testItem()]);
 
     expect(find.byType(ItemSwipeDeck), findsOneWidget);
@@ -84,6 +82,30 @@ void main() {
     expect(find.byType(ItemFilterBar), findsOneWidget);
     expect(find.byKey(ItemSwipeCard.cardKey(testItem().id)), findsOneWidget);
     expect(find.text('1 of 1'), findsOneWidget);
+    expect(find.byKey(ItemSwipeDeck.swipeHintKey), findsNothing);
+    expect(find.byKey(ItemSwipeDeck.nextButtonKey), findsNothing);
+    expect(find.byKey(ItemSwipeDeck.swipeLayerKey), findsNothing);
+    expect(find.byKey(WardrobeDetailScreen.itemsEmptyKey), findsNothing);
+  });
+
+  testWidgets('populated wardrobe browses items with a swipe card deck', (
+    tester,
+  ) async {
+    await pumpDetail(
+      tester,
+      items: [
+        testItem(),
+        testItem(id: 'item_jeans', name: 'Blue jeans'),
+      ],
+    );
+
+    expect(find.byType(ItemSwipeDeck), findsOneWidget);
+    expect(find.byType(GridView), findsNothing);
+    expect(find.byType(ItemFilterBar), findsOneWidget);
+    expect(find.byKey(ItemSwipeCard.cardKey(testItem().id)), findsOneWidget);
+    expect(find.text('1 of 2'), findsOneWidget);
+    expect(find.byKey(ItemSwipeDeck.swipeHintKey), findsOneWidget);
+    expect(find.byKey(ItemSwipeDeck.nextButtonKey), findsOneWidget);
     expect(find.byKey(WardrobeDetailScreen.itemsEmptyKey), findsNothing);
   });
 
