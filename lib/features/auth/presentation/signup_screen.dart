@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/router/app_routes.dart';
 import '../application/auth_controller.dart';
 import '../domain/auth_validators.dart';
+import '../../../core/widgets/app_empty_state.dart';
 import 'widgets/auth_scaffold.dart';
 import 'widgets/google_sign_in_button.dart';
 
@@ -77,10 +78,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
               controller: _emailController,
               keyboardType: TextInputType.emailAddress,
               autofillHints: const [AutofillHints.email],
-              decoration: const InputDecoration(
-                labelText: 'Email',
-                border: OutlineInputBorder(),
-              ),
+              decoration: const InputDecoration(labelText: 'Email'),
               validator: AuthValidators.email,
               enabled: !auth.isBusy,
             ),
@@ -90,10 +88,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
               controller: _passwordController,
               obscureText: true,
               autofillHints: const [AutofillHints.newPassword],
-              decoration: const InputDecoration(
-                labelText: 'Password',
-                border: OutlineInputBorder(),
-              ),
+              decoration: const InputDecoration(labelText: 'Password'),
               validator: AuthValidators.password,
               enabled: !auth.isBusy,
             ),
@@ -102,10 +97,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
               key: SignupScreen.confirmPasswordFieldKey,
               controller: _confirmController,
               obscureText: true,
-              decoration: const InputDecoration(
-                labelText: 'Confirm password',
-                border: OutlineInputBorder(),
-              ),
+              decoration: const InputDecoration(labelText: 'Confirm password'),
               validator: (value) => AuthValidators.confirmPassword(
                 value,
                 _passwordController.text,
@@ -125,11 +117,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
               key: SignupScreen.submitButtonKey,
               onPressed: auth.isBusy ? null : _submit,
               child: auth.isBusy && !_googleBusy
-                  ? const SizedBox(
-                      height: 20,
-                      width: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
+                  ? const AppButtonSpinner()
                   : const Text('Sign up'),
             ),
             const AuthOrDivider(),

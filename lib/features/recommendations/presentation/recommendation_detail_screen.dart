@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/theme/app_spacing.dart';
+import '../../../core/widgets/app_empty_state.dart';
 import '../../../core/router/app_routes.dart';
 import '../../items/application/items_controller.dart';
 import '../../items/domain/item.dart';
@@ -50,7 +52,7 @@ class RecommendationDetailScreen extends ConsumerWidget {
       appBar: AppBar(title: Text(recommendation?.name ?? 'Suggested look')),
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(24),
+          padding: AppSpacing.pageInsets,
           child: _buildBody(context, ref, state, itemsState.items),
         ),
       ),
@@ -67,37 +69,20 @@ class RecommendationDetailScreen extends ConsumerWidget {
       return const Center(child: CircularProgressIndicator());
     }
     if (state.recommendation == null) {
-      return Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              state.errorMessage ?? 'Suggestion not found.',
-              textAlign: TextAlign.center,
-              style: TextStyle(color: Theme.of(context).colorScheme.error),
-            ),
-            const SizedBox(height: 16),
-            FilledButton(
-              key: retryButtonKey,
-              onPressed: () async {
-                await ref
-                    .read(
-                      recommendationsControllerProvider(wardrobeId).notifier,
-                    )
-                    .refresh();
-                if (!context.mounted) {
-                  return;
-                }
-                await ref
-                    .read(
-                      recommendationDetailControllerProvider(_scope).notifier,
-                    )
-                    .refresh();
-              },
-              child: const Text('Retry'),
-            ),
-          ],
-        ),
+      return AppErrorState(
+        message: state.errorMessage ?? 'Suggestion not found.',
+        retryKey: retryButtonKey,
+        onRetry: () async {
+          await ref
+              .read(recommendationsControllerProvider(wardrobeId).notifier)
+              .refresh();
+          if (!context.mounted) {
+            return;
+          }
+          await ref
+              .read(recommendationDetailControllerProvider(_scope).notifier)
+              .refresh();
+        },
       );
     }
 
@@ -149,11 +134,7 @@ class RecommendationDetailScreen extends ConsumerWidget {
                     )
                     .save(),
           child: state.isSaving
-              ? const SizedBox(
-                  height: 20,
-                  width: 20,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
+              ? const AppButtonSpinner()
               : const Text('Save outfit'),
         ),
       ],

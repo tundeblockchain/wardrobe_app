@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/router/app_router.dart';
 import '../../../core/router/app_routes.dart';
+import '../../../core/theme/app_spacing.dart';
+import '../../../core/widgets/app_empty_state.dart';
 import '../../items/application/items_controller.dart';
 import '../../items/application/items_state.dart';
 import '../../items/domain/item_list_filters.dart';
@@ -138,7 +140,7 @@ class _WardrobeDetailScreenState extends ConsumerState<WardrobeDetailScreen>
           },
           child: ListView(
             physics: const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.all(24),
+            padding: AppSpacing.pageInsets,
             children: [
               _buildBody(
                 context,
@@ -165,30 +167,17 @@ class _WardrobeDetailScreenState extends ConsumerState<WardrobeDetailScreen>
   ) {
     if (state.isLoading && state.wardrobe == null) {
       return const Padding(
-        padding: EdgeInsets.symmetric(vertical: 48),
+        padding: EdgeInsets.symmetric(vertical: AppSpacing.xxl),
         child: Center(child: CircularProgressIndicator()),
       );
     }
     if (state.wardrobe == null) {
-      return Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              state.errorMessage ?? 'Wardrobe not found.',
-              textAlign: TextAlign.center,
-              style: TextStyle(color: Theme.of(context).colorScheme.error),
-            ),
-            const SizedBox(height: 16),
-            FilledButton(
-              key: WardrobeDetailScreen.retryButtonKey,
-              onPressed: () => ref
-                  .read(wardrobeDetailControllerProvider(wardrobeId).notifier)
-                  .refresh(),
-              child: const Text('Retry'),
-            ),
-          ],
-        ),
+      return AppErrorState(
+        message: state.errorMessage ?? 'Wardrobe not found.',
+        retryKey: WardrobeDetailScreen.retryButtonKey,
+        onRetry: () => ref
+            .read(wardrobeDetailControllerProvider(wardrobeId).notifier)
+            .refresh(),
       );
     }
 
@@ -242,10 +231,7 @@ class _WardrobeDetailScreenState extends ConsumerState<WardrobeDetailScreen>
             controller: controller,
             autofocus: true,
             maxLength: WardrobeValidators.maxNameLength,
-            decoration: const InputDecoration(
-              labelText: 'Name',
-              border: OutlineInputBorder(),
-            ),
+            decoration: const InputDecoration(labelText: 'Name'),
             autovalidateMode: AutovalidateMode.onUserInteraction,
           ),
           actions: [
@@ -449,42 +435,25 @@ class _ItemsSection extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     if (state.isLoading && state.items.isEmpty) {
       return const Padding(
-        padding: EdgeInsets.symmetric(vertical: 24),
+        padding: EdgeInsets.symmetric(vertical: AppSpacing.lg),
         child: Center(child: CircularProgressIndicator()),
       );
     }
     if (state.errorMessage != null && state.items.isEmpty) {
-      return Column(
-        children: [
-          Text(
-            state.errorMessage!,
-            style: TextStyle(color: Theme.of(context).colorScheme.error),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 16),
-          FilledButton(
-            onPressed: () => ref
-                .read(itemsControllerProvider(wardrobeId).notifier)
-                .refresh(),
-            child: const Text('Retry items'),
-          ),
-        ],
+      return AppErrorState(
+        message: state.errorMessage!,
+        onRetry: () =>
+            ref.read(itemsControllerProvider(wardrobeId).notifier).refresh(),
       );
     }
     if (state.isEmpty && state.filters.isEmpty) {
-      return Padding(
+      return AppEmptyState(
         key: WardrobeDetailScreen.itemsEmptyKey,
-        padding: const EdgeInsets.symmetric(vertical: 16),
-        child: Column(
-          children: [
-            const Text('No items yet. Add a photo of a clothing item.'),
-            const SizedBox(height: 16),
-            FilledButton(
-              onPressed: () => context.push(AppRoutes.createItem(wardrobeId)),
-              child: const Text('Add item'),
-            ),
-          ],
-        ),
+        icon: Icons.add_a_photo_outlined,
+        title: 'No items yet',
+        message: 'Add a photo of a clothing item.',
+        actionLabel: 'Add item',
+        onAction: () => context.push(AppRoutes.createItem(wardrobeId)),
       );
     }
 
@@ -508,9 +477,10 @@ class _ItemsSection extends ConsumerWidget {
         ),
         const SizedBox(height: 16),
         if (state.isEmpty)
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 16),
-            child: Text('No items match these filters.'),
+          const AppEmptyState(
+            icon: Icons.filter_alt_off_outlined,
+            title: 'No matches',
+            message: 'No items match these filters.',
           )
         else
           GridView.builder(

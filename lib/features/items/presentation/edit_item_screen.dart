@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/router/app_routes.dart';
+import '../../../core/theme/app_spacing.dart';
+import '../../../core/widgets/app_empty_state.dart';
 import '../application/edit_item_controller.dart';
 import '../application/item_detail_controller.dart';
 import '../application/item_scope.dart';
@@ -97,7 +99,7 @@ class _EditItemScreenState extends ConsumerState<EditItemScreen> {
             child: item == null
                 ? const Center(child: CircularProgressIndicator())
                 : SingleChildScrollView(
-                    padding: const EdgeInsets.all(24),
+                    padding: AppSpacing.pageInsets,
                     child: Form(
                       key: _formKey,
                       child: Column(
@@ -157,7 +159,6 @@ class _EditItemScreenState extends ConsumerState<EditItemScreen> {
                             maxLength: ItemValidators.maxNameLength,
                             decoration: const InputDecoration(
                               labelText: 'Name',
-                              border: OutlineInputBorder(),
                             ),
                             validator: ItemValidators.name,
                             enabled: !busy,
@@ -167,7 +168,6 @@ class _EditItemScreenState extends ConsumerState<EditItemScreen> {
                             initialValue: _category,
                             decoration: const InputDecoration(
                               labelText: 'Category',
-                              border: OutlineInputBorder(),
                             ),
                             items: [
                               for (final category in ItemCategory.values)
@@ -187,7 +187,6 @@ class _EditItemScreenState extends ConsumerState<EditItemScreen> {
                             maxLength: ItemValidators.maxSubcategoryLength,
                             decoration: const InputDecoration(
                               labelText: 'Subcategory (optional)',
-                              border: OutlineInputBorder(),
                             ),
                             validator: ItemValidators.subcategory,
                             enabled: !busy,
@@ -198,7 +197,6 @@ class _EditItemScreenState extends ConsumerState<EditItemScreen> {
                             decoration: const InputDecoration(
                               labelText: 'Colours (optional)',
                               hintText: 'black, white',
-                              border: OutlineInputBorder(),
                             ),
                             enabled: !busy,
                           ),
@@ -208,7 +206,6 @@ class _EditItemScreenState extends ConsumerState<EditItemScreen> {
                             maxLength: ItemValidators.maxBrandLength,
                             decoration: const InputDecoration(
                               labelText: 'Brand (optional)',
-                              border: OutlineInputBorder(),
                             ),
                             validator: ItemValidators.brand,
                             enabled: !busy,
@@ -227,13 +224,7 @@ class _EditItemScreenState extends ConsumerState<EditItemScreen> {
                             key: EditItemScreen.submitButtonKey,
                             onPressed: busy ? null : _submit,
                             child: state.isSaving
-                                ? const SizedBox(
-                                    height: 20,
-                                    width: 20,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                    ),
-                                  )
+                                ? const AppButtonSpinner()
                                 : const Text('Save changes'),
                           ),
                         ],

@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/router/app_routes.dart';
+import '../../../core/theme/app_spacing.dart';
+import '../../../core/widgets/app_empty_state.dart';
 import '../application/wardrobes_controller.dart';
 import '../domain/wardrobe_validators.dart';
 
@@ -51,7 +53,7 @@ class _CreateWardrobeScreenState extends ConsumerState<CreateWardrobeScreen> {
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 480),
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24),
+              padding: AppSpacing.pageInsets,
               child: Form(
                 key: _formKey,
                 child: Column(
@@ -61,17 +63,14 @@ class _CreateWardrobeScreenState extends ConsumerState<CreateWardrobeScreen> {
                       'Give this wardrobe a name.',
                       style: Theme.of(context).textTheme.bodyMedium,
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: AppSpacing.md),
                     TextFormField(
                       key: CreateWardrobeScreen.nameFieldKey,
                       controller: _nameController,
                       textCapitalization: TextCapitalization.words,
                       autofocus: true,
                       maxLength: WardrobeValidators.maxNameLength,
-                      decoration: const InputDecoration(
-                        labelText: 'Name',
-                        border: OutlineInputBorder(),
-                      ),
+                      decoration: const InputDecoration(labelText: 'Name'),
                       validator: WardrobeValidators.name,
                       enabled: !state.isSaving,
                       onFieldSubmitted: (_) => _submit(),
@@ -85,16 +84,12 @@ class _CreateWardrobeScreenState extends ConsumerState<CreateWardrobeScreen> {
                         ),
                       ),
                     ],
-                    const SizedBox(height: 24),
+                    const SizedBox(height: AppSpacing.lg),
                     FilledButton(
                       key: CreateWardrobeScreen.submitButtonKey,
                       onPressed: state.isSaving ? null : _submit,
                       child: state.isSaving
-                          ? const SizedBox(
-                              height: 20,
-                              width: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
+                          ? const AppButtonSpinner()
                           : const Text('Create'),
                     ),
                   ],

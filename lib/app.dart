@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'core/lifecycle/app_lifecycle.dart';
 import 'core/router/app_router.dart';
+import 'core/theme/app_theme.dart';
 
 /// Root widget. Tests can wrap this in [ProviderScope] with overrides.
 class WardrobeApp extends ConsumerWidget {
@@ -14,10 +15,9 @@ class WardrobeApp extends ConsumerWidget {
     return LifecycleRefreshBinder(
       child: MaterialApp.router(
         title: 'Wardrobe',
-        theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF5C4D7A)),
-          useMaterial3: true,
-        ),
+        theme: AppTheme.light(),
+        darkTheme: AppTheme.dark(),
+        themeMode: ThemeMode.system,
         routerConfig: router,
       ),
     );

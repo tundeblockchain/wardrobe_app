@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/router/app_router.dart';
 import '../../../core/router/app_routes.dart';
+import '../../../core/theme/app_spacing.dart';
+import '../../../core/widgets/app_empty_state.dart';
 import '../application/item_detail_controller.dart';
 import '../application/item_detail_state.dart';
 import '../application/item_scope.dart';
@@ -101,7 +103,7 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen>
               ref.read(itemDetailControllerProvider(_scope).notifier).refresh(),
           child: ListView(
             physics: const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.all(24),
+            padding: AppSpacing.pageInsets,
             children: [_buildBody(context, state)],
           ),
         ),
@@ -117,25 +119,11 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen>
       );
     }
     if (state.item == null) {
-      return Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              state.errorMessage ?? 'Item not found.',
-              textAlign: TextAlign.center,
-              style: TextStyle(color: Theme.of(context).colorScheme.error),
-            ),
-            const SizedBox(height: 16),
-            FilledButton(
-              key: ItemDetailScreen.retryButtonKey,
-              onPressed: () => ref
-                  .read(itemDetailControllerProvider(_scope).notifier)
-                  .refresh(),
-              child: const Text('Retry'),
-            ),
-          ],
-        ),
+      return AppErrorState(
+        message: state.errorMessage ?? 'Item not found.',
+        retryKey: ItemDetailScreen.retryButtonKey,
+        onRetry: () =>
+            ref.read(itemDetailControllerProvider(_scope).notifier).refresh(),
       );
     }
 

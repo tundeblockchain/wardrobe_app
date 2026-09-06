@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/router/app_routes.dart';
+import '../../../core/theme/app_spacing.dart';
+import '../../../core/widgets/app_empty_state.dart';
 import '../../items/application/items_controller.dart';
 import '../../items/domain/item.dart';
 import '../application/outfit_detail_controller.dart';
@@ -68,7 +70,7 @@ class OutfitDetailScreen extends ConsumerWidget {
       ),
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(24),
+          padding: AppSpacing.pageInsets,
           child: _buildBody(context, ref, state, itemsState.items),
         ),
       ),
@@ -85,25 +87,11 @@ class OutfitDetailScreen extends ConsumerWidget {
       return const Center(child: CircularProgressIndicator());
     }
     if (state.outfit == null) {
-      return Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              state.errorMessage ?? 'Outfit not found.',
-              textAlign: TextAlign.center,
-              style: TextStyle(color: Theme.of(context).colorScheme.error),
-            ),
-            const SizedBox(height: 16),
-            FilledButton(
-              key: retryButtonKey,
-              onPressed: () => ref
-                  .read(outfitDetailControllerProvider(_scope).notifier)
-                  .refresh(),
-              child: const Text('Retry'),
-            ),
-          ],
-        ),
+      return AppErrorState(
+        message: state.errorMessage ?? 'Outfit not found.',
+        retryKey: retryButtonKey,
+        onRetry: () =>
+            ref.read(outfitDetailControllerProvider(_scope).notifier).refresh(),
       );
     }
 

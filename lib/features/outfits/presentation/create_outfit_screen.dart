@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/router/app_routes.dart';
+import '../../../core/theme/app_spacing.dart';
+import '../../../core/widgets/app_empty_state.dart';
 import '../../items/application/items_controller.dart';
 import '../application/create_outfit_controller.dart';
 import '../domain/outfit_validators.dart';
@@ -55,7 +57,7 @@ class _CreateOutfitScreenState extends ConsumerState<CreateOutfitScreen> {
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 480),
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24),
+              padding: AppSpacing.pageInsets,
               child: Form(
                 key: _formKey,
                 child: Column(
@@ -72,10 +74,7 @@ class _CreateOutfitScreenState extends ConsumerState<CreateOutfitScreen> {
                       textCapitalization: TextCapitalization.words,
                       autofocus: true,
                       maxLength: OutfitValidators.maxNameLength,
-                      decoration: const InputDecoration(
-                        labelText: 'Name',
-                        border: OutlineInputBorder(),
-                      ),
+                      decoration: const InputDecoration(labelText: 'Name'),
                       validator: OutfitValidators.name,
                       enabled: !state.isSaving,
                     ),
@@ -123,11 +122,7 @@ class _CreateOutfitScreenState extends ConsumerState<CreateOutfitScreen> {
                       key: CreateOutfitScreen.submitButtonKey,
                       onPressed: state.isSaving ? null : _submit,
                       child: state.isSaving
-                          ? const SizedBox(
-                              height: 20,
-                              width: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
+                          ? const AppButtonSpinner()
                           : const Text('Save outfit'),
                     ),
                   ],
