@@ -54,6 +54,37 @@ void main() {
     expect(container.read(itemsControllerProvider('wd_abc123')).items, isEmpty);
   });
 
+  test(
+    'delete failure surfaces ApiException without removing the list row',
+    () async {
+      container.read(itemsControllerProvider('wd_abc123'));
+      container.read(itemDetailControllerProvider(scope));
+      await settle();
+      repository.nextFailure = const ApiException(
+        message: 'Item not found.',
+        code: 'ITEM_NOT_FOUND',
+      );
+
+      final ok = await container
+          .read(itemDetailControllerProvider(scope).notifier)
+          .delete();
+
+      expect(ok, isFalse);
+      expect(
+        container.read(itemDetailControllerProvider(scope)).errorMessage,
+        'Item not found.',
+      );
+      expect(
+        container.read(itemDetailControllerProvider(scope)).isDeleted,
+        isFalse,
+      );
+      expect(
+        container.read(itemsControllerProvider('wd_abc123')).items,
+        hasLength(1),
+      );
+    },
+  );
+
   test('load failure surfaces ApiException message', () async {
     repository.nextFailure = const ApiException(
       message: 'Item not found.',

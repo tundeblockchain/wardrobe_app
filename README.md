@@ -13,16 +13,18 @@ outfit build / save
 AI outfit recommendations
 ([WARDROBE-24](https://tundetunde000.atlassian.net/browse/WARDROBE-24)), and
 profile menu / support forms
-([WARDROBE-34](https://tundetunde000.atlassian.net/browse/WARDROBE-34)).
+([WARDROBE-34](https://tundetunde000.atlassian.net/browse/WARDROBE-34)), and
+clear-all / delete-account flows
+([WARDROBE-35](https://tundetunde000.atlassian.net/browse/WARDROBE-35)).
 
 ## Architecture
 
 Layers (dependencies point downward only):
 
 1. **Presentation** — screens (`login`, `signup`, `forgot-password`, splash, wardrobes list / create / detail, add item / item detail / edit item, outfits list / create / detail / edit, profile / contact us / report a bug)
-2. **Controller / Provider** — Riverpod auth, wardrobe, item, outfit, recommendation, and support / rate-app controllers
-3. **Repository** — `AuthRepository`, `WardrobeRepository`, `ItemRepository`, `UploadRepository`, `OutfitRepository`, `RecommendationRepository`, `SupportRepository`
-4. **API client / Firebase** — `FirebaseAuthRepository` (email/password + Google), Dio + ID-token interceptor, wardrobe/item/upload/outfit/recommendation/support Dio repositories, `image_picker` behind `ItemImagePicker`, `in_app_review` behind `AppReviewer`
+2. **Controller / Provider** — Riverpod auth, wardrobe, item, outfit, recommendation, support / rate-app, and account controllers
+3. **Repository** — `AuthRepository`, `WardrobeRepository`, `ItemRepository`, `UploadRepository`, `OutfitRepository`, `RecommendationRepository`, `SupportRepository`, `AccountRepository`
+4. **API client / Firebase** — `FirebaseAuthRepository` (email/password + Google), Dio + ID-token interceptor, wardrobe/item/upload/outfit/recommendation/support/account Dio repositories, `image_picker` behind `ItemImagePicker`, `in_app_review` behind `AppReviewer`
 
 ## Auth shell
 
@@ -37,10 +39,10 @@ Layers (dependencies point downward only):
 
 Authenticated routes:
 
-- `/profile` — account info (email, display name, sign-in provider), Rate the app, Contact us, Report a bug
+- `/profile` — account info, Rate the app, Contact us, Report a bug, Clear all, Delete account
 - `/profile/contact` — in-app form → `POST /support/contact`
 - `/profile/report-bug` — in-app form → `POST /support/bug` (optional `replyTo` + `meta`)
-- `/wardrobes` — list + empty state
+- `/wardrobes` — list + empty state (account icon → `/profile`)
 - `/wardrobes/create` — name form
 - `/wardrobes/:wardrobeId` — detail, rename, delete, item list, outfits entry, suggestions entry
 
@@ -144,8 +146,20 @@ the forms stay enabled and show a friendly error — they do not fall back to
 mailto.
 
 Rate the app uses `in_app_review` and falls back to the platform store listing
-(`IOS_APP_STORE_ID` dart-define for iOS). Clear all / delete account is
-[WARDROBE-35](https://tundetunde000.atlassian.net/browse/WARDROBE-35).
+(`IOS_APP_STORE_ID` dart-define for iOS).
+
+## Account (clear content / delete)
+
+Clear all and Delete account live on `/profile` (WARDROBE-34 menu).
+
+- **Clear all content** — type `CLEAR`, then `DELETE /me/content`. Session stays.
+- **Delete account** — type `DELETE`, then `DELETE /me`, then Firebase
+  `deleteUser` (Google disconnect when needed). Failures are shown; the app
+  never pretends the account is gone.
+
+Identity is the Firebase ID token only. An empty account still returns `200`.
+Wardrobe and item deletes use the existing `DELETE` APIs behind a confirm
+dialog. Dio is mocked in tests.
 
 ## Local Firebase / API config
 

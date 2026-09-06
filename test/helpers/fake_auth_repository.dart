@@ -12,6 +12,7 @@ class FakeAuthRepository implements AuthRepository {
   AppUser? _current;
   AuthFailure? nextFailure;
   Duration delay = Duration.zero;
+  int deleteUserCalls = 0;
 
   @override
   AppUser? get currentUser => _current;
@@ -45,6 +46,13 @@ class FakeAuthRepository implements AuthRepository {
   @override
   Future<void> signOut() async {
     await Future<void>.delayed(delay);
+    _emit(null);
+  }
+
+  @override
+  Future<void> deleteUser() async {
+    await _maybeFail();
+    deleteUserCalls++;
     _emit(null);
   }
 

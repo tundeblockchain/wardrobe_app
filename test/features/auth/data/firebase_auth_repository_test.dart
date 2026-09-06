@@ -209,6 +209,64 @@ void main() {
     },
   );
 
+  test('deleteUser deletes Firebase then disconnects Google', () async {
+    final user = MockUser();
+    when(() => user.delete()).thenAnswer((_) async {});
+    when(() => firebaseAuth.currentUser).thenReturn(user);
+    when(() => googleSignIn.disconnect()).thenAnswer((_) async => null);
+
+    await repository.deleteUser();
+
+    verifyInOrder([() => user.delete(), () => googleSignIn.disconnect()]);
+  });
+
+  test('deleteUser maps requires-recent-login and skips disconnect', () async {
+    final user = MockUser();
+    when(() => user.delete())
+        .thenThrow(FirebaseAuthException(code: 'requires-recent-login'));
+    when(() => firebaseAuth.currentUser).thenReturn(user);
+
+    expect(
+      () => repository.deleteUser(),
+      throwsA(
+        isA<AuthFailure>()
+            .having((failure) => failure.code, 'code', 'requires-recent-login')
+            .having(
+              (failure) => failure.message,
+              'message',
+              'Sign in again to delete your account.',
+            ),
+      ),
+    );
+    verifyNever(() => googleSignIn.disconnect());
+  });
+
+  test('deleteUser still succeeds if Google disconnect fails', () async {
+    final user = MockUser();
+    when(() => user.delete()).thenAnswer((_) async {});
+    when(() => firebaseAuth.currentUser).thenReturn(user);
+    when(() => googleSignIn.disconnect()).thenThrow(Exception('no google'));
+
+    await repository.deleteUser();
+
+    verify(() => user.delete()).called(1);
+  });
+
+  test('deleteUser fails when there is no current user', () async {
+    when(() => firebaseAuth.currentUser).thenReturn(null);
+
+    expect(
+      () => repository.deleteUser(),
+      throwsA(
+        isA<AuthFailure>().having(
+          (failure) => failure.message,
+          'message',
+          'No signed-in user to delete.',
+        ),
+      ),
+    );
+  });
+
   test('email signIn is unchanged', () async {
     final user = MockUser();
     when(() => user.uid).thenReturn('uid-email');

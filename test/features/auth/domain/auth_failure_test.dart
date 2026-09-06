@@ -34,6 +34,10 @@ void main() {
       messageForFirebaseAuthCode(AuthFailure.cancelledCode),
       'Sign-in cancelled.',
     );
+    expect(
+      messageForFirebaseAuthCode('requires-recent-login'),
+      'Sign in again to delete your account.',
+    );
   });
 
   test('messageForGoogleSignInCode maps platform errors', () {

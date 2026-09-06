@@ -5,6 +5,7 @@ import 'package:wardrobe_app/features/auth/application/auth_controller.dart';
 import 'package:wardrobe_app/features/auth/domain/auth_failure.dart';
 import 'package:wardrobe_app/features/auth/presentation/login_screen.dart';
 import 'package:wardrobe_app/features/auth/presentation/signup_screen.dart';
+import 'package:wardrobe_app/features/account/data/dio_account_repository.dart';
 import 'package:wardrobe_app/features/items/data/dio_item_repository.dart';
 import 'package:wardrobe_app/features/items/data/dio_upload_repository.dart';
 import 'package:wardrobe_app/features/items/data/image_picker_item_image_picker.dart';
@@ -17,6 +18,7 @@ import 'package:wardrobe_app/features/recommendations/data/dio_recommendation_re
 import 'package:wardrobe_app/features/wardrobes/data/dio_wardrobe_repository.dart';
 import 'package:wardrobe_app/features/wardrobes/presentation/wardrobes_screen.dart';
 
+import 'helpers/fake_account_repository.dart';
 import 'helpers/fake_app_reviewer.dart';
 import 'helpers/fake_auth_repository.dart';
 import 'helpers/fake_device_context.dart';
@@ -103,6 +105,7 @@ void main() {
           supportRepositoryProvider.overrideWithValue(FakeSupportRepository()),
           appReviewerProvider.overrideWithValue(FakeAppReviewer()),
           deviceContextProvider.overrideWithValue(const FakeDeviceContext()),
+          accountRepositoryProvider.overrideWithValue(FakeAccountRepository()),
         ],
         child: const WardrobeApp(),
       ),
@@ -130,6 +133,8 @@ void main() {
     expect(find.text('Rate the app'), findsOneWidget);
     expect(find.text('Contact us'), findsOneWidget);
     expect(find.text('Report a bug'), findsOneWidget);
+    expect(find.text('Clear all content'), findsOneWidget);
+    expect(find.text('Delete account'), findsOneWidget);
   });
 
   testWidgets('Google sign-in from login follows the auth redirect shell', (

@@ -140,6 +140,27 @@ class FirebaseAuthRepository implements AuthRepository {
     await _auth.signOut();
   }
 
+  @override
+  Future<void> deleteUser() async {
+    final user = _auth.currentUser;
+    if (user == null) {
+      throw const AuthFailure('No signed-in user to delete.');
+    }
+    try {
+      await user.delete();
+    } on FirebaseAuthException catch (error) {
+      throw AuthFailure(
+        messageForFirebaseAuthCode(error.code),
+        code: error.code,
+      );
+    }
+    try {
+      await _googleSignIn.disconnect();
+    } catch (_) {
+      // Firebase user is already gone. Disconnect is only for the next picker.
+    }
+  }
+
   AppUser _requireUser(User? user) {
     final mapped = _mapUser(user);
     if (mapped == null) {

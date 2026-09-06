@@ -6,6 +6,7 @@ import '../../../core/router/app_router.dart';
 import '../../../core/router/app_routes.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/app_empty_state.dart';
+import '../../../core/widgets/destructive_confirm_dialog.dart';
 import '../application/item_detail_controller.dart';
 import '../application/item_detail_state.dart';
 import '../application/item_scope.dart';
@@ -173,29 +174,27 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen>
   }
 
   Future<void> _confirmDelete(BuildContext context) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) {
-        return AlertDialog(
-          title: const Text('Delete item?'),
-          content: const Text('This cannot be undone.'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(false),
-              child: const Text('Cancel'),
-            ),
-            FilledButton(
-              onPressed: () => Navigator.of(dialogContext).pop(true),
-              child: const Text('Delete'),
-            ),
-          ],
-        );
-      },
+    final confirmed = await DestructiveConfirmDialog.show(
+      context,
+      title: 'Delete item?',
+      message:
+          'This permanently deletes this clothing item and its photos. '
+          'This cannot be undone.',
     );
-    if (confirmed != true) {
+    if (!confirmed) {
       return;
     }
-    await ref.read(itemDetailControllerProvider(_scope).notifier).delete();
+    final ok = await ref
+        .read(itemDetailControllerProvider(_scope).notifier)
+        .delete();
+    if (ok || !context.mounted) {
+      return;
+    }
+    final message =
+        ref.read(itemDetailControllerProvider(_scope)).errorMessage ??
+        'Could not delete this item.';
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(message)));
   }
 }
 

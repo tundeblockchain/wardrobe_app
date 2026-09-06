@@ -51,6 +51,13 @@ void main() {
         expect(
           resolveAuthRedirect(
             status: AuthStatus.unauthenticated,
+            location: AppRoutes.profile,
+          ),
+          AppRoutes.login,
+        );
+        expect(
+          resolveAuthRedirect(
+            status: AuthStatus.unauthenticated,
             location: AppRoutes.wardrobes,
           ),
           AppRoutes.login,
@@ -161,6 +168,13 @@ void main() {
       });
 
       test('allows authenticated wardrobe routes', () {
+        expect(
+          resolveAuthRedirect(
+            status: AuthStatus.authenticated,
+            location: AppRoutes.profile,
+          ),
+          isNull,
+        );
         expect(
           resolveAuthRedirect(
             status: AuthStatus.authenticated,

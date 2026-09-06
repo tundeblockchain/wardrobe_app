@@ -41,4 +41,9 @@ class UnconfiguredAuthRepository implements AuthRepository {
 
   @override
   Future<void> signOut() async {}
+
+  @override
+  Future<void> deleteUser() {
+    throw const AuthFailure(configMessage);
+  }
 }

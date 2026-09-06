@@ -3,11 +3,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/router/app_routes.dart';
+import '../../../core/widgets/type_to_confirm_dialog.dart';
+import '../../account/application/account_controller.dart';
 import '../../auth/application/auth_controller.dart';
 import '../../auth/domain/app_user.dart';
 import '../application/rate_app_controller.dart';
 
-/// Account info plus Rate / Contact us / Report a bug.
+/// Account info plus Rate / Contact us / Report a bug / destructive wipes.
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
 
@@ -16,12 +18,27 @@ class ProfileScreen extends ConsumerWidget {
   static const contactTileKey = Key('profile_contact_us');
   static const reportBugTileKey = Key('profile_report_bug');
   static const signOutButtonKey = Key('profile_sign_out');
+  static const clearContentButtonKey = Key('account_clear_content');
+  static const deleteAccountButtonKey = Key('account_delete_account');
+  static const errorTextKey = Key('account_error');
+  static const infoTextKey = Key('account_info');
+
+  static const clearPhrase = 'CLEAR';
+  static const deletePhrase = 'DELETE';
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final auth = ref.watch(authControllerProvider);
     final rate = ref.watch(rateAppControllerProvider);
+    final account = ref.watch(accountControllerProvider);
     final user = auth.user;
+    final busy = auth.isBusy || account.isBusy || rate.isBusy;
+
+    ref.listen(accountControllerProvider, (previous, next) {
+      if (next.isAccountDeleted && context.mounted) {
+        context.go(AppRoutes.login);
+      }
+    });
 
     return Scaffold(
       key: screenKey,
@@ -74,9 +91,61 @@ class ProfileScreen extends ConsumerWidget {
             ),
           ],
           const SizedBox(height: 32),
+          Text('Danger zone', style: Theme.of(context).textTheme.titleMedium),
+          const SizedBox(height: 8),
+          Text(
+            'These actions cannot be undone.',
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
+          if (account.errorMessage != null) ...[
+            const SizedBox(height: 12),
+            Text(
+              account.errorMessage!,
+              key: errorTextKey,
+              style: TextStyle(color: Theme.of(context).colorScheme.error),
+            ),
+          ],
+          if (account.infoMessage != null) ...[
+            const SizedBox(height: 12),
+            Text(account.infoMessage!, key: infoTextKey),
+          ],
+          if (account.isBusy) ...[
+            const SizedBox(height: 16),
+            const Center(child: CircularProgressIndicator()),
+          ],
+          ListTile(
+            key: clearContentButtonKey,
+            contentPadding: EdgeInsets.zero,
+            leading: const Icon(Icons.delete_sweep_outlined),
+            title: const Text('Clear all content'),
+            subtitle: const Text(
+              'Delete every wardrobe, item, and outfit. Stay signed in.',
+            ),
+            enabled: !busy,
+            onTap: busy ? null : () => _clearContent(context, ref),
+          ),
+          ListTile(
+            key: deleteAccountButtonKey,
+            contentPadding: EdgeInsets.zero,
+            leading: Icon(
+              Icons.person_off_outlined,
+              color: Theme.of(context).colorScheme.error,
+            ),
+            title: Text(
+              'Delete account',
+              style: TextStyle(color: Theme.of(context).colorScheme.error),
+            ),
+            subtitle: const Text(
+              'Permanently delete your data and sign-in. You will need to '
+              'create a new account to use Wardrobe again.',
+            ),
+            enabled: !busy,
+            onTap: busy ? null : () => _deleteAccount(context, ref),
+          ),
+          const SizedBox(height: 24),
           OutlinedButton(
             key: signOutButtonKey,
-            onPressed: auth.isBusy
+            onPressed: busy
                 ? null
                 : () => ref.read(authControllerProvider.notifier).signOut(),
             child: const Text('Sign out'),
@@ -84,6 +153,38 @@ class ProfileScreen extends ConsumerWidget {
         ],
       ),
     );
+  }
+
+  Future<void> _clearContent(BuildContext context, WidgetRef ref) async {
+    final confirmed = await TypeToConfirmDialog.show(
+      context,
+      title: 'Clear all content?',
+      message:
+          'This permanently deletes every wardrobe, clothing item, outfit, '
+          'and photo. Your sign-in stays active so you can start over.',
+      phrase: clearPhrase,
+      confirmLabel: 'Clear all',
+    );
+    if (!confirmed) {
+      return;
+    }
+    await ref.read(accountControllerProvider.notifier).clearContent();
+  }
+
+  Future<void> _deleteAccount(BuildContext context, WidgetRef ref) async {
+    final confirmed = await TypeToConfirmDialog.show(
+      context,
+      title: 'Delete your account?',
+      message:
+          'This permanently deletes every wardrobe, item, outfit, and photo, '
+          'then removes your sign-in. This cannot be undone.',
+      phrase: deletePhrase,
+      confirmLabel: 'Delete account',
+    );
+    if (!confirmed) {
+      return;
+    }
+    await ref.read(accountControllerProvider.notifier).deleteAccount();
   }
 }
 
