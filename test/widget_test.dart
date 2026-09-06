@@ -1,9 +1,9 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wardrobe_app/app.dart';
 import 'package:wardrobe_app/features/auth/application/auth_controller.dart';
 import 'package:wardrobe_app/features/auth/domain/auth_failure.dart';
+import 'package:wardrobe_app/features/auth/presentation/apple_sign_in_support.dart';
 import 'package:wardrobe_app/features/auth/presentation/login_screen.dart';
 import 'package:wardrobe_app/features/auth/presentation/signup_screen.dart';
 import 'package:wardrobe_app/features/account/data/dio_account_repository.dart';
@@ -169,6 +169,7 @@ void main() {
 
     expect(find.byType(LoginScreen), findsOneWidget);
     expect(find.byKey(LoginScreen.googleButtonKey), findsOneWidget);
+    expect(find.byKey(LoginScreen.appleButtonKey), findsNothing);
 
     await tester.tap(find.byKey(LoginScreen.googleButtonKey));
     await tester.pumpAndSettle();
@@ -257,15 +258,13 @@ void main() {
   testWidgets('Apple button is hidden on Android login and signup', (
     tester,
   ) async {
-    debugDefaultTargetPlatformOverride = TargetPlatform.android;
-    addTearDown(() => debugDefaultTargetPlatformOverride = null);
-
     final repository = FakeAuthRepository();
     addTearDown(repository.dispose);
 
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          appleSignInSupportedProvider.overrideWithValue(false),
           authRepositoryProvider.overrideWithValue(repository),
           wardrobeRepositoryProvider.overrideWithValue(
             FakeWardrobeRepository(),
@@ -300,15 +299,13 @@ void main() {
   testWidgets('Apple sign-in from iOS login follows the auth redirect shell', (
     tester,
   ) async {
-    debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
-    addTearDown(() => debugDefaultTargetPlatformOverride = null);
-
     final repository = FakeAuthRepository();
     addTearDown(repository.dispose);
 
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          appleSignInSupportedProvider.overrideWithValue(true),
           authRepositoryProvider.overrideWithValue(repository),
           wardrobeRepositoryProvider.overrideWithValue(
             FakeWardrobeRepository(),
@@ -340,15 +337,13 @@ void main() {
   testWidgets('Apple sign-in from iOS signup follows the auth redirect shell', (
     tester,
   ) async {
-    debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
-    addTearDown(() => debugDefaultTargetPlatformOverride = null);
-
     final repository = FakeAuthRepository();
     addTearDown(repository.dispose);
 
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          appleSignInSupportedProvider.overrideWithValue(true),
           authRepositoryProvider.overrideWithValue(repository),
           wardrobeRepositoryProvider.overrideWithValue(
             FakeWardrobeRepository(),
@@ -364,6 +359,8 @@ void main() {
         child: const WardrobeApp(),
       ),
     );
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('Create an account'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Create an account'));
     await tester.pumpAndSettle();
@@ -381,9 +378,6 @@ void main() {
   testWidgets('Apple cancel on iOS login stays on the form without an error', (
     tester,
   ) async {
-    debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
-    addTearDown(() => debugDefaultTargetPlatformOverride = null);
-
     final repository = FakeAuthRepository()
       ..nextFailure = const AuthFailure(
         'Sign-in cancelled.',
@@ -394,6 +388,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          appleSignInSupportedProvider.overrideWithValue(true),
           authRepositoryProvider.overrideWithValue(repository),
           wardrobeRepositoryProvider.overrideWithValue(
             FakeWardrobeRepository(),

@@ -77,7 +77,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Widget build(BuildContext context) {
     final auth = ref.watch(authControllerProvider);
 
-    final showApple = isAppleSignInSupported();
+    final showApple = ref.watch(appleSignInSupportedProvider);
 
     return AuthScaffold(
       title: 'Sign in',
