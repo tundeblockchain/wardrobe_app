@@ -105,6 +105,24 @@ void main() {
     );
     expect(find.byKey(ProfileScreen.clearContentButtonKey), findsOneWidget);
     expect(find.byKey(ProfileScreen.deleteAccountButtonKey), findsOneWidget);
+    await tester.scrollUntilVisible(
+      find.byKey(ProfileScreen.signOutButtonKey),
+      80,
+    );
+    expect(find.byKey(ProfileScreen.signOutButtonKey), findsOneWidget);
+  });
+
+  testWidgets('Sign out from profile clears the session', (tester) async {
+    await pumpMenu(tester);
+
+    await tester.scrollUntilVisible(
+      find.byKey(ProfileScreen.signOutButtonKey),
+      80,
+    );
+    await tester.tap(find.byKey(ProfileScreen.signOutButtonKey));
+    await tester.pumpAndSettle();
+
+    expect(auth.currentUser, isNull);
   });
 
   testWidgets('Rate the app calls the reviewer', (tester) async {

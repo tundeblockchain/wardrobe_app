@@ -5,7 +5,6 @@ import 'package:go_router/go_router.dart';
 import '../../../core/router/app_routes.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/app_empty_state.dart';
-import '../../auth/application/auth_controller.dart';
 import '../application/wardrobes_controller.dart';
 import '../domain/wardrobe.dart';
 
@@ -13,7 +12,6 @@ import '../domain/wardrobe.dart';
 class WardrobesScreen extends ConsumerWidget {
   const WardrobesScreen({super.key});
 
-  static const signOutButtonKey = Key('wardrobes_sign_out');
   static const profileButtonKey = Key('wardrobes_profile');
   static const createButtonKey = Key('wardrobes_create');
   static const emptyStateKey = Key('wardrobes_empty');
@@ -21,9 +19,7 @@ class WardrobesScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final auth = ref.watch(authControllerProvider);
     final state = ref.watch(wardrobesControllerProvider);
-    final email = auth.user?.email ?? 'signed in';
 
     return Scaffold(
       appBar: AppBar(
@@ -34,12 +30,6 @@ class WardrobesScreen extends ConsumerWidget {
             tooltip: 'Account',
             onPressed: () => context.push(AppRoutes.profile),
             icon: const Icon(Icons.account_circle_outlined),
-          ),
-          TextButton(
-            key: signOutButtonKey,
-            onPressed: () =>
-                ref.read(authControllerProvider.notifier).signOut(),
-            child: const Text('Sign out'),
           ),
         ],
       ),
@@ -56,13 +46,6 @@ class WardrobesScreen extends ConsumerWidget {
           physics: const AlwaysScrollableScrollPhysics(),
           padding: AppSpacing.pageInsets,
           children: [
-            Text(
-              'Signed in as $email',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
-            ),
-            const SizedBox(height: AppSpacing.md),
             if (state.isLoading && state.wardrobes.isEmpty)
               const Padding(
                 padding: EdgeInsets.symmetric(vertical: AppSpacing.xxl),

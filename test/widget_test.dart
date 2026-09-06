@@ -54,6 +54,7 @@ void main() {
           supportRepositoryProvider.overrideWithValue(FakeSupportRepository()),
           appReviewerProvider.overrideWithValue(FakeAppReviewer()),
           deviceContextProvider.overrideWithValue(const FakeDeviceContext()),
+          accountRepositoryProvider.overrideWithValue(FakeAccountRepository()),
         ],
         child: const WardrobeApp(),
       ),
@@ -76,9 +77,19 @@ void main() {
 
     expect(find.byType(WardrobesScreen), findsOneWidget);
     expect(find.text('No wardrobes yet'), findsOneWidget);
-    expect(find.text('Signed in as user@example.com'), findsOneWidget);
+    expect(find.textContaining('Signed in as'), findsNothing);
+    expect(find.text('Sign out'), findsNothing);
+    expect(find.byKey(WardrobesScreen.profileButtonKey), findsOneWidget);
 
-    await tester.tap(find.byKey(WardrobesScreen.signOutButtonKey));
+    await tester.tap(find.byKey(WardrobesScreen.profileButtonKey));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(ProfileScreen), findsOneWidget);
+    await tester.scrollUntilVisible(
+      find.byKey(ProfileScreen.signOutButtonKey),
+      80,
+    );
+    await tester.tap(find.byKey(ProfileScreen.signOutButtonKey));
     await tester.pumpAndSettle();
 
     expect(find.byType(LoginScreen), findsOneWidget);
@@ -173,7 +184,8 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(WardrobesScreen), findsOneWidget);
-    expect(find.text('Signed in as google.user@example.com'), findsOneWidget);
+    expect(find.textContaining('Signed in as'), findsNothing);
+    expect(find.text('Sign out'), findsNothing);
   });
 
   testWidgets('Google sign-in from signup follows the auth redirect shell', (
@@ -212,7 +224,8 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(WardrobesScreen), findsOneWidget);
-    expect(find.text('Signed in as google.user@example.com'), findsOneWidget);
+    expect(find.textContaining('Signed in as'), findsNothing);
+    expect(find.text('Sign out'), findsNothing);
   });
 
   testWidgets('Google cancel on login stays on the form without an error', (
