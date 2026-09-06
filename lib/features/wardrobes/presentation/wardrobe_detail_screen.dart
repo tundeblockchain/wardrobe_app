@@ -6,6 +6,7 @@ import '../../../core/router/app_router.dart';
 import '../../../core/router/app_routes.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/app_empty_state.dart';
+import '../../../core/widgets/destructive_confirm_dialog.dart';
 import '../../items/application/items_controller.dart';
 import '../../items/application/items_state.dart';
 import '../../items/domain/item_list_filters.dart';
@@ -265,31 +266,27 @@ class _WardrobeDetailScreenState extends ConsumerState<WardrobeDetailScreen>
   }
 
   Future<void> _confirmDelete(BuildContext context, WidgetRef ref) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) {
-        return AlertDialog(
-          title: const Text('Delete wardrobe?'),
-          content: const Text('This cannot be undone.'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(false),
-              child: const Text('Cancel'),
-            ),
-            FilledButton(
-              onPressed: () => Navigator.of(dialogContext).pop(true),
-              child: const Text('Delete'),
-            ),
-          ],
-        );
-      },
+    final confirmed = await DestructiveConfirmDialog.show(
+      context,
+      title: 'Delete wardrobe?',
+      message:
+          'This permanently deletes this wardrobe and all of its items, '
+          'outfits, and photos. This cannot be undone.',
     );
-    if (confirmed != true) {
+    if (!confirmed) {
       return;
     }
-    await ref
+    final ok = await ref
         .read(wardrobeDetailControllerProvider(wardrobeId).notifier)
         .delete();
+    if (ok || !context.mounted) {
+      return;
+    }
+    final message =
+        ref.read(wardrobeDetailControllerProvider(wardrobeId)).errorMessage ??
+        'Could not delete this wardrobe.';
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(message)));
   }
 }
 

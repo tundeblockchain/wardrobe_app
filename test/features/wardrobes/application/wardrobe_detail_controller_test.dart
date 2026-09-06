@@ -73,6 +73,39 @@ void main() {
     expect(container.read(wardrobesControllerProvider).wardrobes, isEmpty);
   });
 
+  test(
+    'delete failure surfaces ApiException without removing the list row',
+    () async {
+      container.read(wardrobesControllerProvider);
+      container.read(wardrobeDetailControllerProvider('wd_abc123'));
+      await settle();
+      repository.nextFailure = const ApiException(
+        message: 'Wardrobe not found.',
+        code: 'WARDROBE_NOT_FOUND',
+      );
+
+      final ok = await container
+          .read(wardrobeDetailControllerProvider('wd_abc123').notifier)
+          .delete();
+
+      expect(ok, isFalse);
+      expect(
+        container
+            .read(wardrobeDetailControllerProvider('wd_abc123'))
+            .errorMessage,
+        'Wardrobe not found.',
+      );
+      expect(
+        container.read(wardrobeDetailControllerProvider('wd_abc123')).isDeleted,
+        isFalse,
+      );
+      expect(
+        container.read(wardrobesControllerProvider).wardrobes,
+        hasLength(1),
+      );
+    },
+  );
+
   test('load failure surfaces ApiException message', () async {
     repository.nextFailure = const ApiException(
       message: 'Wardrobe not found.',

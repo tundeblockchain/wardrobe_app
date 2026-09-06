@@ -39,6 +39,8 @@ String messageForFirebaseAuthCode(String code) {
       return 'This account has been disabled.';
     case 'network-request-failed':
       return 'Network error. Check your connection.';
+    case 'requires-recent-login':
+      return 'Sign in again to delete your account.';
     case AuthFailure.cancelledCode:
     case 'sign_in_canceled':
     case 'sign_in_cancelled':

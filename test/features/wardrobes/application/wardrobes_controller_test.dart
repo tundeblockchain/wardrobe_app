@@ -67,6 +67,17 @@ void main() {
     expect(container.read(createWardrobeControllerProvider).isSaving, isFalse);
   });
 
+  test('clearLocal empties the in-memory list', () async {
+    repository.items.add(testWardrobe());
+    container.read(wardrobesControllerProvider);
+    await settle();
+    expect(container.read(wardrobesControllerProvider).wardrobes, hasLength(1));
+
+    container.read(wardrobesControllerProvider.notifier).clearLocal();
+
+    expect(container.read(wardrobesControllerProvider).wardrobes, isEmpty);
+  });
+
   test('create records failure without changing the list', () async {
     container.read(wardrobesControllerProvider);
     await settle();

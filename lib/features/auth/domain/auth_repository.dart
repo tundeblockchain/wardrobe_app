@@ -18,4 +18,7 @@ abstract interface class AuthRepository {
   Future<void> sendPasswordResetEmail({required String email});
 
   Future<void> signOut();
+
+  /// Deletes the Firebase Auth user after `DELETE /me`. Disconnects Google.
+  Future<void> deleteUser();
 }

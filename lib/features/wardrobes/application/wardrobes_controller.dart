@@ -51,6 +51,11 @@ class WardrobesController extends Notifier<WardrobesState> {
       clearError: true,
     );
   }
+
+  /// Drops the in-memory list after a successful `DELETE /me/content`.
+  void clearLocal() {
+    state = state.copyWith(wardrobes: const [], clearError: true);
+  }
 }
 
 /// Submits a new wardrobe and keeps the list cache in sync.
