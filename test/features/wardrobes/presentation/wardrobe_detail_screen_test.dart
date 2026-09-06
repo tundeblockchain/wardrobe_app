@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wardrobe_app/features/items/data/dio_item_repository.dart';
+import 'package:wardrobe_app/features/items/domain/item.dart';
+import 'package:wardrobe_app/features/items/presentation/widgets/item_filter_bar.dart';
+import 'package:wardrobe_app/features/items/presentation/widgets/item_swipe_card.dart';
+import 'package:wardrobe_app/features/items/presentation/widgets/item_swipe_deck.dart';
 import 'package:wardrobe_app/features/outfits/data/dio_outfit_repository.dart';
 import 'package:wardrobe_app/features/recommendations/data/dio_recommendation_repository.dart';
 import 'package:wardrobe_app/features/wardrobes/data/dio_wardrobe_repository.dart';
@@ -13,18 +17,21 @@ import '../../../helpers/fake_recommendation_repository.dart';
 import '../../../helpers/fake_wardrobe_repository.dart';
 
 void main() {
-  testWidgets('wardrobe detail does not show Created or Updated datestamps', (
-    tester,
-  ) async {
-    final wardrobe = testWardrobe();
+  Future<void> pumpDetail(WidgetTester tester, {List<Item>? items}) async {
+    tester.view.physicalSize = const Size(800, 2000);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
 
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
           wardrobeRepositoryProvider.overrideWithValue(
-            FakeWardrobeRepository(seed: [wardrobe]),
+            FakeWardrobeRepository(seed: [testWardrobe()]),
           ),
-          itemRepositoryProvider.overrideWithValue(FakeItemRepository()),
+          itemRepositoryProvider.overrideWithValue(
+            FakeItemRepository(seed: items),
+          ),
           outfitRepositoryProvider.overrideWithValue(FakeOutfitRepository()),
           recommendationRepositoryProvider.overrideWithValue(
             FakeRecommendationRepository(),
@@ -35,8 +42,13 @@ void main() {
         ),
       ),
     );
-
     await tester.pumpAndSettle();
+  }
+
+  testWidgets('wardrobe detail does not show Created or Updated datestamps', (
+    tester,
+  ) async {
+    await pumpDetail(tester);
 
     expect(find.byType(WardrobeDetailScreen), findsOneWidget);
     expect(find.text('Summer Clothes'), findsWidgets);
@@ -49,5 +61,53 @@ void main() {
     expect(find.byKey(WardrobeDetailScreen.addItemButtonKey), findsOneWidget);
     expect(find.byKey(WardrobeDetailScreen.renameButtonKey), findsOneWidget);
     expect(find.byKey(WardrobeDetailScreen.deleteButtonKey), findsOneWidget);
+  });
+
+  testWidgets('empty wardrobe keeps the existing empty items state', (
+    tester,
+  ) async {
+    await pumpDetail(tester);
+
+    expect(find.byKey(WardrobeDetailScreen.itemsEmptyKey), findsOneWidget);
+    expect(find.text('No items yet'), findsOneWidget);
+    expect(find.byType(ItemSwipeDeck), findsNothing);
+    expect(find.byType(ItemFilterBar), findsNothing);
+  });
+
+  testWidgets('populated wardrobe browses items with a swipe card deck', (
+    tester,
+  ) async {
+    await pumpDetail(tester, items: [testItem()]);
+
+    expect(find.byType(ItemSwipeDeck), findsOneWidget);
+    expect(find.byType(GridView), findsNothing);
+    expect(find.byType(ItemFilterBar), findsOneWidget);
+    expect(find.byKey(ItemSwipeCard.cardKey(testItem().id)), findsOneWidget);
+    expect(find.text('1 of 1'), findsOneWidget);
+    expect(find.byKey(WardrobeDetailScreen.itemsEmptyKey), findsNothing);
+  });
+
+  testWidgets('smart filters apply to the swipe card deck', (tester) async {
+    final shoes = testItem(
+      id: 'item_shoes',
+      name: 'Black boots',
+      category: ItemCategory.shoes,
+      subcategory: 'BOOTS',
+    );
+    await pumpDetail(tester, items: [testItem(), shoes]);
+
+    expect(find.text('1 of 2'), findsOneWidget);
+
+    await tester.ensureVisible(
+      find.byKey(ItemFilterBar.categoryChipKey(ItemCategory.shoes)),
+    );
+    await tester.tap(
+      find.byKey(ItemFilterBar.categoryChipKey(ItemCategory.shoes)),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Black boots'), findsOneWidget);
+    expect(find.text('1 of 1'), findsOneWidget);
+    expect(find.text('Black Nike T-Shirt'), findsNothing);
   });
 }

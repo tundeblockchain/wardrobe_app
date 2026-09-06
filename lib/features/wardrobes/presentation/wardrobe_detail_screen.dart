@@ -11,7 +11,7 @@ import '../../items/application/items_controller.dart';
 import '../../items/application/items_state.dart';
 import '../../items/domain/item_list_filters.dart';
 import '../../items/presentation/widgets/item_filter_bar.dart';
-import '../../items/presentation/widgets/item_grid_card.dart';
+import '../../items/presentation/widgets/item_swipe_deck.dart';
 import '../../outfits/application/outfits_controller.dart';
 import '../../outfits/application/outfits_state.dart';
 import '../../outfits/domain/outfit.dart';
@@ -213,6 +213,7 @@ class _WardrobeDetailScreenState extends ConsumerState<WardrobeDetailScreen>
         Text('Items', style: Theme.of(context).textTheme.titleMedium),
         const SizedBox(height: 12),
         _ItemsSection(wardrobeId: wardrobeId, state: itemsState),
+        const SizedBox(height: 72),
       ],
     );
   }
@@ -480,24 +481,10 @@ class _ItemsSection extends ConsumerWidget {
             message: 'No items match these filters.',
           )
         else
-          GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: state.items.length,
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              childAspectRatio: 0.95,
-              crossAxisSpacing: 12,
-              mainAxisSpacing: 12,
-            ),
-            itemBuilder: (context, index) {
-              final item = state.items[index];
-              return ItemGridCard(
-                key: Key('item_tile_${item.id}'),
-                wardrobeId: wardrobeId,
-                item: item,
-              );
-            },
+          ItemSwipeDeck(
+            items: state.items,
+            onOpenItem: (item) =>
+                context.push(AppRoutes.itemDetail(wardrobeId, item.id)),
           ),
       ],
     );

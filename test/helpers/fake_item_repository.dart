@@ -27,7 +27,8 @@ class FakeItemRepository implements ItemRepository {
     _maybeFail();
     return [
       for (final item in items)
-        if (item.wardrobeId == wardrobeId) item,
+        if (item.wardrobeId == wardrobeId && _matchesFilters(item, filters))
+          item,
     ];
   }
 
@@ -131,6 +132,21 @@ class FakeItemRepository implements ItemRepository {
     );
   }
 
+  bool _matchesFilters(Item item, ItemListFilters filters) {
+    if (filters.category != null && item.category != filters.category) {
+      return false;
+    }
+    if (filters.subcategory != null &&
+        item.subcategory != filters.subcategory!.wireValue) {
+      return false;
+    }
+    if (filters.colour != null &&
+        !item.colours.contains(filters.colour!.wireValue)) {
+      return false;
+    }
+    return true;
+  }
+
   void _maybeFail() {
     final failure = nextFailure;
     if (failure != null) {
@@ -145,17 +161,24 @@ Item testItem({
   String wardrobeId = 'wd_abc123',
   String name = 'Black Nike T-Shirt',
   ItemCategory category = ItemCategory.top,
+  String? subcategory = 'TSHIRT',
+  List<String> colours = const ['BLACK'],
+  String? brand = 'Nike',
+  String? originalImageKey = 'users/uid/uploads/uuid.jpg',
+  String? processedImageKey,
+  ItemProcessingStatus processingStatus = ItemProcessingStatus.ready,
 }) {
   return Item(
     id: id,
     wardrobeId: wardrobeId,
     name: name,
     category: category,
-    subcategory: 'TSHIRT',
-    colours: const ['BLACK'],
-    brand: 'Nike',
-    originalImageKey: 'users/uid/uploads/uuid.jpg',
-    processingStatus: ItemProcessingStatus.ready,
+    subcategory: subcategory,
+    colours: colours,
+    brand: brand,
+    originalImageKey: originalImageKey,
+    processedImageKey: processedImageKey,
+    processingStatus: processingStatus,
     createdAt: DateTime.utc(2026, 9, 3, 18, 45),
     updatedAt: DateTime.utc(2026, 9, 3, 18, 45),
   );
