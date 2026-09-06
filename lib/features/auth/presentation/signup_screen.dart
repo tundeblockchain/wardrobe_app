@@ -6,10 +6,12 @@ import '../../../core/router/app_routes.dart';
 import '../application/auth_controller.dart';
 import '../domain/auth_validators.dart';
 import '../../../core/widgets/app_empty_state.dart';
+import 'apple_sign_in_support.dart';
+import 'widgets/apple_sign_in_button.dart';
 import 'widgets/auth_scaffold.dart';
 import 'widgets/google_sign_in_button.dart';
 
-/// Email/password registration with optional Google sign-in.
+/// Email/password registration with optional Google / Apple sign-in.
 class SignupScreen extends ConsumerStatefulWidget {
   const SignupScreen({super.key});
 
@@ -18,6 +20,7 @@ class SignupScreen extends ConsumerStatefulWidget {
   static const confirmPasswordFieldKey = Key('signup_confirm_password');
   static const submitButtonKey = Key('signup_submit');
   static const googleButtonKey = Key('signup_google');
+  static const appleButtonKey = Key('signup_apple');
 
   @override
   ConsumerState<SignupScreen> createState() => _SignupScreenState();
@@ -29,6 +32,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
   final _passwordController = TextEditingController();
   final _confirmController = TextEditingController();
   bool _googleBusy = false;
+  bool _appleBusy = false;
 
   @override
   void dispose() {
@@ -61,13 +65,28 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
     }
   }
 
+  Future<void> _signInWithApple() async {
+    setState(() => _appleBusy = true);
+    try {
+      await ref.read(authControllerProvider.notifier).signInWithApple();
+    } finally {
+      if (mounted) {
+        setState(() => _appleBusy = false);
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final auth = ref.watch(authControllerProvider);
 
+    final showApple = isAppleSignInSupported();
+
     return AuthScaffold(
       title: 'Create account',
-      subtitle: 'Use email and password, or continue with Google.',
+      subtitle: showApple
+          ? 'Use email and password, or continue with Google or Apple.'
+          : 'Use email and password, or continue with Google.',
       child: Form(
         key: _formKey,
         child: Column(
@@ -116,7 +135,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
             FilledButton(
               key: SignupScreen.submitButtonKey,
               onPressed: auth.isBusy ? null : _submit,
-              child: auth.isBusy && !_googleBusy
+              child: auth.isBusy && !_googleBusy && !_appleBusy
                   ? const AppButtonSpinner()
                   : const Text('Sign up'),
             ),
@@ -127,6 +146,15 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
               enabled: !auth.isBusy,
               busy: _googleBusy,
             ),
+            if (showApple) ...[
+              const SizedBox(height: 12),
+              AppleSignInButton(
+                key: SignupScreen.appleButtonKey,
+                onPressed: _signInWithApple,
+                enabled: !auth.isBusy,
+                busy: _appleBusy,
+              ),
+            ],
             const SizedBox(height: 8),
             TextButton(
               onPressed: auth.isBusy ? null : () => context.go(AppRoutes.login),

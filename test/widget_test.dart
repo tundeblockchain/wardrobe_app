@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wardrobe_app/app.dart';
@@ -246,6 +247,172 @@ void main() {
 
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(LoginScreen.googleButtonKey));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(LoginScreen), findsOneWidget);
+    expect(find.text('Sign-in cancelled.'), findsNothing);
+    expect(find.byType(WardrobesScreen), findsNothing);
+  });
+
+  testWidgets('Apple button is hidden on Android login and signup', (
+    tester,
+  ) async {
+    debugDefaultTargetPlatformOverride = TargetPlatform.android;
+    addTearDown(() => debugDefaultTargetPlatformOverride = null);
+
+    final repository = FakeAuthRepository();
+    addTearDown(repository.dispose);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          authRepositoryProvider.overrideWithValue(repository),
+          wardrobeRepositoryProvider.overrideWithValue(
+            FakeWardrobeRepository(),
+          ),
+          itemRepositoryProvider.overrideWithValue(FakeItemRepository()),
+          outfitRepositoryProvider.overrideWithValue(FakeOutfitRepository()),
+          recommendationRepositoryProvider.overrideWithValue(
+            FakeRecommendationRepository(),
+          ),
+          uploadRepositoryProvider.overrideWithValue(FakeUploadRepository()),
+          itemImagePickerProvider.overrideWithValue(FakeItemImagePicker()),
+        ],
+        child: const WardrobeApp(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byType(LoginScreen), findsOneWidget);
+    expect(find.byKey(LoginScreen.googleButtonKey), findsOneWidget);
+    expect(find.byKey(LoginScreen.appleButtonKey), findsNothing);
+    expect(find.text('Continue with Apple'), findsNothing);
+
+    await tester.tap(find.text('Create an account'));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(SignupScreen), findsOneWidget);
+    expect(find.byKey(SignupScreen.googleButtonKey), findsOneWidget);
+    expect(find.byKey(SignupScreen.appleButtonKey), findsNothing);
+    expect(find.text('Continue with Apple'), findsNothing);
+  });
+
+  testWidgets('Apple sign-in from iOS login follows the auth redirect shell', (
+    tester,
+  ) async {
+    debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
+    addTearDown(() => debugDefaultTargetPlatformOverride = null);
+
+    final repository = FakeAuthRepository();
+    addTearDown(repository.dispose);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          authRepositoryProvider.overrideWithValue(repository),
+          wardrobeRepositoryProvider.overrideWithValue(
+            FakeWardrobeRepository(),
+          ),
+          itemRepositoryProvider.overrideWithValue(FakeItemRepository()),
+          outfitRepositoryProvider.overrideWithValue(FakeOutfitRepository()),
+          recommendationRepositoryProvider.overrideWithValue(
+            FakeRecommendationRepository(),
+          ),
+          uploadRepositoryProvider.overrideWithValue(FakeUploadRepository()),
+          itemImagePickerProvider.overrideWithValue(FakeItemImagePicker()),
+        ],
+        child: const WardrobeApp(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byType(LoginScreen), findsOneWidget);
+    expect(find.byKey(LoginScreen.googleButtonKey), findsOneWidget);
+    await tester.ensureVisible(find.byKey(LoginScreen.appleButtonKey));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(LoginScreen.appleButtonKey));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(WardrobesScreen), findsOneWidget);
+    expect(find.text('Signed in as apple.user@example.com'), findsOneWidget);
+  });
+
+  testWidgets('Apple sign-in from iOS signup follows the auth redirect shell', (
+    tester,
+  ) async {
+    debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
+    addTearDown(() => debugDefaultTargetPlatformOverride = null);
+
+    final repository = FakeAuthRepository();
+    addTearDown(repository.dispose);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          authRepositoryProvider.overrideWithValue(repository),
+          wardrobeRepositoryProvider.overrideWithValue(
+            FakeWardrobeRepository(),
+          ),
+          itemRepositoryProvider.overrideWithValue(FakeItemRepository()),
+          outfitRepositoryProvider.overrideWithValue(FakeOutfitRepository()),
+          recommendationRepositoryProvider.overrideWithValue(
+            FakeRecommendationRepository(),
+          ),
+          uploadRepositoryProvider.overrideWithValue(FakeUploadRepository()),
+          itemImagePickerProvider.overrideWithValue(FakeItemImagePicker()),
+        ],
+        child: const WardrobeApp(),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Create an account'));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(SignupScreen), findsOneWidget);
+    await tester.ensureVisible(find.byKey(SignupScreen.appleButtonKey));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(SignupScreen.appleButtonKey));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(WardrobesScreen), findsOneWidget);
+    expect(find.text('Signed in as apple.user@example.com'), findsOneWidget);
+  });
+
+  testWidgets('Apple cancel on iOS login stays on the form without an error', (
+    tester,
+  ) async {
+    debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
+    addTearDown(() => debugDefaultTargetPlatformOverride = null);
+
+    final repository = FakeAuthRepository()
+      ..nextFailure = const AuthFailure(
+        'Sign-in cancelled.',
+        code: AuthFailure.cancelledCode,
+      );
+    addTearDown(repository.dispose);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          authRepositoryProvider.overrideWithValue(repository),
+          wardrobeRepositoryProvider.overrideWithValue(
+            FakeWardrobeRepository(),
+          ),
+          itemRepositoryProvider.overrideWithValue(FakeItemRepository()),
+          outfitRepositoryProvider.overrideWithValue(FakeOutfitRepository()),
+          recommendationRepositoryProvider.overrideWithValue(
+            FakeRecommendationRepository(),
+          ),
+          uploadRepositoryProvider.overrideWithValue(FakeUploadRepository()),
+          itemImagePickerProvider.overrideWithValue(FakeItemImagePicker()),
+        ],
+        child: const WardrobeApp(),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.byKey(LoginScreen.appleButtonKey));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(LoginScreen.appleButtonKey));
     await tester.pumpAndSettle();
 
     expect(find.byType(LoginScreen), findsOneWidget);

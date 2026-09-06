@@ -1,10 +1,16 @@
+import 'dart:convert';
+import 'dart:math';
+
+import 'package:crypto/crypto.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/services.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
 import '../domain/app_user.dart';
 import '../domain/auth_failure.dart';
 import '../domain/auth_repository.dart';
+import 'apple_sign_in_client.dart';
 
 /// Optional Web OAuth client ID (Firebase Google provider) for Android ID tokens.
 const String kGoogleServerClientIdDefine = String.fromEnvironment(
@@ -20,16 +26,41 @@ GoogleSignIn defaultGoogleSignIn() {
   );
 }
 
+/// Cryptographically random nonce for Sign in with Apple (replay protection).
+String generateAppleRawNonce([int length = 32]) {
+  const charset =
+      '0123456789ABCDEFGHIJKLMNOPQRSTUVXYZabcdefghijklmnopqrstuvwxyz-._';
+  final random = Random.secure();
+  return List.generate(
+    length,
+    (_) => charset[random.nextInt(charset.length)],
+  ).join();
+}
+
+/// SHA-256 hex digest of [input]. Apple receives this; Firebase checks the raw nonce.
+String sha256ofString(String input) {
+  final bytes = utf8.encode(input);
+  final digest = sha256.convert(bytes);
+  return digest.toString();
+}
+
 /// Firebase Auth implementation of [AuthRepository].
 class FirebaseAuthRepository implements AuthRepository {
   FirebaseAuthRepository({
     FirebaseAuth? firebaseAuth,
     GoogleSignIn? googleSignIn,
+    AppleSignInClient? appleSignIn,
+    String Function()? appleRawNonceGenerator,
   }) : _auth = firebaseAuth ?? FirebaseAuth.instance,
-       _googleSignIn = googleSignIn ?? defaultGoogleSignIn();
+       _googleSignIn = googleSignIn ?? defaultGoogleSignIn(),
+       _appleSignIn = appleSignIn ?? const PluginAppleSignInClient(),
+       _appleRawNonceGenerator =
+           appleRawNonceGenerator ?? generateAppleRawNonce;
 
   final FirebaseAuth _auth;
   final GoogleSignIn _googleSignIn;
+  final AppleSignInClient _appleSignIn;
+  final String Function() _appleRawNonceGenerator;
 
   @override
   Stream<AppUser?> authStateChanges() {
@@ -112,6 +143,54 @@ class FirebaseAuthRepository implements AuthRepository {
     } on PlatformException catch (error) {
       throw AuthFailure(
         messageForGoogleSignInCode(error.code),
+        code: error.code,
+      );
+    }
+  }
+
+  @override
+  Future<AppUser> signInWithApple() async {
+    try {
+      final rawNonce = _appleRawNonceGenerator();
+      final apple = await _appleSignIn.getAppleIdCredential(
+        nonce: sha256ofString(rawNonce),
+      );
+      final identityToken = apple.identityToken;
+      if (identityToken == null || identityToken.isEmpty) {
+        throw const AuthFailure(
+          'Apple sign-in failed. Please try again.',
+          code: 'missing-apple-token',
+        );
+      }
+
+      final credential = OAuthProvider('apple.com').credential(
+        idToken: identityToken,
+        rawNonce: rawNonce,
+        accessToken: apple.authorizationCode,
+      );
+      final userCredential = await _auth.signInWithCredential(credential);
+      return _requireUser(userCredential.user);
+    } on AuthFailure {
+      rethrow;
+    } on SignInWithAppleAuthorizationException catch (error) {
+      final cancelled = error.code == AuthorizationErrorCode.canceled;
+      throw AuthFailure(
+        messageForAppleSignInCode(error.code.name),
+        code: cancelled ? AuthFailure.cancelledCode : error.code.name,
+      );
+    } on SignInWithAppleException {
+      throw const AuthFailure(
+        'Apple sign-in failed. Please try again.',
+        code: 'apple-sign-in-failed',
+      );
+    } on FirebaseAuthException catch (error) {
+      throw AuthFailure(
+        messageForFirebaseAuthCode(error.code),
+        code: error.code,
+      );
+    } on PlatformException catch (error) {
+      throw AuthFailure(
+        messageForAppleSignInCode(error.code),
         code: error.code,
       );
     }

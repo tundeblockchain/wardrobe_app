@@ -116,6 +116,52 @@ void main() {
     },
   );
 
+  test('signInWithApple updates status to authenticated', () async {
+    await Future<void>.delayed(Duration.zero);
+    await container.read(authControllerProvider.notifier).signInWithApple();
+
+    final state = container.read(authControllerProvider);
+    expect(state.status, AuthStatus.authenticated);
+    expect(state.user?.email, 'apple.user@example.com');
+    expect(state.user?.providerId, 'apple.com');
+    expect(state.isBusy, isFalse);
+    expect(state.errorMessage, isNull);
+  });
+
+  test('signInWithApple cancel leaves the user unauthenticated', () async {
+    await Future<void>.delayed(Duration.zero);
+    repository.nextFailure = const AuthFailure(
+      'Sign-in cancelled.',
+      code: AuthFailure.cancelledCode,
+    );
+
+    await container.read(authControllerProvider.notifier).signInWithApple();
+
+    final state = container.read(authControllerProvider);
+    expect(state.status, AuthStatus.unauthenticated);
+    expect(state.errorMessage, isNull);
+    expect(state.user, isNull);
+    expect(state.isBusy, isFalse);
+  });
+
+  test(
+    'signInWithApple records account-exists without authenticating',
+    () async {
+      await Future<void>.delayed(Duration.zero);
+      repository.nextFailure = const AuthFailure(
+        'An account already exists for that email. Sign in with email and password.',
+        code: 'account-exists-with-different-credential',
+      );
+
+      await container.read(authControllerProvider.notifier).signInWithApple();
+
+      final state = container.read(authControllerProvider);
+      expect(state.status, AuthStatus.unauthenticated);
+      expect(state.errorMessage, contains('already exists'));
+      expect(state.user, isNull);
+    },
+  );
+
   test('sendPasswordResetEmail sets info message', () async {
     await Future<void>.delayed(Duration.zero);
     await container

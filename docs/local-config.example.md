@@ -41,5 +41,9 @@ Firebase (Google provider). Android needs it to mint an ID token for
 Do **not** commit real client IDs or `google-services.json` /
 `GoogleService-Info.plist`.
 
+Sign in with Apple (iOS) does not add a dart-define. Tunde still needs the
+Apple Developer capability, Services ID, and Firebase Apple provider — see
+[apple-sign-in.md](apple-sign-in.md). Never commit the Apple `.p8` key.
+
 Optional `IOS_APP_STORE_ID` is used when in-app review is unavailable and the
 client opens the App Store listing. It is not a secret.

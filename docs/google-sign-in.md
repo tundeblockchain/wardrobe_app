@@ -160,4 +160,5 @@ flow.
 
 ## Out of scope
 
-Apple sign-in and Phase-3 try-on.
+Phase-3 try-on. Sign in with Apple is documented in
+[apple-sign-in.md](apple-sign-in.md) ([WARDROBE-52](https://tundetunde000.atlassian.net/browse/WARDROBE-52)).

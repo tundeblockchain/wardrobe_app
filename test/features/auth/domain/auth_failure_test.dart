@@ -15,6 +15,11 @@ void main() {
       const AuthFailure('x', code: 'sign_in_cancelled').isCancelled,
       isTrue,
     );
+    expect(const AuthFailure('x', code: 'canceled').isCancelled, isTrue);
+    expect(
+      const AuthFailure('x', code: 'authorization-error/canceled').isCancelled,
+      isTrue,
+    );
     expect(
       const AuthFailure('x', code: 'invalid-credential').isCancelled,
       isFalse,
@@ -52,6 +57,18 @@ void main() {
     expect(
       messageForGoogleSignInCode('sign_in_failed'),
       'Google sign-in failed. Please try again.',
+    );
+  });
+
+  test('messageForAppleSignInCode maps platform errors', () {
+    expect(messageForAppleSignInCode('canceled'), 'Sign-in cancelled.');
+    expect(
+      messageForAppleSignInCode('network_error'),
+      'Network error. Check your connection.',
+    );
+    expect(
+      messageForAppleSignInCode('failed'),
+      'Apple sign-in failed. Please try again.',
     );
   });
 }

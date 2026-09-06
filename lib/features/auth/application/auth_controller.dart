@@ -69,6 +69,10 @@ class AuthController extends Notifier<AuthState> {
     await _authenticate(_repository.signInWithGoogle);
   }
 
+  Future<void> signInWithApple() async {
+    await _authenticate(_repository.signInWithApple);
+  }
+
   Future<void> sendPasswordResetEmail({required String email}) async {
     state = state.copyWith(isBusy: true, clearError: true, clearInfo: true);
     try {
