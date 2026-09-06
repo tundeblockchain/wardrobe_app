@@ -62,9 +62,18 @@ void main() {
       code: 'NETWORK_ERROR',
     );
 
-    await expectLater(
-      container.read(wardrobeCoverProvider('wd_abc123').future),
-      throwsA(isA<ApiException>()),
-    );
+    Object? captured;
+    final subscription = container.listen(wardrobeCoverProvider('wd_abc123'), (
+      previous,
+      next,
+    ) {
+      if (next.hasError) {
+        captured = next.error;
+      }
+    }, fireImmediately: true);
+    addTearDown(subscription.close);
+
+    await Future<void>.delayed(Duration.zero);
+    expect(captured, isA<ApiException>());
   });
 }
