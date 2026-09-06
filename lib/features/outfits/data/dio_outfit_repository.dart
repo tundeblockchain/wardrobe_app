@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../core/network/dio_client.dart';
 import '../domain/outfit.dart';
+import '../domain/outfit_render.dart';
 import '../domain/outfit_repository.dart';
 import 'outfit_dtos.dart';
 
@@ -17,6 +18,9 @@ class DioOutfitRepository implements OutfitRepository {
 
   String _outfitPath(String wardrobeId, String outfitId) =>
       '${_collectionPath(wardrobeId)}/$outfitId';
+
+  String _renderPath(String wardrobeId, String outfitId) =>
+      '${_outfitPath(wardrobeId, outfitId)}/render';
 
   @override
   Future<List<Outfit>> listOutfits(String wardrobeId) {
@@ -85,6 +89,42 @@ class DioOutfitRepository implements OutfitRepository {
     });
   }
 
+  @override
+  Future<Outfit> requestRender({
+    required String wardrobeId,
+    required String outfitId,
+    required String aiProfileId,
+    List<OutfitItem>? items,
+    List<String>? itemIds,
+  }) {
+    return _guard(() async {
+      final response = await _dio.post<dynamic>(
+        _renderPath(wardrobeId, outfitId),
+        data: RequestOutfitRenderRequest(
+          aiProfileId: aiProfileId,
+          items: items == null
+              ? null
+              : [for (final item in items) OutfitItemRequest.fromDomain(item)],
+          itemIds: itemIds,
+        ).toJson(),
+      );
+      return parseOutfit(response.data);
+    });
+  }
+
+  @override
+  Future<OutfitRender> getRender({
+    required String wardrobeId,
+    required String outfitId,
+  }) {
+    return _guard(() async {
+      final response = await _dio.get<dynamic>(
+        _renderPath(wardrobeId, outfitId),
+      );
+      return parseOutfitRender(response.data);
+    });
+  }
+
   Future<T> _guard<T>(Future<T> Function() action) async {
     try {
       return await action();
@@ -115,6 +155,17 @@ Outfit parseOutfit(dynamic data) {
   }
   throw const ApiException(
     message: 'Unexpected outfit response.',
+    code: 'INVALID_RESPONSE',
+  );
+}
+
+OutfitRender parseOutfitRender(dynamic data) {
+  if (data is Map) {
+    return OutfitRenderResponse.fromJson(Map<String, dynamic>.from(data))
+        .toDomain();
+  }
+  throw const ApiException(
+    message: 'Unexpected outfit render response.',
     code: 'INVALID_RESPONSE',
   );
 }

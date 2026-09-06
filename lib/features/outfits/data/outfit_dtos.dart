@@ -3,6 +3,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import '../../../core/network/api_exception.dart';
 import '../../items/domain/item.dart';
 import '../domain/outfit.dart';
+import '../domain/outfit_render.dart';
 
 part 'outfit_dtos.freezed.dart';
 part 'outfit_dtos.g.dart';
@@ -48,6 +49,41 @@ abstract class OutfitItemRequest with _$OutfitItemRequest {
   }
 }
 
+/// Backend `OutfitRender` (WARDROBE-47). GET `/render` returns this object.
+@freezed
+abstract class OutfitRenderResponse with _$OutfitRenderResponse {
+  const OutfitRenderResponse._();
+
+  const factory OutfitRenderResponse({
+    required String status,
+    required String aiProfileId,
+    String? imageKey,
+    String? imageUrl,
+    String? error,
+  }) = _OutfitRenderResponse;
+
+  factory OutfitRenderResponse.fromJson(Map<String, dynamic> json) =>
+      _$OutfitRenderResponseFromJson(json);
+
+  OutfitRender toDomain() {
+    return OutfitRender(
+      status: OutfitRenderStatus.parse(status),
+      aiProfileId: aiProfileId,
+      imageKey: _optional(imageKey),
+      imageUrl: _optional(imageUrl),
+      error: _optional(error),
+    );
+  }
+}
+
+String? _optional(String? value) {
+  final trimmed = value?.trim();
+  if (trimmed == null || trimmed.isEmpty) {
+    return null;
+  }
+  return trimmed;
+}
+
 /// Backend outfit payload. [outfitId] maps to domain [Outfit.id].
 @freezed
 abstract class OutfitResponse with _$OutfitResponse {
@@ -58,6 +94,7 @@ abstract class OutfitResponse with _$OutfitResponse {
     required String wardrobeId,
     required String name,
     @Default([]) List<OutfitItemResponse> items,
+    OutfitRenderResponse? render,
     required DateTime createdAt,
     required DateTime updatedAt,
   }) = _OutfitResponse;
@@ -71,6 +108,7 @@ abstract class OutfitResponse with _$OutfitResponse {
       wardrobeId: wardrobeId,
       name: name,
       items: items.map((item) => item.toDomain()).toList(),
+      render: render?.toDomain(),
       createdAt: createdAt,
       updatedAt: updatedAt,
     );
@@ -126,4 +164,18 @@ abstract class UpdateOutfitRequest with _$UpdateOutfitRequest {
 
   factory UpdateOutfitRequest.fromJson(Map<String, dynamic> json) =>
       _$UpdateOutfitRequestFromJson(json);
+}
+
+/// `POST /wardrobes/{wardrobeId}/outfits/{outfitId}/render` body.
+@freezed
+abstract class RequestOutfitRenderRequest with _$RequestOutfitRenderRequest {
+  @JsonSerializable(explicitToJson: true)
+  const factory RequestOutfitRenderRequest({
+    required String aiProfileId,
+    @JsonKey(includeIfNull: false) List<OutfitItemRequest>? items,
+    @JsonKey(includeIfNull: false) List<String>? itemIds,
+  }) = _RequestOutfitRenderRequest;
+
+  factory RequestOutfitRenderRequest.fromJson(Map<String, dynamic> json) =>
+      _$RequestOutfitRenderRequestFromJson(json);
 }

@@ -84,4 +84,16 @@ abstract class AiProfile with _$AiProfile {
 
   bool get canAddReferenceImage =>
       isPersonal && referenceImages.length < maxAiProfileReferenceImages;
+
+  /// Backend WARDROBE-47: profile must be READY PERSONAL or GENERIC_MODEL.
+  /// PERSONAL also needs at least one reference photo.
+  bool get canUseForTryOn {
+    if (status != AiProfileStatus.ready) {
+      return false;
+    }
+    if (isGenericModel) {
+      return true;
+    }
+    return isPersonal && referenceImages.isNotEmpty;
+  }
 }

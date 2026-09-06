@@ -149,6 +149,84 @@ void main() {
     );
   });
 
+  test('requestRender posts aiProfileId and maps 202 outfit', () async {
+    repository = buildRepository([
+      HttpScript(
+        statusCode: 202,
+        body: {
+          ...payload,
+          'render': {'status': 'PENDING', 'aiProfileId': 'profile_generic_01'},
+        },
+      ),
+    ]);
+
+    final result = await repository.requestRender(
+      wardrobeId: 'wd_abc123',
+      outfitId: 'outfit_123',
+      aiProfileId: 'profile_generic_01',
+    );
+
+    expect(result.render?.status.wireValue, 'PENDING');
+    expect(adapter.requests.single.method, 'POST');
+    expect(
+      adapter.requests.single.path,
+      '/wardrobes/wd_abc123/outfits/outfit_123/render',
+    );
+    expect(_requestBody(adapter.requests.single), {
+      'aiProfileId': 'profile_generic_01',
+    });
+  });
+
+  test('getRender polls OutfitRender including READY imageUrl', () async {
+    repository = buildRepository([
+      const HttpScript(
+        statusCode: 200,
+        body: {
+          'status': 'READY',
+          'aiProfileId': 'profile_generic_01',
+          'imageKey': 'users/uid/outfits/outfit_123/render.png',
+          'imageUrl': 'https://cdn.example.com/try-on.png',
+        },
+      ),
+    ]);
+
+    final result = await repository.getRender(
+      wardrobeId: 'wd_abc123',
+      outfitId: 'outfit_123',
+    );
+
+    expect(result.status.wireValue, 'READY');
+    expect(result.imageUrl, 'https://cdn.example.com/try-on.png');
+    expect(adapter.requests.single.method, 'GET');
+    expect(
+      adapter.requests.single.path,
+      '/wardrobes/wd_abc123/outfits/outfit_123/render',
+    );
+  });
+
+  test('getRender maps RENDER_NOT_FOUND', () async {
+    repository = buildRepository([
+      const HttpScript(
+        statusCode: 404,
+        body: {
+          'error': {'code': 'RENDER_NOT_FOUND', 'message': 'No render yet.'},
+        },
+      ),
+    ]);
+
+    expect(
+      () =>
+          repository.getRender(wardrobeId: 'wd_abc123', outfitId: 'outfit_123'),
+      throwsA(
+        isA<ApiException>().having(
+          (error) => error.code,
+          'code',
+          'RENDER_NOT_FOUND',
+        ),
+      ),
+    );
+  });
+
   test('maps nested backend error envelope to ApiException', () async {
     repository = buildRepository([
       const HttpScript(

@@ -25,6 +25,8 @@ class OutfitDetailScreen extends ConsumerWidget {
 
   static const editButtonKey = Key('outfit_detail_edit');
   static const deleteButtonKey = Key('outfit_detail_delete');
+  static const tryOnButtonKey = Key('outfit_detail_try_on');
+  static const tryOnAppBarKey = Key('outfit_detail_try_on_app_bar');
   static const retryButtonKey = Key('outfit_detail_retry');
 
   OutfitScope get _scope =>
@@ -47,6 +49,13 @@ class OutfitDetailScreen extends ConsumerWidget {
         title: Text(outfit?.name ?? 'Outfit'),
         actions: [
           if (outfit != null) ...[
+            IconButton(
+              key: tryOnAppBarKey,
+              tooltip: 'Try on',
+              onPressed: () =>
+                  context.push(AppRoutes.tryOn(wardrobeId, outfitId)),
+              icon: const Icon(Icons.checkroom_outlined),
+            ),
             IconButton(
               key: editButtonKey,
               tooltip: 'Edit',
@@ -103,6 +112,13 @@ class OutfitDetailScreen extends ConsumerWidget {
         const SizedBox(height: 8),
         Text('Added ${_formatTimestamp(outfit.createdAt)}'),
         Text('Updated ${_formatTimestamp(outfit.updatedAt)}'),
+        const SizedBox(height: 24),
+        FilledButton.icon(
+          key: tryOnButtonKey,
+          onPressed: () => context.push(AppRoutes.tryOn(wardrobeId, outfitId)),
+          icon: const Icon(Icons.checkroom_outlined),
+          label: const Text('Try on'),
+        ),
         const SizedBox(height: 24),
         Text('Slots', style: Theme.of(context).textTheme.titleMedium),
         const SizedBox(height: 12),

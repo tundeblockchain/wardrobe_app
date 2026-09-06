@@ -38,6 +38,7 @@ class WardrobeDetailScreen extends ConsumerStatefulWidget {
   static const recommendationsButtonKey = Key(
     'wardrobe_detail_recommendations',
   );
+  static const dressingRoomButtonKey = Key('wardrobe_detail_dressing_room');
 
   @override
   ConsumerState<WardrobeDetailScreen> createState() =>
@@ -198,6 +199,20 @@ class _WardrobeDetailScreenState extends ConsumerState<WardrobeDetailScreen>
           const SizedBox(height: 24),
           const Center(child: CircularProgressIndicator()),
         ],
+        const SizedBox(height: 32),
+        Text('Dressing room', style: Theme.of(context).textTheme.titleMedium),
+        const SizedBox(height: 12),
+        ListTile(
+          key: WardrobeDetailScreen.dressingRoomButtonKey,
+          contentPadding: EdgeInsets.zero,
+          leading: const CircleAvatar(
+            child: Icon(Icons.face_retouching_natural_outlined),
+          ),
+          title: const Text('Virtual try-on'),
+          subtitle: const Text('Pick an outfit and an AI profile'),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () => context.push(AppRoutes.dressingRoom(wardrobeId)),
+        ),
         const SizedBox(height: 32),
         Text('Outfits', style: Theme.of(context).textTheme.titleMedium),
         const SizedBox(height: 12),
