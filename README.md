@@ -71,14 +71,19 @@ Upload flow:
 3. `POST /wardrobes/{wardrobeId}/items` with `{ "name", "category", "imageKey" }`
 
 Response `itemId` maps to domain `id`. Image keys stay on the domain as
-`originalImageKey` / `processedImageKey`. `processingStatus` is shown on the
-item grid and detail (`PENDING` / `PROCESSING` / `READY` / `FAILED`). The
-client refetches on pull-to-refresh, app resume, and route re-entry (no
-websockets). Category / colour / subcategory chips send WARDROBE-21 query
-params to `GET /wardrobes/{wardrobeId}/items`. Camera/gallery is abstracted as
-`ItemImagePicker` so unit tests never need a device. On Android, gallery uses
-the system Photo Picker (no `READ_MEDIA_IMAGES`); camera still uses `CAMERA`.
-See [docs/android-photo-picker.md](docs/android-photo-picker.md).
+`originalImageKey` / `processedImageKey`. Wardrobe item browse is a
+Tinder-style card stack (WARDROBE-41): swipe left / right / up (or Next item)
+to advance; tap the card or View details to open the existing item screen.
+Cards prefer the processed image when present, otherwise the original, and
+still show `processingStatus` (`PENDING` / `PROCESSING` / `READY` / `FAILED`).
+An empty wardrobe keeps the existing empty state. Category / colour /
+subcategory chips still send WARDROBE-21 query params to
+`GET /wardrobes/{wardrobeId}/items` and filter the card deck. The client
+refetches on pull-to-refresh, app resume, and route re-entry (no websockets).
+Camera/gallery is abstracted as `ItemImagePicker` so unit tests never need a
+device. On Android, gallery uses the system Photo Picker (no
+`READ_MEDIA_IMAGES`); camera still uses `CAMERA`. See
+[docs/android-photo-picker.md](docs/android-photo-picker.md).
 
 Backend item/upload APIs (WARDROBE-8 / WARDROBE-11) may not be live yet; the
 client is scaffolded against the contract with mocked unit tests.
