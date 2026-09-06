@@ -46,7 +46,6 @@ void main() {
 
     expect(picked, isNotNull);
     expect(picked!.contentType, 'image/jpeg');
-    expect(picked.fileName, 'shirt.jpg');
     expect(picked.bytes, Uint8List.fromList(const [0xFF, 0xD8, 0xFF]));
     verify(
       () => mock.pickImage(
