@@ -155,9 +155,6 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen>
           if (ai.detectedColours.isNotEmpty)
             Text(ai.detectedColours.join(', ')),
         ],
-        const SizedBox(height: 16),
-        Text('Added ${_formatTimestamp(item.createdAt)}'),
-        Text('Updated ${_formatTimestamp(item.updatedAt)}'),
         if (state.errorMessage != null) ...[
           const SizedBox(height: 16),
           Text(
@@ -196,14 +193,4 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen>
     ScaffoldMessenger.of(context)
         .showSnackBar(SnackBar(content: Text(message)));
   }
-}
-
-String _formatTimestamp(DateTime value) {
-  final local = value.toLocal();
-  final year = local.year.toString().padLeft(4, '0');
-  final month = local.month.toString().padLeft(2, '0');
-  final day = local.day.toString().padLeft(2, '0');
-  final hour = local.hour.toString().padLeft(2, '0');
-  final minute = local.minute.toString().padLeft(2, '0');
-  return '$year-$month-$day $hour:$minute';
 }

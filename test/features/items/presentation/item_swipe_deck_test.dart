@@ -7,6 +7,7 @@ import 'package:wardrobe_app/features/items/presentation/widgets/item_swipe_card
 import 'package:wardrobe_app/features/items/presentation/widgets/item_swipe_deck.dart';
 import 'package:wardrobe_app/features/items/presentation/widgets/processing_status_chip.dart';
 
+import '../../../helpers/date_stamp_matchers.dart';
 import '../../../helpers/fake_item_repository.dart';
 
 void main() {
@@ -75,6 +76,7 @@ void main() {
     );
     expect(find.text('1 of 2'), findsOneWidget);
     expect(find.text('Black Nike T-Shirt'), findsOneWidget);
+    expectNoCreatedUpdatedDateStamps();
   });
 
   testWidgets('prefers the processed image key on the card', (tester) async {

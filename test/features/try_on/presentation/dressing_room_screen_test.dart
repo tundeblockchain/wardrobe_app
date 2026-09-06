@@ -7,6 +7,7 @@ import 'package:wardrobe_app/features/ai_profiles/application/selected_ai_profil
 import 'package:wardrobe_app/features/outfits/data/dio_outfit_repository.dart';
 import 'package:wardrobe_app/features/try_on/presentation/dressing_room_screen.dart';
 
+import '../../../helpers/date_stamp_matchers.dart';
 import '../../../helpers/fake_ai_profile_repository.dart';
 import '../../../helpers/fake_outfit_repository.dart';
 
@@ -64,6 +65,7 @@ void main() {
     await pumpScreen(tester);
 
     expect(find.byKey(DressingRoomScreen.emptyStateKey), findsOneWidget);
+    expectNoCreatedUpdatedDateStamps();
     expect(find.text('No outfits yet'), findsOneWidget);
     expect(find.text('No AI profile selected'), findsOneWidget);
   });
@@ -81,6 +83,7 @@ void main() {
       find.byKey(const Key('dressing_room_outfit_outfit_123')),
       findsOneWidget,
     );
+    expectNoCreatedUpdatedDateStamps();
 
     await tester.tap(find.byKey(const Key('dressing_room_outfit_outfit_123')));
     await tester.pumpAndSettle();

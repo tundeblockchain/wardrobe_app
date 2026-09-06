@@ -116,18 +116,9 @@ class _WardrobeTile extends StatelessWidget {
       child: ListTile(
         key: Key('wardrobe_tile_${wardrobe.id}'),
         title: Text(wardrobe.name),
-        subtitle: Text('Created ${_formatDate(wardrobe.createdAt)}'),
         trailing: const Icon(Icons.chevron_right),
         onTap: () => context.push(AppRoutes.wardrobeDetail(wardrobe.id)),
       ),
     );
   }
-}
-
-String _formatDate(DateTime value) {
-  final local = value.toLocal();
-  final year = local.year.toString().padLeft(4, '0');
-  final month = local.month.toString().padLeft(2, '0');
-  final day = local.day.toString().padLeft(2, '0');
-  return '$year-$month-$day';
 }

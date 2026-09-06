@@ -12,6 +12,7 @@ import 'package:wardrobe_app/features/ai_profiles/presentation/widgets/generic_m
 import 'package:wardrobe_app/features/ai_profiles/presentation/widgets/personal_ai_profile_card.dart';
 import 'package:wardrobe_app/features/items/data/image_picker_item_image_picker.dart';
 
+import '../../../helpers/date_stamp_matchers.dart';
 import '../../../helpers/fake_ai_profile_repository.dart';
 import '../../../helpers/fake_item_image_picker.dart';
 
@@ -61,6 +62,7 @@ void main() {
     await pumpScreen(tester);
 
     expect(find.byType(AiTryOnScreen), findsOneWidget);
+    expectNoCreatedUpdatedDateStamps();
     expect(find.byKey(AiTryOnScreen.personalEmptyKey), findsOneWidget);
     expect(find.text('Create personal profile'), findsOneWidget);
 

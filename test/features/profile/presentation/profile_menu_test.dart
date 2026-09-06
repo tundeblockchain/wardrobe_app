@@ -16,6 +16,7 @@ import 'package:wardrobe_app/features/profile/presentation/contact_us_screen.dar
 import 'package:wardrobe_app/features/profile/presentation/profile_screen.dart';
 import 'package:wardrobe_app/features/profile/presentation/report_bug_screen.dart';
 
+import '../../../helpers/date_stamp_matchers.dart';
 import '../../../helpers/fake_account_repository.dart';
 import '../../../helpers/fake_ai_profile_repository.dart';
 import '../../../helpers/fake_app_reviewer.dart';
@@ -96,6 +97,7 @@ void main() {
     expect(find.text('ada@example.com'), findsOneWidget);
     expect(find.text('Signed in with Google'), findsOneWidget);
     expect(find.byKey(ProfileScreen.aiTryOnTileKey), findsOneWidget);
+    expectNoCreatedUpdatedDateStamps();
     expect(find.byKey(ProfileScreen.rateTileKey), findsOneWidget);
     expect(find.byKey(ProfileScreen.contactTileKey), findsOneWidget);
     expect(find.byKey(ProfileScreen.reportBugTileKey), findsOneWidget);
