@@ -35,6 +35,11 @@ class UnconfiguredAuthRepository implements AuthRepository {
   }
 
   @override
+  Future<AppUser> signInWithApple() {
+    throw const AuthFailure(configMessage);
+  }
+
+  @override
   Future<void> sendPasswordResetEmail({required String email}) {
     throw const AuthFailure(configMessage);
   }

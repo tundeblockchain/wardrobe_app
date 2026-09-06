@@ -21,7 +21,9 @@ clear-all / delete-account flows
 Phase-3 AI profile setup / generic-model picker
 ([WARDROBE-50](https://tundetunde000.atlassian.net/browse/WARDROBE-50)), and
 virtual try-on / dressing room
-([WARDROBE-51](https://tundetunde000.atlassian.net/browse/WARDROBE-51)).
+([WARDROBE-51](https://tundetunde000.atlassian.net/browse/WARDROBE-51)), and
+Sign in with Apple on iOS
+([WARDROBE-52](https://tundetunde000.atlassian.net/browse/WARDROBE-52)).
 
 ## Architecture
 
@@ -30,12 +32,16 @@ Layers (dependencies point downward only):
 1. **Presentation** — screens (`login`, `signup`, `forgot-password`, splash, wardrobes list / create / detail, add item / item detail / edit item, outfits list / create / detail / edit, dressing room / try-on, profile / contact us / report a bug / AI try-on)
 2. **Controller / Provider** — Riverpod auth, wardrobe, item, outfit, try-on, recommendation, support / rate-app, account, and AI-profile controllers
 3. **Repository** — `AuthRepository`, `WardrobeRepository`, `ItemRepository`, `UploadRepository`, `OutfitRepository`, `RecommendationRepository`, `SupportRepository`, `AccountRepository`, `AiProfileRepository`
-4. **API client / Firebase** — `FirebaseAuthRepository` (email/password + Google), Dio + ID-token interceptor, wardrobe/item/upload/outfit/recommendation/support/account/AI-profile Dio repositories, `image_picker` behind `ItemImagePicker`, `in_app_review` behind `AppReviewer`
+4. **API client / Firebase** — `FirebaseAuthRepository` (email/password + Google + Apple on iOS), Dio + ID-token interceptor, wardrobe/item/upload/outfit/recommendation/support/account/AI-profile Dio repositories, `image_picker` behind `ItemImagePicker`, `in_app_review` behind `AppReviewer`
 
 ## Auth shell
 
 - Email/password and Google / Gmail via `firebase_auth` + `google_sign_in`.
   Firebase console setup: [docs/google-sign-in.md](docs/google-sign-in.md).
+- Sign in with Apple on **iOS only** (`sign_in_with_apple` +
+  `OAuthProvider('apple.com')`). Hidden on Android. Console steps:
+  [docs/apple-sign-in.md](docs/apple-sign-in.md)
+  ([WARDROBE-52](https://tundetunde000.atlassian.net/browse/WARDROBE-52)).
 - `go_router` restores on splash, sends signed-out users to `/login`, and signed-in users to `/wardrobes`.
 - Dio attaches `Authorization: Bearer <idToken>` from
   `FirebaseAuth.currentUser.getIdToken()` on **each** request. Tokens are never
@@ -229,7 +235,8 @@ Android `applicationId` / `namespace` and iOS `PRODUCT_BUNDLE_IDENTIFIER` are
 `com.tundetunde.wardrobe`
 ([WARDROBE-39](https://tundetunde000.atlassian.net/browse/WARDROBE-39)).
 Firebase, Play Console, and App Store Connect apps must use that exact id.
-See [docs/google-sign-in.md](docs/google-sign-in.md) for console steps.
+See [docs/google-sign-in.md](docs/google-sign-in.md) and
+[docs/apple-sign-in.md](docs/apple-sign-in.md) for console steps.
 
 Do **not** commit secrets. `lib/firebase_options.dart`, `google-services.json`,
 and `GoogleService-Info.plist` are gitignored.

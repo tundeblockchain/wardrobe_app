@@ -11,7 +11,9 @@ class AuthFailure implements Exception {
   bool get isCancelled =>
       code == cancelledCode ||
       code == 'sign_in_canceled' ||
-      code == 'sign_in_cancelled';
+      code == 'sign_in_cancelled' ||
+      code == 'canceled' ||
+      code == 'authorization-error/canceled';
 
   @override
   String toString() => 'AuthFailure($code, $message)';
@@ -65,5 +67,22 @@ String messageForGoogleSignInCode(String code) {
       return 'Google sign-in failed. Please try again.';
     default:
       return 'Google sign-in failed. Please try again.';
+  }
+}
+
+/// Maps Sign in with Apple / platform error codes to user-facing copy.
+String messageForAppleSignInCode(String code) {
+  switch (code) {
+    case AuthFailure.cancelledCode:
+    case 'canceled':
+    case 'sign_in_canceled':
+    case 'sign_in_cancelled':
+    case 'authorization-error/canceled':
+      return 'Sign-in cancelled.';
+    case 'network_error':
+    case 'network-request-failed':
+      return 'Network error. Check your connection.';
+    default:
+      return 'Apple sign-in failed. Please try again.';
   }
 }

@@ -39,6 +39,11 @@ class FakeAuthRepository implements AuthRepository {
   }
 
   @override
+  Future<AppUser> signInWithApple() {
+    return _authenticate('apple.user@example.com');
+  }
+
+  @override
   Future<void> sendPasswordResetEmail({required String email}) async {
     await _maybeFail();
   }
@@ -60,11 +65,20 @@ class FakeAuthRepository implements AuthRepository {
     await _maybeFail();
     final trimmed = email.trim();
     final isGoogle = trimmed == 'google.user@example.com';
+    final isApple = trimmed == 'apple.user@example.com';
     final user = AppUser(
       uid: 'uid-${trimmed.hashCode}',
       email: trimmed,
-      displayName: isGoogle ? 'Google User' : null,
-      providerId: isGoogle ? 'google.com' : 'password',
+      displayName: isGoogle
+          ? 'Google User'
+          : isApple
+          ? 'Apple User'
+          : null,
+      providerId: isGoogle
+          ? 'google.com'
+          : isApple
+          ? 'apple.com'
+          : 'password',
     );
     _emit(user);
     return user;

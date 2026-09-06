@@ -15,6 +15,9 @@ abstract interface class AuthRepository {
   /// Google / Gmail sign-in. Returns the same [AppUser] session as email/password.
   Future<AppUser> signInWithGoogle();
 
+  /// Sign in with Apple (iOS). Returns the same [AppUser] session as email/password.
+  Future<AppUser> signInWithApple();
+
   Future<void> sendPasswordResetEmail({required String email});
 
   Future<void> signOut();

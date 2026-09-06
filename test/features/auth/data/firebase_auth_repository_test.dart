@@ -3,12 +3,16 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
+import 'package:wardrobe_app/features/auth/data/apple_sign_in_client.dart';
 import 'package:wardrobe_app/features/auth/data/firebase_auth_repository.dart';
 import 'package:wardrobe_app/features/auth/domain/auth_failure.dart';
 
 class MockFirebaseAuth extends Mock implements FirebaseAuth {}
 
 class MockGoogleSignIn extends Mock implements GoogleSignIn {}
+
+class MockAppleSignInClient extends Mock implements AppleSignInClient {}
 
 class MockGoogleSignInAccount extends Mock implements GoogleSignInAccount {}
 
@@ -26,6 +30,7 @@ class FakeAuthCredential extends Fake implements AuthCredential {}
 void main() {
   late MockFirebaseAuth firebaseAuth;
   late MockGoogleSignIn googleSignIn;
+  late MockAppleSignInClient appleSignIn;
   late FirebaseAuthRepository repository;
 
   setUpAll(() {
@@ -35,9 +40,12 @@ void main() {
   setUp(() {
     firebaseAuth = MockFirebaseAuth();
     googleSignIn = MockGoogleSignIn();
+    appleSignIn = MockAppleSignInClient();
     repository = FirebaseAuthRepository(
       firebaseAuth: firebaseAuth,
       googleSignIn: googleSignIn,
+      appleSignIn: appleSignIn,
+      appleRawNonceGenerator: () => 'raw-nonce',
     );
   });
 
@@ -59,6 +67,19 @@ void main() {
     when(() => firebaseAuth.signInWithCredential(any()))
         .thenAnswer((_) async => credential);
     return credential;
+  }
+
+  void stubAppleTokens({
+    String? identityToken = 'apple-id-token',
+    String authorizationCode = 'apple-auth-code',
+  }) {
+    when(() => appleSignIn.getAppleIdCredential(nonce: any(named: 'nonce')))
+        .thenAnswer(
+          (_) async => AppleIdTokens(
+            identityToken: identityToken,
+            authorizationCode: authorizationCode,
+          ),
+        );
   }
 
   Future<void> stubGoogleAccount({
@@ -293,5 +314,118 @@ void main() {
     expect(session.providerId, 'password');
     expect(session.providerLabel, 'Email');
     verifyNever(() => googleSignIn.signIn());
+    verifyNever(
+      () => appleSignIn.getAppleIdCredential(nonce: any(named: 'nonce')),
+    );
+  });
+
+  test('signInWithApple maps Apple tokens to an AppUser session', () async {
+    stubAppleTokens();
+    stubSignedInUser(
+      uid: 'uid-apple',
+      email: 'hidden@privaterelay.appleid.com',
+      displayName: 'Ada',
+      providerId: 'apple.com',
+    );
+
+    final user = await repository.signInWithApple();
+
+    expect(user.uid, 'uid-apple');
+    expect(user.email, 'hidden@privaterelay.appleid.com');
+    expect(user.displayName, 'Ada');
+    expect(user.providerId, 'apple.com');
+    expect(user.providerLabel, 'Apple');
+    verify(
+      () =>
+          appleSignIn.getAppleIdCredential(nonce: sha256ofString('raw-nonce')),
+    ).called(1);
+    verify(() => firebaseAuth.signInWithCredential(any())).called(1);
+    verifyNever(() => googleSignIn.signIn());
+  });
+
+  test('signInWithApple treats a cancelled sheet as cancelled', () async {
+    when(() => appleSignIn.getAppleIdCredential(nonce: any(named: 'nonce')))
+        .thenThrow(
+          const SignInWithAppleAuthorizationException(
+            code: AuthorizationErrorCode.canceled,
+            message: 'The user canceled',
+          ),
+        );
+
+    expect(
+      () => repository.signInWithApple(),
+      throwsA(
+        isA<AuthFailure>().having(
+          (failure) => failure.isCancelled,
+          'isCancelled',
+          isTrue,
+        ),
+      ),
+    );
+    verifyNever(() => firebaseAuth.signInWithCredential(any()));
+  });
+
+  test(
+    'signInWithApple maps account-exists-with-different-credential',
+    () async {
+      stubAppleTokens();
+      when(() => firebaseAuth.signInWithCredential(any())).thenThrow(
+        FirebaseAuthException(code: 'account-exists-with-different-credential'),
+      );
+
+      expect(
+        () => repository.signInWithApple(),
+        throwsA(
+          isA<AuthFailure>()
+              .having(
+                (failure) => failure.code,
+                'code',
+                'account-exists-with-different-credential',
+              )
+              .having(
+                (failure) => failure.message,
+                'message',
+                contains('already exists'),
+              ),
+        ),
+      );
+    },
+  );
+
+  test('signInWithApple maps other Apple authorization errors', () async {
+    when(() => appleSignIn.getAppleIdCredential(nonce: any(named: 'nonce')))
+        .thenThrow(
+          const SignInWithAppleAuthorizationException(
+            code: AuthorizationErrorCode.failed,
+            message: 'failed',
+          ),
+        );
+
+    expect(
+      () => repository.signInWithApple(),
+      throwsA(
+        isA<AuthFailure>().having(
+          (failure) => failure.message,
+          'message',
+          'Apple sign-in failed. Please try again.',
+        ),
+      ),
+    );
+  });
+
+  test('signInWithApple fails when Apple returns no identity token', () async {
+    stubAppleTokens(identityToken: null);
+
+    expect(
+      () => repository.signInWithApple(),
+      throwsA(
+        isA<AuthFailure>().having(
+          (failure) => failure.code,
+          'code',
+          'missing-apple-token',
+        ),
+      ),
+    );
+    verifyNever(() => firebaseAuth.signInWithCredential(any()));
   });
 }
