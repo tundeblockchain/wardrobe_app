@@ -18,7 +18,8 @@ Copy these placeholders into a **local** file that is **not committed**
   "FIREBASE_PROJECT_ID": "your-project-id",
   "FIREBASE_AUTH_DOMAIN": "your-project-id.firebaseapp.com",
   "FIREBASE_STORAGE_BUCKET": "your-project-id.appspot.com",
-  "GOOGLE_SERVER_CLIENT_ID": "your-web-client-id.apps.googleusercontent.com"
+  "GOOGLE_SERVER_CLIENT_ID": "your-web-client-id.apps.googleusercontent.com",
+  "IOS_APP_STORE_ID": "your-ios-app-store-id"
 }
 ```
 
@@ -36,3 +37,6 @@ Firebase (Google provider). Android needs it to mint an ID token for
 `signInWithCredential`. See [docs/google-sign-in.md](google-sign-in.md).
 Do **not** commit real client IDs or `google-services.json` /
 `GoogleService-Info.plist`.
+
+Optional `IOS_APP_STORE_ID` is used when in-app review is unavailable and the
+client opens the App Store listing. It is not a secret.

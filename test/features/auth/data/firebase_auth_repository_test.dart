@@ -19,6 +19,8 @@ class MockUserCredential extends Mock implements UserCredential {}
 
 class MockUser extends Mock implements User {}
 
+class MockUserInfo extends Mock implements UserInfo {}
+
 class FakeAuthCredential extends Fake implements AuthCredential {}
 
 void main() {
@@ -42,10 +44,16 @@ void main() {
   MockUserCredential stubSignedInUser({
     String uid = 'uid-google',
     String email = 'user@gmail.com',
+    String? displayName = 'Ada Lovelace',
+    String providerId = 'google.com',
   }) {
     final user = MockUser();
     when(() => user.uid).thenReturn(uid);
     when(() => user.email).thenReturn(email);
+    when(() => user.displayName).thenReturn(displayName);
+    final info = MockUserInfo();
+    when(() => info.providerId).thenReturn(providerId);
+    when(() => user.providerData).thenReturn([info]);
     final credential = MockUserCredential();
     when(() => credential.user).thenReturn(user);
     when(() => firebaseAuth.signInWithCredential(any()))
@@ -73,6 +81,9 @@ void main() {
 
     expect(user.uid, 'uid-google');
     expect(user.email, 'user@gmail.com');
+    expect(user.displayName, 'Ada Lovelace');
+    expect(user.providerId, 'google.com');
+    expect(user.providerLabel, 'Google');
     verify(() => googleSignIn.signIn()).called(1);
     verify(() => firebaseAuth.signInWithCredential(any())).called(1);
   });
@@ -202,6 +213,10 @@ void main() {
     final user = MockUser();
     when(() => user.uid).thenReturn('uid-email');
     when(() => user.email).thenReturn('user@example.com');
+    when(() => user.displayName).thenReturn(null);
+    final info = MockUserInfo();
+    when(() => info.providerId).thenReturn('password');
+    when(() => user.providerData).thenReturn([info]);
     final credential = MockUserCredential();
     when(() => credential.user).thenReturn(user);
     when(
@@ -217,6 +232,8 @@ void main() {
     );
 
     expect(session.email, 'user@example.com');
+    expect(session.providerId, 'password');
+    expect(session.providerLabel, 'Email');
     verifyNever(() => googleSignIn.signIn());
   });
 }

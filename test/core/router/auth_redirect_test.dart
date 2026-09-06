@@ -104,6 +104,27 @@ void main() {
           ),
           AppRoutes.login,
         );
+        expect(
+          resolveAuthRedirect(
+            status: AuthStatus.unauthenticated,
+            location: AppRoutes.profile,
+          ),
+          AppRoutes.login,
+        );
+        expect(
+          resolveAuthRedirect(
+            status: AuthStatus.unauthenticated,
+            location: AppRoutes.contactUs,
+          ),
+          AppRoutes.login,
+        );
+        expect(
+          resolveAuthRedirect(
+            status: AuthStatus.unauthenticated,
+            location: AppRoutes.reportBug,
+          ),
+          AppRoutes.login,
+        );
       });
     });
 
@@ -193,6 +214,27 @@ void main() {
           resolveAuthRedirect(
             status: AuthStatus.authenticated,
             location: AppRoutes.recommendationDetail('wd_abc123', 0),
+          ),
+          isNull,
+        );
+        expect(
+          resolveAuthRedirect(
+            status: AuthStatus.authenticated,
+            location: AppRoutes.profile,
+          ),
+          isNull,
+        );
+        expect(
+          resolveAuthRedirect(
+            status: AuthStatus.authenticated,
+            location: AppRoutes.contactUs,
+          ),
+          isNull,
+        );
+        expect(
+          resolveAuthRedirect(
+            status: AuthStatus.authenticated,
+            location: AppRoutes.reportBug,
           ),
           isNull,
         );
