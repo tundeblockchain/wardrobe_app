@@ -7,7 +7,9 @@ the Firebase auth shell
 wardrobe list / create / detail
 ([WARDROBE-12](https://tundetunde000.atlassian.net/browse/WARDROBE-12)), and
 clothing items with camera/gallery upload
-([WARDROBE-13](https://tundetunde000.atlassian.net/browse/WARDROBE-13)), and
+([WARDROBE-13](https://tundetunde000.atlassian.net/browse/WARDROBE-13)),
+Android Photo Picker without `READ_MEDIA_IMAGES`
+([WARDROBE-40](https://tundetunde000.atlassian.net/browse/WARDROBE-40)), and
 outfit build / save
 ([WARDROBE-14](https://tundetunde000.atlassian.net/browse/WARDROBE-14)), and
 AI outfit recommendations
@@ -74,7 +76,9 @@ item grid and detail (`PENDING` / `PROCESSING` / `READY` / `FAILED`). The
 client refetches on pull-to-refresh, app resume, and route re-entry (no
 websockets). Category / colour / subcategory chips send WARDROBE-21 query
 params to `GET /wardrobes/{wardrobeId}/items`. Camera/gallery is abstracted as
-`ItemImagePicker` so unit tests never need a device.
+`ItemImagePicker` so unit tests never need a device. On Android, gallery uses
+the system Photo Picker (no `READ_MEDIA_IMAGES`); camera still uses `CAMERA`.
+See [docs/android-photo-picker.md](docs/android-photo-picker.md).
 
 Backend item/upload APIs (WARDROBE-8 / WARDROBE-11) may not be live yet; the
 client is scaffolded against the contract with mocked unit tests.

@@ -1,13 +1,29 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:image_picker_android/image_picker_android.dart';
+import 'package:image_picker_platform_interface/image_picker_platform_interface.dart';
 
 import '../domain/item_image_picker.dart';
 import '../domain/picked_image.dart';
 
+/// Opts gallery picks into the Android system Photo Picker.
+///
+/// On Android 16+ `image_picker` always uses Photo Picker. On 15 and below this
+/// flag avoids the legacy gallery path that needed `READ_MEDIA_IMAGES` /
+/// `READ_EXTERNAL_STORAGE`. No-op on iOS and other platforms.
+void enableAndroidPhotoPicker([ImagePickerPlatform? platform]) {
+  final implementation = platform ?? ImagePickerPlatform.instance;
+  if (implementation is ImagePickerAndroid) {
+    implementation.useAndroidPhotoPicker = true;
+  }
+}
+
 /// [ItemImagePicker] backed by `image_picker`.
 class ImagePickerItemImagePicker implements ItemImagePicker {
   ImagePickerItemImagePicker({ImagePicker? picker})
-    : _picker = picker ?? ImagePicker();
+    : _picker = picker ?? ImagePicker() {
+    enableAndroidPhotoPicker();
+  }
 
   final ImagePicker _picker;
 
