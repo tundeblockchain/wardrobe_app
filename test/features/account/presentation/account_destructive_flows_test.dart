@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wardrobe_app/core/network/api_exception.dart';
 import 'package:wardrobe_app/core/widgets/destructive_confirm_dialog.dart';
@@ -10,7 +11,6 @@ import 'package:wardrobe_app/features/wardrobes/presentation/wardrobe_detail_scr
 import 'package:wardrobe_app/features/wardrobes/presentation/wardrobes_screen.dart';
 
 import '../../../helpers/fake_item_repository.dart';
-import '../../../helpers/fake_wardrobe_repository.dart';
 import '../../../helpers/test_app.dart';
 
 void main() {
@@ -87,8 +87,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('wardrobe_tile_wd_abc123')));
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(Key('item_tile_${testItem().id}')));
-    await tester.pumpAndSettle();
+    await _openItemDetail(tester);
 
     await tester.tap(find.byKey(ItemDetailScreen.deleteButtonKey));
     await tester.pumpAndSettle();
@@ -109,8 +108,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('wardrobe_tile_wd_abc123')));
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(Key('item_tile_${testItem().id}')));
-    await tester.pumpAndSettle();
+    await _openItemDetail(tester);
 
     await tester.tap(find.byKey(ItemDetailScreen.deleteButtonKey));
     await tester.pumpAndSettle();
@@ -239,4 +237,17 @@ void main() {
     expect(find.byType(LoginScreen), findsNothing);
     expect(find.textContaining('could not be removed'), findsOneWidget);
   });
+}
+
+Future<void> _openItemDetail(WidgetTester tester) async {
+  tester.view.physicalSize = const Size(800, 2000);
+  tester.view.devicePixelRatio = 1;
+  addTearDown(tester.view.resetPhysicalSize);
+  addTearDown(tester.view.resetDevicePixelRatio);
+  await tester.pumpAndSettle();
+
+  final itemFinder = find.byKey(Key('item_tile_${testItem().id}'));
+  await tester.ensureVisible(itemFinder);
+  await tester.tap(itemFinder);
+  await tester.pumpAndSettle();
 }
