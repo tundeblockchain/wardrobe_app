@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:wardrobe_app/app.dart';
 import 'package:wardrobe_app/features/account/data/dio_account_repository.dart';
+import 'package:wardrobe_app/features/ai_profiles/data/dio_ai_profile_repository.dart';
 import 'package:wardrobe_app/features/auth/application/auth_controller.dart';
 import 'package:wardrobe_app/features/auth/domain/app_user.dart';
 import 'package:wardrobe_app/features/items/data/dio_item_repository.dart';
@@ -15,6 +16,7 @@ import 'package:wardrobe_app/features/recommendations/data/dio_recommendation_re
 import 'package:wardrobe_app/features/wardrobes/data/dio_wardrobe_repository.dart';
 
 import 'fake_account_repository.dart';
+import 'fake_ai_profile_repository.dart';
 import 'fake_app_reviewer.dart';
 import 'fake_auth_repository.dart';
 import 'fake_device_context.dart';
@@ -55,6 +57,7 @@ class TestAppHarness {
   final picker = FakeItemImagePicker();
   final reviewer = FakeAppReviewer();
   final support = FakeSupportRepository();
+  final aiProfiles = FakeAiProfileRepository();
 
   Widget app() {
     return ProviderScope(
@@ -69,6 +72,7 @@ class TestAppHarness {
         accountRepositoryProvider.overrideWithValue(account),
         appReviewerProvider.overrideWithValue(reviewer),
         supportRepositoryProvider.overrideWithValue(support),
+        aiProfileRepositoryProvider.overrideWithValue(aiProfiles),
         deviceContextProvider.overrideWithValue(const FakeDeviceContext()),
       ],
       child: const WardrobeApp(),

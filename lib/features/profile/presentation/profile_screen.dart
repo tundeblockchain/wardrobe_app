@@ -15,6 +15,7 @@ class ProfileScreen extends ConsumerWidget {
 
   static const screenKey = Key('profile_screen');
   static const rateTileKey = Key('profile_rate_app');
+  static const aiTryOnTileKey = Key('profile_ai_try_on');
   static const contactTileKey = Key('profile_contact_us');
   static const reportBugTileKey = Key('profile_report_bug');
   static const signOutButtonKey = Key('profile_sign_out');
@@ -48,6 +49,15 @@ class ProfileScreen extends ConsumerWidget {
         children: [
           _AccountCard(user: user),
           const SizedBox(height: 24),
+          ListTile(
+            key: aiTryOnTileKey,
+            contentPadding: EdgeInsets.zero,
+            leading: const Icon(Icons.checkroom_outlined),
+            title: const Text('AI try-on'),
+            subtitle: const Text('Your photos and model looks'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => context.push(AppRoutes.aiTryOn),
+          ),
           ListTile(
             key: rateTileKey,
             contentPadding: EdgeInsets.zero,

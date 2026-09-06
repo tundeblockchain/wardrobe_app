@@ -5,6 +5,7 @@ class AccountWipeSummary {
     required this.deletedWardrobes,
     required this.deletedItems,
     required this.deletedOutfits,
+    this.deletedAiProfiles = 0,
     required this.deletedS3Objects,
     required this.s3Failures,
   });
@@ -13,6 +14,7 @@ class AccountWipeSummary {
   final int deletedWardrobes;
   final int deletedItems;
   final int deletedOutfits;
+  final int deletedAiProfiles;
   final int deletedS3Objects;
   final int s3Failures;
 
@@ -24,6 +26,7 @@ class AccountWipeSummary {
       deletedWardrobes: _asInt(json['deletedWardrobes']),
       deletedItems: _asInt(json['deletedItems']),
       deletedOutfits: _asInt(json['deletedOutfits']),
+      deletedAiProfiles: _asInt(json['deletedAiProfiles']),
       deletedS3Objects: _asInt(json['deletedS3Objects']),
       s3Failures: _asInt(json['s3Failures']),
     );
@@ -47,6 +50,10 @@ class AccountWipeSummary {
         '$deletedWardrobes wardrobes',
       if (deletedItems == 1) '1 item' else '$deletedItems items',
       if (deletedOutfits == 1) '1 outfit' else '$deletedOutfits outfits',
+      if (deletedAiProfiles == 1)
+        '1 AI profile'
+      else if (deletedAiProfiles > 0)
+        '$deletedAiProfiles AI profiles',
     ];
     final summary = 'Removed ${parts.join(', ')}.';
     if (hadS3Failures) {
@@ -63,6 +70,7 @@ class AccountWipeSummary {
             deletedWardrobes == other.deletedWardrobes &&
             deletedItems == other.deletedItems &&
             deletedOutfits == other.deletedOutfits &&
+            deletedAiProfiles == other.deletedAiProfiles &&
             deletedS3Objects == other.deletedS3Objects &&
             s3Failures == other.s3Failures;
   }
@@ -73,6 +81,7 @@ class AccountWipeSummary {
     deletedWardrobes,
     deletedItems,
     deletedOutfits,
+    deletedAiProfiles,
     deletedS3Objects,
     s3Failures,
   );
