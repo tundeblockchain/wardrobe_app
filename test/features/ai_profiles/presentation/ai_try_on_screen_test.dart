@@ -25,6 +25,11 @@ void main() {
   });
 
   Future<ProviderContainer> pumpScreen(WidgetTester tester) async {
+    tester.view.physicalSize = const Size(800, 1600);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
     final router = GoRouter(
       initialLocation: AppRoutes.aiTryOn,
       routes: [
@@ -70,21 +75,20 @@ void main() {
     expect(find.text('Ready'), findsWidgets);
   });
 
-  testWidgets('shows READY / PROCESSING / FAILED on a personal profile', (
-    tester,
-  ) async {
+  testWidgets('shows PROCESSING status on a personal profile', (tester) async {
     repository.personal.add(
       testPersonalProfile(status: AiProfileStatus.processing),
     );
     await pumpScreen(tester);
 
     expect(find.text('Processing'), findsWidgets);
+  });
 
-    repository.personal
-      ..clear()
-      ..add(testPersonalProfile(status: AiProfileStatus.failed));
-    await tester.fling(find.byType(ListView), const Offset(0, 300), 1000);
-    await tester.pumpAndSettle();
+  testWidgets('shows FAILED status on a personal profile', (tester) async {
+    repository.personal.add(
+      testPersonalProfile(status: AiProfileStatus.failed),
+    );
+    await pumpScreen(tester);
 
     expect(find.text('Failed'), findsWidgets);
   });
@@ -125,11 +129,22 @@ void main() {
   ) async {
     final container = await pumpScreen(tester);
 
+    final scrollable = find.byType(Scrollable).first;
+    await tester.scrollUntilVisible(
+      find.text('Alex'),
+      80,
+      scrollable: scrollable,
+    );
     expect(find.text('Alex'), findsOneWidget);
     expect(find.text('Jordan'), findsOneWidget);
     expect(find.text('Sam'), findsOneWidget);
     expect(find.text('Riley'), findsOneWidget);
 
+    await tester.scrollUntilVisible(
+      find.byKey(GenericModelCard.cardKey('profile_generic_02')),
+      80,
+      scrollable: scrollable,
+    );
     await tester.tap(
       find.byKey(GenericModelCard.cardKey('profile_generic_02')),
     );

@@ -105,7 +105,7 @@ class FakeAiProfileRepository implements AiProfileRepository {
   Future<AiProfile> createPersonal() async {
     createCalls++;
     _maybeFail();
-    final created = testPersonalProfile(id: 'profile_${createCalls}');
+    final created = testPersonalProfile(id: 'profile_$createCalls');
     personal.add(created);
     return created;
   }
@@ -156,7 +156,7 @@ class FakeAiProfileRepository implements AiProfileRepository {
     attachCalls++;
     lastObjectKey = objectKey ?? objectKeys?.first;
     _maybeFail();
-    final keys = <String>[if (objectKey != null) objectKey, ...?objectKeys];
+    final keys = <String>[?objectKey, ...?objectKeys];
     final current = _require(aiProfileId);
     final nextKeys = [...current.referenceImages];
     for (final key in keys) {

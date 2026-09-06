@@ -99,6 +99,10 @@ void main() {
     expect(find.byKey(ProfileScreen.rateTileKey), findsOneWidget);
     expect(find.byKey(ProfileScreen.contactTileKey), findsOneWidget);
     expect(find.byKey(ProfileScreen.reportBugTileKey), findsOneWidget);
+    await tester.scrollUntilVisible(
+      find.byKey(ProfileScreen.deleteAccountButtonKey),
+      80,
+    );
     expect(find.byKey(ProfileScreen.clearContentButtonKey), findsOneWidget);
     expect(find.byKey(ProfileScreen.deleteAccountButtonKey), findsOneWidget);
   });
