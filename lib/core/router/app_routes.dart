@@ -6,6 +6,9 @@ abstract final class AppRoutes {
   static const forgotPassword = '/forgot-password';
   static const wardrobes = '/wardrobes';
   static const createWardrobe = '/wardrobes/create';
+  static const profile = '/profile';
+  static const contactUs = '/profile/contact';
+  static const reportBug = '/profile/report-bug';
 
   static String wardrobeDetail(String wardrobeId) => '/wardrobes/$wardrobeId';
 

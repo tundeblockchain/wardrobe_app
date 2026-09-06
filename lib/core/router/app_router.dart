@@ -14,6 +14,9 @@ import '../../features/outfits/presentation/create_outfit_screen.dart';
 import '../../features/outfits/presentation/edit_outfit_screen.dart';
 import '../../features/outfits/presentation/outfit_detail_screen.dart';
 import '../../features/outfits/presentation/outfits_screen.dart';
+import '../../features/profile/presentation/contact_us_screen.dart';
+import '../../features/profile/presentation/profile_screen.dart';
+import '../../features/profile/presentation/report_bug_screen.dart';
 import '../../features/recommendations/presentation/recommendation_detail_screen.dart';
 import '../../features/recommendations/presentation/recommendations_screen.dart';
 import '../../features/wardrobes/presentation/create_wardrobe_screen.dart';
@@ -71,6 +74,20 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.forgotPassword,
         builder: (context, state) => const ForgotPasswordScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.profile,
+        builder: (context, state) => const ProfileScreen(),
+        routes: [
+          GoRoute(
+            path: 'contact',
+            builder: (context, state) => const ContactUsScreen(),
+          ),
+          GoRoute(
+            path: 'report-bug',
+            builder: (context, state) => const ReportBugScreen(),
+          ),
+        ],
       ),
       GoRoute(
         path: AppRoutes.wardrobes,

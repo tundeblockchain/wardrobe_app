@@ -14,6 +14,7 @@ class WardrobesScreen extends ConsumerWidget {
   const WardrobesScreen({super.key});
 
   static const signOutButtonKey = Key('wardrobes_sign_out');
+  static const profileButtonKey = Key('wardrobes_profile');
   static const createButtonKey = Key('wardrobes_create');
   static const emptyStateKey = Key('wardrobes_empty');
   static const retryButtonKey = Key('wardrobes_retry');
@@ -28,6 +29,12 @@ class WardrobesScreen extends ConsumerWidget {
       appBar: AppBar(
         title: const Text('Wardrobes'),
         actions: [
+          IconButton(
+            key: profileButtonKey,
+            tooltip: 'Account',
+            onPressed: () => context.push(AppRoutes.profile),
+            icon: const Icon(Icons.account_circle_outlined),
+          ),
           TextButton(
             key: signOutButtonKey,
             onPressed: () =>

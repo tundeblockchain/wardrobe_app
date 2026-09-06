@@ -11,16 +11,18 @@ clothing items with camera/gallery upload
 outfit build / save
 ([WARDROBE-14](https://tundetunde000.atlassian.net/browse/WARDROBE-14)), and
 AI outfit recommendations
-([WARDROBE-24](https://tundetunde000.atlassian.net/browse/WARDROBE-24)).
+([WARDROBE-24](https://tundetunde000.atlassian.net/browse/WARDROBE-24)), and
+profile menu / support forms
+([WARDROBE-34](https://tundetunde000.atlassian.net/browse/WARDROBE-34)).
 
 ## Architecture
 
 Layers (dependencies point downward only):
 
-1. **Presentation** — screens (`login`, `signup`, `forgot-password`, splash, wardrobes list / create / detail, add item / item detail / edit item, outfits list / create / detail / edit)
-2. **Controller / Provider** — Riverpod auth, wardrobe, item, outfit, and recommendation controllers
-3. **Repository** — `AuthRepository`, `WardrobeRepository`, `ItemRepository`, `UploadRepository`, `OutfitRepository`, `RecommendationRepository`
-4. **API client / Firebase** — `FirebaseAuthRepository` (email/password + Google), Dio + ID-token interceptor, wardrobe/item/upload/outfit/recommendation Dio repositories, `image_picker` behind `ItemImagePicker`
+1. **Presentation** — screens (`login`, `signup`, `forgot-password`, splash, wardrobes list / create / detail, add item / item detail / edit item, outfits list / create / detail / edit, profile / contact us / report a bug)
+2. **Controller / Provider** — Riverpod auth, wardrobe, item, outfit, recommendation, and support / rate-app controllers
+3. **Repository** — `AuthRepository`, `WardrobeRepository`, `ItemRepository`, `UploadRepository`, `OutfitRepository`, `RecommendationRepository`, `SupportRepository`
+4. **API client / Firebase** — `FirebaseAuthRepository` (email/password + Google), Dio + ID-token interceptor, wardrobe/item/upload/outfit/recommendation/support Dio repositories, `image_picker` behind `ItemImagePicker`, `in_app_review` behind `AppReviewer`
 
 ## Auth shell
 
@@ -35,6 +37,9 @@ Layers (dependencies point downward only):
 
 Authenticated routes:
 
+- `/profile` — account info (email, display name, sign-in provider), Rate the app, Contact us, Report a bug
+- `/profile/contact` — in-app form → `POST /support/contact`
+- `/profile/report-bug` — in-app form → `POST /support/bug` (optional `replyTo` + `meta`)
 - `/wardrobes` — list + empty state
 - `/wardrobes/create` — name form
 - `/wardrobes/:wardrobeId` — detail, rename, delete, item list, outfits entry, suggestions entry
@@ -103,6 +108,44 @@ Suggestions are never auto-saved. The feature is additive: if
 flows still work and the suggestions entry shows an unavailable state.
 
 No Phase-3 virtual try-on.
+
+## Profile and support
+
+Authenticated routes:
+
+- `/profile` — Firebase account card (email, display name, provider) plus menu items
+- `/profile/contact` → `POST /support/contact`
+- `/profile/report-bug` → `POST /support/bug`
+
+Request body (WARDROBE-38):
+
+```json
+{
+  "subject": "Can't upload a photo",
+  "body": "The camera sheet hangs after I pick a photo.",
+  "replyTo": "user@example.com",
+  "meta": {
+    "appVersion": "1.0.0",
+    "platform": "ios",
+    "deviceModel": "iPhone 15",
+    "osVersion": "18.1"
+  }
+}
+```
+
+`replyTo` is the signed-in Firebase email when present. `meta` is optional
+device/app context. The form field is labeled Message; the wire field is `body`.
+
+**Flutter never talks to Resend** and never opens mailto for these flows. Backend
+[WARDROBE-38](https://tundetunde000.atlassian.net/browse/WARDROBE-38) owns
+email delivery. The client posts through the shared Dio client (Firebase ID
+token interceptor) against that contract. If the support API is not live yet,
+the forms stay enabled and show a friendly error — they do not fall back to
+mailto.
+
+Rate the app uses `in_app_review` and falls back to the platform store listing
+(`IOS_APP_STORE_ID` dart-define for iOS). Clear all / delete account is
+[WARDROBE-35](https://tundetunde000.atlassian.net/browse/WARDROBE-35).
 
 ## Local Firebase / API config
 

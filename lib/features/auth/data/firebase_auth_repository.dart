@@ -152,6 +152,12 @@ class FirebaseAuthRepository implements AuthRepository {
     if (user == null) {
       return null;
     }
-    return AppUser(uid: user.uid, email: user.email);
+    final providers = user.providerData;
+    return AppUser(
+      uid: user.uid,
+      email: user.email,
+      displayName: user.displayName,
+      providerId: providers.isEmpty ? null : providers.first.providerId,
+    );
   }
 }

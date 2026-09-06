@@ -50,7 +50,14 @@ class FakeAuthRepository implements AuthRepository {
 
   Future<AppUser> _authenticate(String email) async {
     await _maybeFail();
-    final user = AppUser(uid: 'uid-${email.hashCode}', email: email.trim());
+    final trimmed = email.trim();
+    final isGoogle = trimmed == 'google.user@example.com';
+    final user = AppUser(
+      uid: 'uid-${trimmed.hashCode}',
+      email: trimmed,
+      displayName: isGoogle ? 'Google User' : null,
+      providerId: isGoogle ? 'google.com' : 'password',
+    );
     _emit(user);
     return user;
   }
