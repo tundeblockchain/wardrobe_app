@@ -7,6 +7,9 @@ Copy these placeholders into a **local** file that is **not committed**
 `lib/firebase_options.dart` is gitignored. Do not commit real
 `google-services.json` or `GoogleService-Info.plist`.
 
+Firebase Android/iOS apps and store listings must use app id
+`com.tundetunde.wardrobe`. See [google-sign-in.md](google-sign-in.md).
+
 ## Dart defines
 
 ```json
