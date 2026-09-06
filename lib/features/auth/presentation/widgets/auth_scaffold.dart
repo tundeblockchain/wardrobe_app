@@ -40,13 +40,13 @@ class AuthScaffold extends StatelessWidget {
               child: SingleChildScrollView(
                 padding: const EdgeInsets.symmetric(
                   horizontal: AppSpacing.page,
-                  vertical: AppSpacing.xl,
+                  vertical: AppSpacing.lg,
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     const _BrandMark(),
-                    const SizedBox(height: AppSpacing.lg),
+                    const SizedBox(height: AppSpacing.md),
                     Text(title, style: theme.textTheme.headlineMedium),
                     if (subtitle != null) ...[
                       const SizedBox(height: AppSpacing.sm),
@@ -57,7 +57,7 @@ class AuthScaffold extends StatelessWidget {
                         ),
                       ),
                     ],
-                    const SizedBox(height: AppSpacing.xl),
+                    const SizedBox(height: AppSpacing.lg),
                     child,
                   ],
                 ),
@@ -79,8 +79,8 @@ class _BrandMark extends StatelessWidget {
     return Align(
       alignment: Alignment.centerLeft,
       child: Container(
-        width: 72,
-        height: 72,
+        width: 56,
+        height: 56,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           gradient: LinearGradient(
@@ -96,7 +96,7 @@ class _BrandMark extends StatelessWidget {
             ),
           ],
         ),
-        child: Icon(Icons.checkroom_rounded, color: scheme.onPrimary, size: 36),
+        child: Icon(Icons.checkroom_rounded, color: scheme.onPrimary, size: 28),
       ),
     );
   }

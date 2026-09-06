@@ -139,6 +139,8 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(SignupScreen), findsOneWidget);
+    await tester.ensureVisible(find.byKey(SignupScreen.googleButtonKey));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(SignupScreen.googleButtonKey));
     await tester.pumpAndSettle();
 
