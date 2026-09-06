@@ -3,7 +3,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:wardrobe_app/features/items/presentation/add_item_screen.dart';
 import 'package:wardrobe_app/features/wardrobes/presentation/wardrobe_detail_screen.dart';
 
-import '../../../helpers/fake_item_image_picker.dart';
 import '../../../helpers/test_app.dart';
 
 void main() {
