@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../application/support_controller.dart';
 import '../../domain/support_form_kind.dart';
@@ -48,8 +47,9 @@ class _SupportFormState extends ConsumerState<SupportForm> {
     if (sent && mounted) {
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text(widget.kind.successMessage)));
-      if (context.canPop()) {
-        context.pop();
+      final navigator = Navigator.of(context);
+      if (navigator.canPop()) {
+        navigator.pop();
       }
     }
   }

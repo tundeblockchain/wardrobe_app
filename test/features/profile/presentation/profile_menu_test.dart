@@ -35,7 +35,7 @@ void main() {
     support = FakeSupportRepository();
   });
 
-  tearDown(auth.dispose);
+  tearDown(() => auth.dispose());
 
   Future<void> pumpMenu(WidgetTester tester) async {
     final router = GoRouter(
