@@ -163,6 +163,12 @@ dialog. Dio is mocked in tests.
 
 ## Local Firebase / API config
 
+Android `applicationId` / `namespace` and iOS `PRODUCT_BUNDLE_IDENTIFIER` are
+`com.tundetunde.wardrobe`
+([WARDROBE-39](https://tundetunde000.atlassian.net/browse/WARDROBE-39)).
+Firebase, Play Console, and App Store Connect apps must use that exact id.
+See [docs/google-sign-in.md](docs/google-sign-in.md) for console steps.
+
 Do **not** commit secrets. `lib/firebase_options.dart`, `google-services.json`,
 and `GoogleService-Info.plist` are gitignored.
 
