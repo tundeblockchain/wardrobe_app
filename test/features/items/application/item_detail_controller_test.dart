@@ -152,7 +152,7 @@ void main() {
 
     final item = container.read(itemDetailControllerProvider(scope)).item;
     expect(item?.processingStatus, ItemProcessingStatus.failed);
-    expect(item?.processingStatus?.isInProgress, isFalse);
+    expect(item?.processingStatus.isInProgress, isFalse);
     expect(item?.processingError, 'Background removal failed.');
     expect(item?.originalImageKey, 'https://cdn.example.com/original.jpg');
     expect(repository.getCalls, greaterThan(getsWhileProcessing));
