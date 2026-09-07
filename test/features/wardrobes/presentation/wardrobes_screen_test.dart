@@ -6,6 +6,8 @@ import 'package:wardrobe_app/features/auth/domain/app_user.dart';
 import 'package:wardrobe_app/features/items/data/dio_item_repository.dart';
 import 'package:wardrobe_app/features/items/presentation/widgets/item_browse_image.dart';
 import 'package:wardrobe_app/features/wardrobes/data/dio_wardrobe_repository.dart';
+import 'package:wardrobe_app/core/network/api_exception.dart';
+import 'package:wardrobe_app/core/widgets/destructive_confirm_dialog.dart';
 import 'package:wardrobe_app/features/wardrobes/presentation/wardrobe_detail_screen.dart';
 import 'package:wardrobe_app/features/wardrobes/presentation/wardrobes_screen.dart';
 import 'package:wardrobe_app/features/wardrobes/presentation/widgets/wardrobe_list_card.dart';
@@ -154,4 +156,83 @@ void main() {
     expect(find.byType(WardrobeDetailScreen), findsOneWidget);
     expect(find.text('Items'), findsOneWidget);
   });
+
+  testWidgets('wardrobe card delete confirm removes the card from the list', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(400, 1400);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final harness = TestAppHarness();
+    addTearDown(harness.dispose);
+
+    await tester.pumpWidget(harness.app());
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(WardrobeListCard.deleteKey('wd_abc123')));
+    await tester.pumpAndSettle();
+    expect(find.text('Delete wardrobe?'), findsOneWidget);
+
+    await tester.tap(find.byKey(DestructiveConfirmDialog.confirmButtonKey));
+    await tester.pumpAndSettle();
+
+    expect(harness.wardrobes.deleteCalls, 1);
+    expect(find.byType(WardrobesScreen), findsOneWidget);
+    expect(find.byType(WardrobeDetailScreen), findsNothing);
+    expect(find.byKey(WardrobesScreen.emptyStateKey), findsOneWidget);
+  });
+
+  testWidgets('wardrobe card delete cancel does not call DELETE', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(400, 1400);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final harness = TestAppHarness();
+    addTearDown(harness.dispose);
+
+    await tester.pumpWidget(harness.app());
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(WardrobeListCard.deleteKey('wd_abc123')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(DestructiveConfirmDialog.cancelButtonKey));
+    await tester.pumpAndSettle();
+
+    expect(harness.wardrobes.deleteCalls, 0);
+    expect(find.text('Summer Clothes'), findsOneWidget);
+  });
+
+  testWidgets(
+    'wardrobe card delete error keeps the card and shows a snackbar',
+    (tester) async {
+      tester.view.physicalSize = const Size(400, 1400);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      final harness = TestAppHarness();
+      addTearDown(harness.dispose);
+
+      await tester.pumpWidget(harness.app());
+      await tester.pumpAndSettle();
+      harness.wardrobes.nextFailure = const ApiException(
+        message: 'Wardrobe not found.',
+        code: 'WARDROBE_NOT_FOUND',
+      );
+
+      await tester.tap(find.byKey(WardrobeListCard.deleteKey('wd_abc123')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(DestructiveConfirmDialog.confirmButtonKey));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(WardrobesScreen), findsOneWidget);
+      expect(find.text('Summer Clothes'), findsOneWidget);
+      expect(find.text('Wardrobe not found.'), findsWidgets);
+    },
+  );
 }

@@ -56,6 +56,32 @@ class WardrobesController extends Notifier<WardrobesState> {
     );
   }
 
+  /// `DELETE /wardrobes/{id}` then drop the card from the home list.
+  Future<bool> deleteWardrobe(String id) async {
+    try {
+      await _repository.deleteWardrobe(id);
+      if (!ref.mounted) {
+        return true;
+      }
+      remove(id);
+      return true;
+    } on ApiException catch (error) {
+      if (!ref.mounted) {
+        return false;
+      }
+      state = state.copyWith(errorMessage: error.message);
+      return false;
+    } catch (_) {
+      if (!ref.mounted) {
+        return false;
+      }
+      state = state.copyWith(
+        errorMessage: 'Something went wrong. Please try again.',
+      );
+      return false;
+    }
+  }
+
   /// Drops the in-memory list after a successful `DELETE /me/content`.
   void clearLocal() {
     state = state.copyWith(wardrobes: const [], clearError: true);

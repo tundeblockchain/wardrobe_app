@@ -13,16 +13,19 @@ class ItemSwipeDeck extends StatefulWidget {
     super.key,
     required this.items,
     required this.onOpenItem,
+    this.onDeleteItem,
   });
 
   final List<Item> items;
   final ValueChanged<Item> onOpenItem;
+  final ValueChanged<Item>? onDeleteItem;
 
   static const deckKey = Key('item_swipe_deck');
   static const endKey = Key('item_swipe_end');
   static const resetButtonKey = Key('item_swipe_reset');
   static const nextButtonKey = Key('item_swipe_next');
   static const openButtonKey = Key('item_swipe_open');
+  static const removeButtonKey = Key('item_swipe_remove');
   static const counterKey = Key('item_swipe_counter');
   static const swipeHintKey = Key('item_swipe_hint');
   static const swipeLayerKey = Key('item_swipe_layer');
@@ -75,7 +78,13 @@ class _ItemSwipeDeckState extends State<ItemSwipeDeck>
       _dragAnimation = null;
       _advancing = false;
       _drag = Offset.zero;
-      _index = nextIndex >= 0 ? nextIndex : 0;
+      if (nextIds.isEmpty) {
+        _index = 0;
+      } else if (nextIndex >= 0) {
+        _index = nextIndex;
+      } else {
+        _index = _index.clamp(0, nextIds.length - 1);
+      }
     }
   }
 
@@ -189,6 +198,15 @@ class _ItemSwipeDeckState extends State<ItemSwipeDeck>
     widget.onOpenItem(item);
   }
 
+  void _deleteCurrent() {
+    final item = _current;
+    final onDelete = widget.onDeleteItem;
+    if (item == null || onDelete == null) {
+      return;
+    }
+    onDelete(item);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -245,6 +263,18 @@ class _ItemSwipeDeckState extends State<ItemSwipeDeck>
               onPressed: _openCurrent,
               child: const Text('View details'),
             ),
+          if (widget.onDeleteItem != null) ...[
+            const SizedBox(height: AppSpacing.sm),
+            OutlinedButton.icon(
+              key: ItemSwipeDeck.removeButtonKey,
+              onPressed: _deleteCurrent,
+              icon: const Icon(Icons.delete_outline),
+              label: const Text('Remove item'),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: Theme.of(context).colorScheme.error,
+              ),
+            ),
+          ],
         ],
       ],
     );
@@ -252,7 +282,11 @@ class _ItemSwipeDeckState extends State<ItemSwipeDeck>
 
   Widget _buildStack(BuildContext context) {
     if (!_swipeEnabled) {
-      return ItemSwipeCard(item: _items[_index], onTap: _openCurrent);
+      return ItemSwipeCard(
+        item: _items[_index],
+        onTap: _openCurrent,
+        onDelete: widget.onDeleteItem == null ? null : _deleteCurrent,
+      );
     }
 
     final remaining = _items.length - _index;
@@ -300,6 +334,9 @@ class _ItemSwipeDeckState extends State<ItemSwipeDeck>
                     child: ItemSwipeCard(
                       item: _items[_index],
                       onTap: _openCurrent,
+                      onDelete: widget.onDeleteItem == null
+                          ? null
+                          : _deleteCurrent,
                     ),
                   ),
                 ),

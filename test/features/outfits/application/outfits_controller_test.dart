@@ -50,4 +50,48 @@ void main() {
       contains('connection'),
     );
   });
+
+  test('deleteOutfit calls DELETE and removes the list row', () async {
+    repository.outfits.add(testOutfit());
+    container.read(outfitsControllerProvider('wd_abc123'));
+    await settle();
+
+    final ok = await container
+        .read(outfitsControllerProvider('wd_abc123').notifier)
+        .deleteOutfit('outfit_123');
+
+    expect(ok, isTrue);
+    expect(repository.deleteCalls, 1);
+    expect(
+      container.read(outfitsControllerProvider('wd_abc123')).outfits,
+      isEmpty,
+    );
+  });
+
+  test(
+    'deleteOutfit failure surfaces ApiException without removing the row',
+    () async {
+      repository.outfits.add(testOutfit());
+      container.read(outfitsControllerProvider('wd_abc123'));
+      await settle();
+      repository.nextFailure = const ApiException(
+        message: 'Outfit not found.',
+        code: 'OUTFIT_NOT_FOUND',
+      );
+
+      final ok = await container
+          .read(outfitsControllerProvider('wd_abc123').notifier)
+          .deleteOutfit('outfit_123');
+
+      expect(ok, isFalse);
+      expect(
+        container.read(outfitsControllerProvider('wd_abc123')).errorMessage,
+        'Outfit not found.',
+      );
+      expect(
+        container.read(outfitsControllerProvider('wd_abc123')).outfits,
+        hasLength(1),
+      );
+    },
+  );
 }

@@ -67,6 +67,47 @@ void main() {
     expect(container.read(createWardrobeControllerProvider).isSaving, isFalse);
   });
 
+  test('deleteWardrobe calls DELETE and removes the list row', () async {
+    repository.items.add(testWardrobe());
+    container.read(wardrobesControllerProvider);
+    await settle();
+
+    final ok = await container
+        .read(wardrobesControllerProvider.notifier)
+        .deleteWardrobe('wd_abc123');
+
+    expect(ok, isTrue);
+    expect(repository.deleteCalls, 1);
+    expect(container.read(wardrobesControllerProvider).wardrobes, isEmpty);
+  });
+
+  test(
+    'deleteWardrobe failure surfaces ApiException without removing the row',
+    () async {
+      repository.items.add(testWardrobe());
+      container.read(wardrobesControllerProvider);
+      await settle();
+      repository.nextFailure = const ApiException(
+        message: 'Wardrobe not found.',
+        code: 'WARDROBE_NOT_FOUND',
+      );
+
+      final ok = await container
+          .read(wardrobesControllerProvider.notifier)
+          .deleteWardrobe('wd_abc123');
+
+      expect(ok, isFalse);
+      expect(
+        container.read(wardrobesControllerProvider).errorMessage,
+        'Wardrobe not found.',
+      );
+      expect(
+        container.read(wardrobesControllerProvider).wardrobes,
+        hasLength(1),
+      );
+    },
+  );
+
   test('clearLocal empties the in-memory list', () async {
     repository.items.add(testWardrobe());
     container.read(wardrobesControllerProvider);

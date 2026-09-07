@@ -68,6 +68,35 @@ class OutfitsController extends Notifier<OutfitsState> {
       clearError: true,
     );
   }
+
+  /// `DELETE /wardrobes/{id}/outfits/{outfitId}` then drop the row from the list.
+  Future<bool> deleteOutfit(String outfitId) async {
+    try {
+      await _repository.deleteOutfit(
+        wardrobeId: wardrobeId,
+        outfitId: outfitId,
+      );
+      if (!ref.mounted) {
+        return true;
+      }
+      remove(outfitId);
+      return true;
+    } on ApiException catch (error) {
+      if (!ref.mounted) {
+        return false;
+      }
+      state = state.copyWith(errorMessage: error.message);
+      return false;
+    } catch (_) {
+      if (!ref.mounted) {
+        return false;
+      }
+      state = state.copyWith(
+        errorMessage: 'Something went wrong. Please try again.',
+      );
+      return false;
+    }
+  }
 }
 
 final outfitsControllerProvider =
