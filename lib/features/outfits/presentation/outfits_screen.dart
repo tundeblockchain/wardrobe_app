@@ -5,8 +5,10 @@ import 'package:go_router/go_router.dart';
 import '../../../core/router/app_routes.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/app_empty_state.dart';
+import '../../../core/widgets/entity_delete.dart';
 import '../application/outfits_controller.dart';
 import '../domain/outfit.dart';
+import 'widgets/outfit_list_tile.dart';
 
 /// Saved outfits for one wardrobe.
 class OutfitsScreen extends ConsumerWidget {
@@ -91,34 +93,33 @@ class OutfitsScreen extends ConsumerWidget {
                   ),
                 ),
               for (final outfit in state.outfits)
-                _OutfitTile(wardrobeId: wardrobeId, outfit: outfit),
+                OutfitListTile(
+                  wardrobeId: wardrobeId,
+                  outfit: outfit,
+                  onDelete: () => _deleteOutfit(context, ref, outfit),
+                ),
             ],
           ],
         ),
       ),
     );
   }
-}
 
-class _OutfitTile extends StatelessWidget {
-  const _OutfitTile({required this.wardrobeId, required this.outfit});
-
-  final String wardrobeId;
-  final Outfit outfit;
-
-  @override
-  Widget build(BuildContext context) {
-    final slotCount = outfit.items.length;
-    return Card(
-      child: ListTile(
-        key: Key('outfit_tile_${outfit.id}'),
-        leading: const CircleAvatar(child: Icon(Icons.checkroom_outlined)),
-        title: Text(outfit.name),
-        subtitle: Text(slotCount == 1 ? '1 item' : '$slotCount items'),
-        trailing: const Icon(Icons.chevron_right),
-        onTap: () =>
-            context.push(AppRoutes.outfitDetail(wardrobeId, outfit.id)),
-      ),
+  Future<void> _deleteOutfit(
+    BuildContext context,
+    WidgetRef ref,
+    Outfit outfit,
+  ) {
+    return EntityDelete.confirmAndRun(
+      context,
+      title: EntityDelete.outfitTitle,
+      message: EntityDelete.outfitMessage,
+      action: () => ref
+          .read(outfitsControllerProvider(wardrobeId).notifier)
+          .deleteOutfit(outfit.id),
+      fallbackError: EntityDelete.outfitError,
+      errorMessage: () =>
+          ref.read(outfitsControllerProvider(wardrobeId)).errorMessage,
     );
   }
 }

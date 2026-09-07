@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-/// Shared confirm sheet for wardrobe / item / account deletes.
+/// Shared confirm sheet for wardrobe / item / outfit / account deletes.
 class DestructiveConfirmDialog extends StatelessWidget {
   const DestructiveConfirmDialog({
     super.key,

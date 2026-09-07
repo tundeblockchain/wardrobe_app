@@ -88,6 +88,32 @@ class ItemsController extends Notifier<ItemsState> {
       clearError: true,
     );
   }
+
+  /// `DELETE /wardrobes/{id}/items/{itemId}` then drop the row from the list.
+  Future<bool> deleteItem(String itemId) async {
+    try {
+      await _repository.deleteItem(wardrobeId: wardrobeId, itemId: itemId);
+      if (!ref.mounted) {
+        return true;
+      }
+      remove(itemId);
+      return true;
+    } on ApiException catch (error) {
+      if (!ref.mounted) {
+        return false;
+      }
+      state = state.copyWith(errorMessage: error.message);
+      return false;
+    } catch (_) {
+      if (!ref.mounted) {
+        return false;
+      }
+      state = state.copyWith(
+        errorMessage: 'Something went wrong. Please try again.',
+      );
+      return false;
+    }
+  }
 }
 
 final itemsControllerProvider =

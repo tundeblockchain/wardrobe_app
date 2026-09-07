@@ -133,6 +133,62 @@ void main() {
     );
   });
 
+  test('deleteItem calls DELETE and removes READY and FAILED rows', () async {
+    final ready = testItem();
+    final failed = testItem(
+      id: 'item_failed',
+      name: 'Failed blouse',
+      processingStatus: ItemProcessingStatus.failed,
+    );
+    repository.items.addAll([ready, failed]);
+    container.read(itemsControllerProvider('wd_abc123'));
+    await settle();
+
+    final removedReady = await container
+        .read(itemsControllerProvider('wd_abc123').notifier)
+        .deleteItem(ready.id);
+    expect(removedReady, isTrue);
+    expect(repository.deleteCalls, 1);
+    expect(
+      container.read(itemsControllerProvider('wd_abc123')).items.single.id,
+      failed.id,
+    );
+
+    final removedFailed = await container
+        .read(itemsControllerProvider('wd_abc123').notifier)
+        .deleteItem(failed.id);
+    expect(removedFailed, isTrue);
+    expect(repository.deleteCalls, 2);
+    expect(container.read(itemsControllerProvider('wd_abc123')).items, isEmpty);
+  });
+
+  test(
+    'deleteItem failure surfaces ApiException without removing the row',
+    () async {
+      repository.items.add(testItem());
+      container.read(itemsControllerProvider('wd_abc123'));
+      await settle();
+      repository.nextFailure = const ApiException(
+        message: 'Item not found.',
+        code: 'ITEM_NOT_FOUND',
+      );
+
+      final ok = await container
+          .read(itemsControllerProvider('wd_abc123').notifier)
+          .deleteItem('item_xyz123');
+
+      expect(ok, isFalse);
+      expect(
+        container.read(itemsControllerProvider('wd_abc123')).errorMessage,
+        'Item not found.',
+      );
+      expect(
+        container.read(itemsControllerProvider('wd_abc123')).items,
+        hasLength(1),
+      );
+    },
+  );
+
   test('remove evicts the local upload preview', () async {
     repository.items.add(testItem());
     container.read(itemsControllerProvider('wd_abc123'));

@@ -6,15 +6,17 @@ import '../../../core/router/app_router.dart';
 import '../../../core/router/app_routes.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/app_empty_state.dart';
-import '../../../core/widgets/destructive_confirm_dialog.dart';
+import '../../../core/widgets/entity_delete.dart';
 import '../../items/application/items_controller.dart';
 import '../../items/application/items_state.dart';
+import '../../items/domain/item.dart';
 import '../../items/domain/item_list_filters.dart';
 import '../../items/presentation/widgets/item_filter_bar.dart';
 import '../../items/presentation/widgets/item_swipe_deck.dart';
 import '../../outfits/application/outfits_controller.dart';
 import '../../outfits/application/outfits_state.dart';
 import '../../outfits/domain/outfit.dart';
+import '../../outfits/presentation/widgets/outfit_list_tile.dart';
 import '../../recommendations/application/recommendations_controller.dart';
 import '../../recommendations/application/recommendations_state.dart';
 import '../../recommendations/domain/recommendation.dart';
@@ -281,28 +283,18 @@ class _WardrobeDetailScreenState extends ConsumerState<WardrobeDetailScreen>
         .rename(name);
   }
 
-  Future<void> _confirmDelete(BuildContext context, WidgetRef ref) async {
-    final confirmed = await DestructiveConfirmDialog.show(
+  Future<void> _confirmDelete(BuildContext context, WidgetRef ref) {
+    return EntityDelete.confirmAndRun(
       context,
-      title: 'Delete wardrobe?',
-      message:
-          'This permanently deletes this wardrobe and all of its items, '
-          'outfits, and photos. This cannot be undone.',
+      title: EntityDelete.wardrobeTitle,
+      message: EntityDelete.wardrobeMessage,
+      action: () => ref
+          .read(wardrobeDetailControllerProvider(wardrobeId).notifier)
+          .delete(),
+      fallbackError: EntityDelete.wardrobeError,
+      errorMessage: () =>
+          ref.read(wardrobeDetailControllerProvider(wardrobeId)).errorMessage,
     );
-    if (!confirmed) {
-      return;
-    }
-    final ok = await ref
-        .read(wardrobeDetailControllerProvider(wardrobeId).notifier)
-        .delete();
-    if (ok || !context.mounted) {
-      return;
-    }
-    final message =
-        ref.read(wardrobeDetailControllerProvider(wardrobeId)).errorMessage ??
-        'Could not delete this wardrobe.';
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(message)));
   }
 }
 
@@ -336,19 +328,11 @@ class _OutfitsSection extends ConsumerWidget {
         ),
         if (!state.isEmpty)
           for (final Outfit outfit in state.outfits.take(3))
-            Card(
-              child: ListTile(
-                key: Key('wardrobe_outfit_tile_${outfit.id}'),
-                title: Text(outfit.name),
-                subtitle: Text(
-                  outfit.items.length == 1
-                      ? '1 item'
-                      : '${outfit.items.length} items',
-                ),
-                trailing: const Icon(Icons.chevron_right),
-                onTap: () =>
-                    context.push(AppRoutes.outfitDetail(wardrobeId, outfit.id)),
-              ),
+            OutfitListTile(
+              wardrobeId: wardrobeId,
+              outfit: outfit,
+              tileKey: Key('wardrobe_outfit_tile_${outfit.id}'),
+              onDelete: () => _deleteOutfit(context, ref, outfit),
             ),
         Align(
           alignment: Alignment.centerLeft,
@@ -359,6 +343,24 @@ class _OutfitsSection extends ConsumerWidget {
           ),
         ),
       ],
+    );
+  }
+
+  Future<void> _deleteOutfit(
+    BuildContext context,
+    WidgetRef ref,
+    Outfit outfit,
+  ) {
+    return EntityDelete.confirmAndRun(
+      context,
+      title: EntityDelete.outfitTitle,
+      message: EntityDelete.outfitMessage,
+      action: () => ref
+          .read(outfitsControllerProvider(wardrobeId).notifier)
+          .deleteOutfit(outfit.id),
+      fallbackError: EntityDelete.outfitError,
+      errorMessage: () =>
+          ref.read(outfitsControllerProvider(wardrobeId)).errorMessage,
     );
   }
 }
@@ -500,8 +502,23 @@ class _ItemsSection extends ConsumerWidget {
             items: state.items,
             onOpenItem: (item) =>
                 context.push(AppRoutes.itemDetail(wardrobeId, item.id)),
+            onDeleteItem: (item) => _deleteItem(context, ref, item),
           ),
       ],
+    );
+  }
+
+  Future<void> _deleteItem(BuildContext context, WidgetRef ref, Item item) {
+    return EntityDelete.confirmAndRun(
+      context,
+      title: EntityDelete.itemTitle,
+      message: EntityDelete.itemMessage,
+      action: () => ref
+          .read(itemsControllerProvider(wardrobeId).notifier)
+          .deleteItem(item.id),
+      fallbackError: EntityDelete.itemError,
+      errorMessage: () =>
+          ref.read(itemsControllerProvider(wardrobeId)).errorMessage,
     );
   }
 }

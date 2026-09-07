@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:wardrobe_app/core/network/api_exception.dart';
+import 'package:wardrobe_app/core/widgets/destructive_confirm_dialog.dart';
 import 'package:wardrobe_app/features/items/data/dio_item_repository.dart';
 import 'package:wardrobe_app/features/items/domain/item.dart';
 import 'package:wardrobe_app/features/items/presentation/widgets/item_filter_bar.dart';
 import 'package:wardrobe_app/features/items/presentation/widgets/item_swipe_card.dart';
 import 'package:wardrobe_app/features/items/presentation/widgets/item_swipe_deck.dart';
 import 'package:wardrobe_app/features/outfits/data/dio_outfit_repository.dart';
+import 'package:wardrobe_app/features/outfits/presentation/widgets/outfit_list_tile.dart';
 import 'package:wardrobe_app/features/recommendations/data/dio_recommendation_repository.dart';
 import 'package:wardrobe_app/features/wardrobes/data/dio_wardrobe_repository.dart';
 import 'package:wardrobe_app/features/wardrobes/presentation/wardrobe_detail_screen.dart';
@@ -18,7 +21,11 @@ import '../../../helpers/fake_recommendation_repository.dart';
 import '../../../helpers/fake_wardrobe_repository.dart';
 
 void main() {
-  Future<void> pumpDetail(WidgetTester tester, {List<Item>? items}) async {
+  Future<void> pumpDetail(
+    WidgetTester tester, {
+    List<Item>? items,
+    FakeOutfitRepository? outfits,
+  }) async {
     tester.view.physicalSize = const Size(800, 2000);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
@@ -33,7 +40,9 @@ void main() {
           itemRepositoryProvider.overrideWithValue(
             FakeItemRepository(seed: items),
           ),
-          outfitRepositoryProvider.overrideWithValue(FakeOutfitRepository()),
+          outfitRepositoryProvider.overrideWithValue(
+            outfits ?? FakeOutfitRepository(),
+          ),
           recommendationRepositoryProvider.overrideWithValue(
             FakeRecommendationRepository(),
           ),
@@ -131,5 +140,124 @@ void main() {
     expect(find.text('Black boots'), findsOneWidget);
     expect(find.text('1 of 1'), findsOneWidget);
     expect(find.text('Black Nike T-Shirt'), findsNothing);
+  });
+
+  testWidgets('PROCESSING item card shows a delete control', (tester) async {
+    await pumpDetail(
+      tester,
+      items: [testItem(processingStatus: ItemProcessingStatus.processing)],
+    );
+
+    expect(find.byKey(ItemSwipeCard.deleteKey(testItem().id)), findsOneWidget);
+    expect(find.byKey(ItemSwipeDeck.removeButtonKey), findsOneWidget);
+    expect(find.text('Processing'), findsOneWidget);
+  });
+
+  testWidgets('item card delete works for FAILED and PROCESSING items', (
+    tester,
+  ) async {
+    final failed = testItem(processingStatus: ItemProcessingStatus.failed);
+    final outfits = FakeOutfitRepository();
+    final items = FakeItemRepository(seed: [failed]);
+
+    tester.view.physicalSize = const Size(800, 2000);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          wardrobeRepositoryProvider.overrideWithValue(
+            FakeWardrobeRepository(seed: [testWardrobe()]),
+          ),
+          itemRepositoryProvider.overrideWithValue(items),
+          outfitRepositoryProvider.overrideWithValue(outfits),
+          recommendationRepositoryProvider.overrideWithValue(
+            FakeRecommendationRepository(),
+          ),
+        ],
+        child: const MaterialApp(
+          home: WardrobeDetailScreen(wardrobeId: 'wd_abc123'),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(ItemSwipeCard.deleteKey(failed.id)), findsOneWidget);
+    expect(find.byKey(ItemSwipeDeck.removeButtonKey), findsOneWidget);
+
+    await tester.ensureVisible(find.byKey(ItemSwipeDeck.removeButtonKey));
+    await tester.tap(find.byKey(ItemSwipeDeck.removeButtonKey));
+    await tester.pumpAndSettle();
+    expect(find.text('Delete item?'), findsOneWidget);
+
+    await tester.tap(find.byKey(DestructiveConfirmDialog.confirmButtonKey));
+    await tester.pumpAndSettle();
+
+    expect(items.deleteCalls, 1);
+    expect(find.byKey(WardrobeDetailScreen.itemsEmptyKey), findsOneWidget);
+  });
+
+  testWidgets('outfit preview delete confirm removes the row', (tester) async {
+    final outfits = FakeOutfitRepository(seed: [testOutfit()]);
+    await pumpDetail(tester, items: [testItem()], outfits: outfits);
+
+    await tester.ensureVisible(
+      find.byKey(OutfitListTile.deleteKey('outfit_123')),
+    );
+    await tester.tap(find.byKey(OutfitListTile.deleteKey('outfit_123')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(DestructiveConfirmDialog.confirmButtonKey));
+    await tester.pumpAndSettle();
+
+    expect(outfits.deleteCalls, 1);
+    expect(find.text('Friday Night'), findsNothing);
+  });
+
+  testWidgets('item card delete error stays on the deck and shows a snackbar', (
+    tester,
+  ) async {
+    final items = FakeItemRepository(seed: [testItem()]);
+
+    tester.view.physicalSize = const Size(800, 2000);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          wardrobeRepositoryProvider.overrideWithValue(
+            FakeWardrobeRepository(seed: [testWardrobe()]),
+          ),
+          itemRepositoryProvider.overrideWithValue(items),
+          outfitRepositoryProvider.overrideWithValue(FakeOutfitRepository()),
+          recommendationRepositoryProvider.overrideWithValue(
+            FakeRecommendationRepository(),
+          ),
+        ],
+        child: const MaterialApp(
+          home: ScaffoldMessenger(
+            child: WardrobeDetailScreen(wardrobeId: 'wd_abc123'),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    items.nextFailure = const ApiException(
+      message: 'Item not found.',
+      code: 'ITEM_NOT_FOUND',
+    );
+
+    await tester.ensureVisible(find.byKey(ItemSwipeDeck.removeButtonKey));
+    await tester.tap(find.byKey(ItemSwipeDeck.removeButtonKey));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(DestructiveConfirmDialog.confirmButtonKey));
+    await tester.pumpAndSettle();
+
+    expect(items.deleteCalls, 1);
+    expect(find.byKey(ItemSwipeCard.cardKey(testItem().id)), findsOneWidget);
+    expect(find.text('Item not found.'), findsWidgets);
   });
 }

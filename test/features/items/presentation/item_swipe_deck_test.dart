@@ -37,6 +37,7 @@ void main() {
     WidgetTester tester, {
     required List<Item> items,
     ValueChanged<Item>? onOpen,
+    ValueChanged<Item>? onDelete,
   }) async {
     tester.view.physicalSize = const Size(400, 900);
     tester.view.devicePixelRatio = 1;
@@ -55,6 +56,7 @@ void main() {
                 child: ItemSwipeDeck(
                   items: items,
                   onOpenItem: onOpen ?? opened.add,
+                  onDeleteItem: onDelete,
                 ),
               ),
             ),
@@ -215,6 +217,27 @@ void main() {
     expect(opened, hasLength(2));
     expect(opened.last.id, shirt.id);
   });
+
+  testWidgets(
+    'delete controls appear for PROCESSING items and invoke callback',
+    (tester) async {
+      final deleted = <Item>[];
+      await pumpDeck(tester, items: [sneakers], onDelete: deleted.add);
+
+      expect(find.byKey(ItemSwipeCard.deleteKey(sneakers.id)), findsOneWidget);
+      expect(find.byKey(ItemSwipeDeck.removeButtonKey), findsOneWidget);
+      expect(find.text('Processing'), findsOneWidget);
+
+      await tester.tap(find.byKey(ItemSwipeDeck.removeButtonKey));
+      await tester.pumpAndSettle();
+      expect(deleted.single.id, sneakers.id);
+
+      deleted.clear();
+      await tester.tap(find.byKey(ItemSwipeCard.deleteKey(sneakers.id)));
+      await tester.pumpAndSettle();
+      expect(deleted.single.id, sneakers.id);
+    },
+  );
 
   testWidgets('end of stack shows a reset affordance', (tester) async {
     await pumpDeck(tester, items: [shirt, jeans]);

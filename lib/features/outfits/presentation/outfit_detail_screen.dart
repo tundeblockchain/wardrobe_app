@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/router/app_routes.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/app_empty_state.dart';
+import '../../../core/widgets/entity_delete.dart';
 import '../../items/application/items_controller.dart';
 import '../../items/domain/item.dart';
 import '../application/outfit_detail_controller.dart';
@@ -149,29 +150,16 @@ class OutfitDetailScreen extends ConsumerWidget {
     );
   }
 
-  Future<void> _confirmDelete(BuildContext context, WidgetRef ref) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) {
-        return AlertDialog(
-          title: const Text('Delete outfit?'),
-          content: const Text('This cannot be undone.'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(false),
-              child: const Text('Cancel'),
-            ),
-            FilledButton(
-              onPressed: () => Navigator.of(dialogContext).pop(true),
-              child: const Text('Delete'),
-            ),
-          ],
-        );
-      },
+  Future<void> _confirmDelete(BuildContext context, WidgetRef ref) {
+    return EntityDelete.confirmAndRun(
+      context,
+      title: EntityDelete.outfitTitle,
+      message: EntityDelete.outfitMessage,
+      action: () =>
+          ref.read(outfitDetailControllerProvider(_scope).notifier).delete(),
+      fallbackError: EntityDelete.outfitError,
+      errorMessage: () =>
+          ref.read(outfitDetailControllerProvider(_scope)).errorMessage,
     );
-    if (confirmed != true) {
-      return;
-    }
-    await ref.read(outfitDetailControllerProvider(_scope).notifier).delete();
   }
 }

@@ -35,6 +35,7 @@ class TestAppHarness {
     FakeAuthRepository? auth,
     FakeWardrobeRepository? wardrobes,
     FakeItemRepository? items,
+    FakeOutfitRepository? outfits,
     FakeAccountRepository? account,
   }) : auth =
            auth ??
@@ -46,15 +47,16 @@ class TestAppHarness {
            ),
        wardrobes = wardrobes ?? FakeWardrobeRepository(seed: [testWardrobe()]),
        items = items ?? FakeItemRepository(seed: [testItem()]),
+       outfits = outfits ?? FakeOutfitRepository(),
        account = account ?? FakeAccountRepository();
 
   final FakeAuthRepository auth;
   final FakeWardrobeRepository wardrobes;
   final FakeItemRepository items;
+  final FakeOutfitRepository outfits;
   final FakeAccountRepository account;
   final sessionStore = InMemorySessionLocalStore();
   final sessionImages = RecordingSessionImageCache();
-  final outfits = FakeOutfitRepository();
   final recommendations = FakeRecommendationRepository();
   final uploads = FakeUploadRepository();
   final picker = FakeItemImagePicker();
