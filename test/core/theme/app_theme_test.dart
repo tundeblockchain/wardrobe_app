@@ -67,11 +67,23 @@ void main() {
     }
   });
 
-  test('light theme uses the purple/pink family and rounded surfaces', () {
+  test('light theme uses the burgundy/plum family and rounded surfaces', () {
     final theme = AppTheme.light();
     expect(theme.useMaterial3, isTrue);
     expect(theme.colorScheme.primary, AppColors.lightPrimary);
     expect(theme.colorScheme.secondary, AppColors.lightSecondary);
+    final primaryHue = HSLColor.fromColor(AppColors.lightPrimary).hue;
+    final secondaryHue = HSLColor.fromColor(AppColors.lightSecondary).hue;
+    expect(
+      primaryHue >= 330 || primaryHue <= 20,
+      isTrue,
+      reason: 'primary should be burgundy (wine red), hue=$primaryHue',
+    );
+    expect(
+      secondaryHue,
+      inInclusiveRange(300, 340),
+      reason: 'secondary should be plum, hue=$secondaryHue',
+    );
     expect(
       theme.floatingActionButtonTheme.backgroundColor,
       AppColors.lightSecondary,
