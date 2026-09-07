@@ -31,12 +31,6 @@ void main() {
 
   Future<void> settle() => Future<void>.delayed(Duration.zero);
 
-  Future<void> flushPoll() async {
-    for (var i = 0; i < 8; i++) {
-      await settle();
-    }
-  }
-
   test('loads item detail by id', () async {
     container.read(itemDetailControllerProvider(scope));
     await settle();
@@ -124,6 +118,15 @@ void main() {
   });
 
   test('polls get until FAILED and then stops', () async {
+    final ticks = ItemProcessingPollTicks();
+    final polling = ProviderContainer.test(
+      overrides: [
+        itemRepositoryProvider.overrideWithValue(repository),
+        ...ticks.overrides(),
+      ],
+    );
+    addTearDown(polling.dispose);
+
     final processing = testItem(
       processingStatus: ItemProcessingStatus.processing,
       originalImageUrl: 'https://cdn.example.com/original.jpg',
@@ -132,36 +135,35 @@ void main() {
       ..clear()
       ..add(processing);
 
-    container.read(itemDetailControllerProvider(scope));
-    await flushPoll();
+    polling.read(itemDetailControllerProvider(scope));
+    await settle();
 
     expect(
-      container
-          .read(itemDetailControllerProvider(scope))
-          .item
-          ?.processingStatus,
+      polling.read(itemDetailControllerProvider(scope)).item?.processingStatus,
       ItemProcessingStatus.processing,
     );
+    expect(ticks.waiting, greaterThan(0));
     final getsWhileProcessing = repository.getCalls;
 
     repository.items[0] = processing.copyWith(
       processingStatus: ItemProcessingStatus.failed,
       processingError: 'Background removal failed.',
     );
-    await flushPoll();
+    await ticks.tickAll();
 
-    final item = container.read(itemDetailControllerProvider(scope)).item;
+    final item = polling.read(itemDetailControllerProvider(scope)).item;
     expect(item?.processingStatus, ItemProcessingStatus.failed);
     expect(item?.processingStatus.isInProgress, isFalse);
     expect(item?.processingError, 'Background removal failed.');
     expect(item?.originalImageKey, 'https://cdn.example.com/original.jpg');
     expect(repository.getCalls, greaterThan(getsWhileProcessing));
+    expect(ticks.waiting, 0);
 
     final getsAfterFailed = repository.getCalls;
-    await flushPoll();
+    await ticks.tickAll();
     expect(repository.getCalls, getsAfterFailed);
     expect(
-      container
+      polling
           .read(itemsControllerProvider('wd_abc123'))
           .items
           .single

@@ -32,12 +32,6 @@ void main() {
 
   Future<void> settle() => Future<void>.delayed(Duration.zero);
 
-  Future<void> flushPoll() async {
-    for (var i = 0; i < 8; i++) {
-      await settle();
-    }
-  }
-
   test('refresh loads items for the wardrobe', () async {
     repository.items.add(testItem());
 
@@ -131,9 +125,7 @@ void main() {
       processingStatus: ItemProcessingStatus.ready,
       processedImageKey: 'https://cdn.example.com/processed.png',
     );
-    repository.items[0] = ready;
     container.read(itemsControllerProvider('wd_abc123').notifier).upsert(ready);
-    await flushPoll();
 
     final items = container.read(itemsControllerProvider('wd_abc123')).items;
     expect(items, hasLength(1));
@@ -202,32 +194,41 @@ void main() {
   );
 
   test('polls list until FAILED and then stops', () async {
+    final ticks = ItemProcessingPollTicks();
+    final polling = ProviderContainer.test(
+      overrides: [
+        itemRepositoryProvider.overrideWithValue(repository),
+        ...ticks.overrides(),
+      ],
+    );
+    addTearDown(polling.dispose);
+
     final processing = testItem(
       processingStatus: ItemProcessingStatus.processing,
       originalImageUrl: 'https://cdn.example.com/original.jpg',
     );
     repository.items.add(processing);
-    container.read(itemsControllerProvider('wd_abc123'));
-    await flushPoll();
+    polling.read(itemsControllerProvider('wd_abc123'));
+    await settle();
 
     expect(
-      container
+      polling
           .read(itemsControllerProvider('wd_abc123'))
           .items
           .single
           .processingStatus,
       ItemProcessingStatus.processing,
     );
+    expect(ticks.waiting, 1);
     final callsWhileProcessing = repository.listCalls;
 
-    final failed = processing.copyWith(
+    repository.items[0] = processing.copyWith(
       processingStatus: ItemProcessingStatus.failed,
       processingError: 'Background removal failed.',
     );
-    repository.items[0] = failed;
-    await flushPoll();
+    await ticks.tickAll();
 
-    final items = container.read(itemsControllerProvider('wd_abc123')).items;
+    final items = polling.read(itemsControllerProvider('wd_abc123')).items;
     expect(items.single.processingStatus, ItemProcessingStatus.failed);
     expect(items.single.processingStatus.isInProgress, isFalse);
     expect(items.single.processingStatus.isTerminal, isTrue);
@@ -237,9 +238,10 @@ void main() {
       'https://cdn.example.com/original.jpg',
     );
     expect(repository.listCalls, greaterThan(callsWhileProcessing));
+    expect(ticks.waiting, 0);
 
     final callsAfterFailed = repository.listCalls;
-    await flushPoll();
+    await ticks.tickAll();
     expect(repository.listCalls, callsAfterFailed);
   });
 
@@ -257,7 +259,7 @@ void main() {
     await container
         .read(itemsControllerProvider('wd_abc123').notifier)
         .refresh();
-    await flushPoll();
+    await settle();
 
     final item = container
         .read(itemsControllerProvider('wd_abc123'))
@@ -266,7 +268,7 @@ void main() {
     expect(item.processingStatus, ItemProcessingStatus.failed);
     expect(item.processingError, 'Classifier unavailable.');
     final calls = repository.listCalls;
-    await flushPoll();
+    await settle();
     expect(repository.listCalls, calls);
   });
 
