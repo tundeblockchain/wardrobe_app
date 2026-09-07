@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/network/api_exception.dart';
+import '../../../core/session/session_gate.dart';
 import '../../ai_profiles/application/selected_ai_profile.dart';
 import '../../ai_profiles/domain/ai_profile.dart';
 import '../../outfits/application/outfit_scope.dart';
@@ -37,6 +38,9 @@ class TryOnController extends Notifier<TryOnState> {
 
   @override
   TryOnState build() {
+    if (!watchAllowsUserDataFetch(ref)) {
+      return const TryOnState();
+    }
     Future<void>.microtask(() async {
       await refresh();
       if (!ref.mounted) {

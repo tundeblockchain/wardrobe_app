@@ -1,7 +1,11 @@
+import 'dart:async';
+
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/router/auth_redirect.dart';
+import '../../../core/session/session_gate.dart';
+import '../../../core/session/user_session_reset.dart';
 import '../data/firebase_auth_repository.dart';
 import '../data/unconfigured_auth_repository.dart';
 import '../domain/app_user.dart';
@@ -24,6 +28,8 @@ class AuthController extends Notifier<AuthState> {
     final repository = ref.watch(authRepositoryProvider);
     final subscription = repository.authStateChanges().listen(
       (user) {
+        final leavingAccount =
+            state.user != null && state.user?.uid != user?.uid;
         state = state.copyWith(
           status: user == null
               ? AuthStatus.unauthenticated
@@ -32,6 +38,11 @@ class AuthController extends Notifier<AuthState> {
           clearUser: user == null,
           isBusy: false,
         );
+        if (user != null) {
+          ref.read(sessionGateProvider.notifier).markSignedIn(user.uid);
+        } else if (leavingAccount) {
+          unawaited(_clearLocalSession());
+        }
       },
       onError: (Object _, StackTrace _) {
         state = state.copyWith(
@@ -95,6 +106,10 @@ class AuthController extends Notifier<AuthState> {
     state = state.copyWith(isBusy: true, clearError: true, clearInfo: true);
     try {
       await _repository.signOut();
+      await _clearLocalSession();
+      if (!ref.mounted) {
+        return;
+      }
       state = state.copyWith(
         isBusy: false,
         status: AuthStatus.unauthenticated,
@@ -110,10 +125,17 @@ class AuthController extends Notifier<AuthState> {
     }
   }
 
+  /// Wipes Riverpod lists, image cache, and any prefs / secure-storage hook.
+  Future<void> _clearLocalSession() async {
+    ref.read(sessionGateProvider.notifier).markSignedOut();
+    await ref.read(userSessionResetProvider).clear();
+  }
+
   Future<void> _authenticate(Future<AppUser> Function() action) async {
     state = state.copyWith(isBusy: true, clearError: true, clearInfo: true);
     try {
       final user = await action();
+      ref.read(sessionGateProvider.notifier).markSignedIn(user.uid);
       state = state.copyWith(
         isBusy: false,
         status: AuthStatus.authenticated,

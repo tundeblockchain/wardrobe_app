@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/network/api_exception.dart';
+import '../../../core/session/session_gate.dart';
 import '../data/dio_outfit_repository.dart';
 import '../domain/outfit.dart';
 import '../domain/outfit_repository.dart';
@@ -16,6 +17,9 @@ class OutfitDetailController extends Notifier<OutfitDetailState> {
 
   @override
   OutfitDetailState build() {
+    if (!watchAllowsUserDataFetch(ref)) {
+      return const OutfitDetailState();
+    }
     Future<void>.microtask(refresh);
     return const OutfitDetailState(isLoading: true);
   }

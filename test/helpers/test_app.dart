@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:wardrobe_app/app.dart';
+import 'package:wardrobe_app/core/session/session_local_store.dart';
 import 'package:wardrobe_app/features/account/data/dio_account_repository.dart';
 import 'package:wardrobe_app/features/ai_profiles/data/dio_ai_profile_repository.dart';
 import 'package:wardrobe_app/features/auth/application/auth_controller.dart';
@@ -51,6 +52,8 @@ class TestAppHarness {
   final FakeWardrobeRepository wardrobes;
   final FakeItemRepository items;
   final FakeAccountRepository account;
+  final sessionStore = InMemorySessionLocalStore();
+  final sessionImages = RecordingSessionImageCache();
   final outfits = FakeOutfitRepository();
   final recommendations = FakeRecommendationRepository();
   final uploads = FakeUploadRepository();
@@ -74,6 +77,8 @@ class TestAppHarness {
         supportRepositoryProvider.overrideWithValue(support),
         aiProfileRepositoryProvider.overrideWithValue(aiProfiles),
         deviceContextProvider.overrideWithValue(const FakeDeviceContext()),
+        sessionLocalStoreProvider.overrideWithValue(sessionStore),
+        sessionImageCacheProvider.overrideWithValue(sessionImages),
       ],
       child: const WardrobeApp(),
     );

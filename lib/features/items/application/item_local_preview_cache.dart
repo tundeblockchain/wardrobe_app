@@ -2,6 +2,8 @@ import 'dart:typed_data';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/session/session_gate.dart';
+
 /// In-session bytes for a just-uploaded clothing photo.
 ///
 /// Backend item payloads expose S3 object keys, not GET URLs, while status is
@@ -9,7 +11,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 /// stays visible until a network URL (processed or original) is available.
 class ItemLocalPreviewCache extends Notifier<Map<String, Uint8List>> {
   @override
-  Map<String, Uint8List> build() => const {};
+  Map<String, Uint8List> build() {
+    ref.watch(sessionGateProvider.select((s) => s.allowUserDataFetch));
+    return const {};
+  }
 
   void store(String itemId, Uint8List bytes) {
     if (itemId.isEmpty || bytes.isEmpty) {
@@ -26,6 +31,14 @@ class ItemLocalPreviewCache extends Notifier<Map<String, Uint8List>> {
     }
     final next = Map<String, Uint8List>.from(state)..remove(itemId);
     state = next;
+  }
+
+  /// Drops every preview so the next account cannot see prior upload bytes.
+  void clear() {
+    if (state.isEmpty) {
+      return;
+    }
+    state = const {};
   }
 }
 
