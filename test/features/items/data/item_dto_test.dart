@@ -120,6 +120,34 @@ void main() {
       expect(domain.processedImageKey, isNull);
     });
 
+    test('maps FAILED as terminal and never treats ERROR as processing', () {
+      final failed = ItemResponse.fromJson({
+        ...json,
+        'processingStatus': 'FAILED',
+        'processingError': 'Background removal failed.',
+        'originalImageUrl':
+            'https://cdn.example.com/original.jpg?X-Amz-Expires=900',
+      }).toDomain();
+
+      expect(failed.processingStatus, ItemProcessingStatus.failed);
+      expect(failed.processingStatus.wireValue, 'FAILED');
+      expect(failed.processingStatus.isTerminal, isTrue);
+      expect(failed.processingStatus.isInProgress, isFalse);
+      expect(failed.processingError, 'Background removal failed.');
+      expect(
+        failed.originalImageKey,
+        'https://cdn.example.com/original.jpg?X-Amz-Expires=900',
+      );
+
+      final errorWire = ItemResponse.fromJson({
+        ...json,
+        'processingStatus': 'ERROR',
+      }).toDomain();
+      expect(errorWire.processingStatus, ItemProcessingStatus.unknown);
+      expect(errorWire.processingStatus.isInProgress, isFalse);
+      expect(errorWire.processingStatus.isTerminal, isFalse);
+    });
+
     test('defaults missing processingStatus to ready', () {
       final payload = Map<String, dynamic>.from(json)
         ..remove('processingStatus');

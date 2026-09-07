@@ -33,9 +33,7 @@ class ItemBrowseImage extends StatelessWidget {
   static Key processingIndicatorKey(String itemId) =>
       Key('item_browse_processing_$itemId');
 
-  bool get _isInProgress =>
-      item.processingStatus == ItemProcessingStatus.pending ||
-      item.processingStatus == ItemProcessingStatus.processing;
+  bool get _isInProgress => item.processingStatus.isInProgress;
 
   @override
   Widget build(BuildContext context) {

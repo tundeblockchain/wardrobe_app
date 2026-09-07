@@ -25,7 +25,7 @@ class ProcessingStatusChip extends StatelessWidget {
       processingError: processingError,
     );
     final colors = _colorsFor(Theme.of(context).colorScheme, display.tone);
-    return Chip(
+    final chip = Chip(
       visualDensity: compact ? VisualDensity.compact : VisualDensity.standard,
       materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
       avatar: Icon(display.tone._icon, size: 16, color: colors.foreground),
@@ -40,6 +40,10 @@ class ProcessingStatusChip extends StatelessWidget {
           ? const EdgeInsets.symmetric(horizontal: 4)
           : const EdgeInsets.symmetric(horizontal: 8),
     );
+    if (status != ItemProcessingStatus.failed) {
+      return chip;
+    }
+    return Tooltip(message: display.detailMessage, child: chip);
   }
 }
 

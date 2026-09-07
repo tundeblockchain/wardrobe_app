@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/lifecycle/app_lifecycle.dart';
@@ -8,6 +10,7 @@ import '../domain/item.dart';
 import '../domain/item_list_filters.dart';
 import '../domain/item_repository.dart';
 import 'item_local_preview_cache.dart';
+import 'item_processing_poll.dart';
 import 'items_state.dart';
 
 /// Loads and maintains clothing items for one wardrobe.
@@ -15,6 +18,8 @@ class ItemsController extends Notifier<ItemsState> {
   ItemsController(this.wardrobeId);
 
   final String wardrobeId;
+
+  bool _polling = false;
 
   @override
   ItemsState build() {
@@ -43,6 +48,7 @@ class ItemsController extends Notifier<ItemsState> {
         return;
       }
       state = state.copyWith(isLoading: false, items: items);
+      _schedulePollIfNeeded();
     } on ApiException catch (error) {
       if (!ref.mounted) {
         return;
@@ -76,6 +82,53 @@ class ItemsController extends Notifier<ItemsState> {
       next.add(item);
     }
     state = state.copyWith(items: next, clearError: true);
+    _schedulePollIfNeeded();
+  }
+
+  void _schedulePollIfNeeded() {
+    if (state.items.any((item) => item.processingStatus.isInProgress)) {
+      unawaited(_pollUntilSettled());
+    }
+  }
+
+  Future<void> _pollUntilSettled() async {
+    if (_polling) {
+      return;
+    }
+    _polling = true;
+    final config = ref.read(itemProcessingPollConfigProvider);
+    final delay = ref.read(itemProcessingDelayProvider);
+    final deadline = DateTime.now().add(config.timeout);
+    try {
+      while (ref.mounted) {
+        if (!state.items.any((item) => item.processingStatus.isInProgress)) {
+          return;
+        }
+        if (!DateTime.now().isBefore(deadline)) {
+          return;
+        }
+        await delay(config.interval);
+        if (!ref.mounted) {
+          return;
+        }
+        try {
+          final items = await _repository.listItems(
+            wardrobeId,
+            filters: state.filters,
+          );
+          if (!ref.mounted) {
+            return;
+          }
+          state = state.copyWith(items: items);
+        } on ApiException {
+          return;
+        } catch (_) {
+          return;
+        }
+      }
+    } finally {
+      _polling = false;
+    }
   }
 
   void remove(String itemId) {

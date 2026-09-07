@@ -19,6 +19,7 @@ import '../../../helpers/fake_item_repository.dart';
 import '../../../helpers/fake_outfit_repository.dart';
 import '../../../helpers/fake_recommendation_repository.dart';
 import '../../../helpers/fake_wardrobe_repository.dart';
+import '../../../helpers/item_processing_poll_overrides.dart';
 
 void main() {
   Future<void> pumpDetail(
@@ -46,6 +47,7 @@ void main() {
           recommendationRepositoryProvider.overrideWithValue(
             FakeRecommendationRepository(),
           ),
+          ...itemProcessingPollTestOverrides(),
         ],
         child: const MaterialApp(
           home: WardrobeDetailScreen(wardrobeId: 'wd_abc123'),
@@ -176,6 +178,7 @@ void main() {
           recommendationRepositoryProvider.overrideWithValue(
             FakeRecommendationRepository(),
           ),
+          ...itemProcessingPollTestOverrides(),
         ],
         child: const MaterialApp(
           home: WardrobeDetailScreen(wardrobeId: 'wd_abc123'),
@@ -236,6 +239,7 @@ void main() {
           recommendationRepositoryProvider.overrideWithValue(
             FakeRecommendationRepository(),
           ),
+          ...itemProcessingPollTestOverrides(),
         ],
         child: const MaterialApp(
           home: ScaffoldMessenger(

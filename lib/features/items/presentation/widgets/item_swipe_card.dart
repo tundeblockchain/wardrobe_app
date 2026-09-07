@@ -5,6 +5,7 @@ import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/widgets/entity_delete.dart';
 import '../../application/item_local_preview_cache.dart';
 import '../../domain/item.dart';
+import '../../domain/processing_status_display.dart';
 import 'item_browse_image.dart';
 import 'processing_status_chip.dart';
 
@@ -28,6 +29,9 @@ class ItemSwipeCard extends ConsumerWidget {
   static Key swipeCardKey(String itemId) => Key('item_swipe_card_$itemId');
 
   static Key deleteKey(String itemId) => Key('item_card_delete_$itemId');
+
+  static Key processingErrorKey(String itemId) =>
+      Key('item_processing_error_$itemId');
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -102,6 +106,22 @@ class ItemSwipeCard extends ConsumerWidget {
                           ),
                         ),
                       ),
+                      if (item.processingStatus ==
+                          ItemProcessingStatus.failed) ...[
+                        const SizedBox(height: AppSpacing.xs),
+                        Text(
+                          key: processingErrorKey(item.id),
+                          ProcessingStatusDisplay.of(
+                            item.processingStatus,
+                            processingError: item.processingError,
+                          ).detailMessage,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: scheme.error,
+                          ),
+                        ),
+                      ],
                     ],
                   ),
                 ),

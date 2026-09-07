@@ -97,6 +97,37 @@ void main() {
     );
   });
 
+  testWidgets('shows FAILED and processingError instead of processing', (
+    tester,
+  ) async {
+    final failed = testItem(
+      id: 'item_failed',
+      name: 'Torn shirt',
+      processingStatus: ItemProcessingStatus.failed,
+      processingError: 'Background removal failed.',
+      originalImageUrl: 'https://cdn.example.com/original.jpg',
+    );
+
+    await pumpDeck(tester, items: [failed]);
+
+    expect(find.byKey(ProcessingStatusChip.chipKey(failed.id)), findsOneWidget);
+    expect(find.text('Failed'), findsOneWidget);
+    expect(find.text('Processing'), findsNothing);
+    expect(
+      find.byKey(ItemSwipeCard.processingErrorKey(failed.id)),
+      findsOneWidget,
+    );
+    expect(find.text('Background removal failed.'), findsOneWidget);
+    expect(
+      find.byKey(ItemBrowseImage.sourceKey(failed.originalImageKey!)),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(ItemBrowseImage.processingIndicatorKey(failed.id)),
+      findsNothing,
+    );
+  });
+
   testWidgets('keeps the processing status badge on the card', (tester) async {
     await pumpDeck(tester, items: [sneakers]);
 

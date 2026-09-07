@@ -51,5 +51,19 @@ void main() {
       expect(display.label, 'Unknown');
       expect(display.tone, ProcessingStatusTone.unknown);
     });
+
+    test('FAILED is terminal and ERROR is not treated as processing', () {
+      expect(ItemProcessingStatus.parse('FAILED').isTerminal, isTrue);
+      expect(ItemProcessingStatus.parse('FAILED').isInProgress, isFalse);
+      expect(ItemProcessingStatus.parse('READY').isTerminal, isTrue);
+      expect(ItemProcessingStatus.parse('PROCESSING').isInProgress, isTrue);
+      expect(ItemProcessingStatus.parse('PENDING').isInProgress, isTrue);
+      expect(ItemProcessingStatus.parse('ERROR'), ItemProcessingStatus.unknown);
+      expect(ItemProcessingStatus.parse('ERROR').isInProgress, isFalse);
+
+      final display = ProcessingStatusDisplay.of(ItemProcessingStatus.failed);
+      expect(display.label, isNot('Processing'));
+      expect(display.tone, ProcessingStatusTone.failed);
+    });
   });
 }

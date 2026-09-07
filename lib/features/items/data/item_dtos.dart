@@ -98,6 +98,7 @@ abstract class ItemResponse with _$ItemResponse {
           ai?.processedImageKey,
       processingStatus: ItemProcessingStatus.parse(processingStatus),
       processingError: _optionalError(
+        // WARDROBE-59: optional worker reason; present on FAILED only.
         processingError ?? failureReason ?? errorMessage,
       ),
       ai: ai?.toDomain(),

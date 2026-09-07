@@ -6,8 +6,10 @@ import 'package:wardrobe_app/features/items/application/item_detail_controller.d
 import 'package:wardrobe_app/features/items/application/item_scope.dart';
 import 'package:wardrobe_app/features/items/application/items_controller.dart';
 import 'package:wardrobe_app/features/items/data/dio_item_repository.dart';
+import 'package:wardrobe_app/features/items/domain/item.dart';
 
 import '../../../helpers/fake_item_repository.dart';
+import '../../../helpers/item_processing_poll_overrides.dart';
 
 void main() {
   const scope = ItemScope(wardrobeId: 'wd_abc123', itemId: 'item_xyz123');
@@ -18,7 +20,10 @@ void main() {
   setUp(() {
     repository = FakeItemRepository(seed: [testItem()]);
     container = ProviderContainer.test(
-      overrides: [itemRepositoryProvider.overrideWithValue(repository)],
+      overrides: [
+        itemRepositoryProvider.overrideWithValue(repository),
+        ...itemProcessingPollTestOverrides(),
+      ],
     );
   });
 
@@ -110,5 +115,60 @@ void main() {
     await settle();
 
     expect(repository.getCalls, 2);
+  });
+
+  test('polls get until FAILED and then stops', () async {
+    final ticks = ItemProcessingPollTicks();
+    final polling = ProviderContainer.test(
+      overrides: [
+        itemRepositoryProvider.overrideWithValue(repository),
+        ...ticks.overrides(),
+      ],
+    );
+    addTearDown(polling.dispose);
+
+    final processing = testItem(
+      processingStatus: ItemProcessingStatus.processing,
+      originalImageUrl: 'https://cdn.example.com/original.jpg',
+    );
+    repository.items
+      ..clear()
+      ..add(processing);
+
+    polling.read(itemDetailControllerProvider(scope));
+    await settle();
+
+    expect(
+      polling.read(itemDetailControllerProvider(scope)).item?.processingStatus,
+      ItemProcessingStatus.processing,
+    );
+    expect(ticks.waiting, greaterThan(0));
+    final getsWhileProcessing = repository.getCalls;
+
+    repository.items[0] = processing.copyWith(
+      processingStatus: ItemProcessingStatus.failed,
+      processingError: 'Background removal failed.',
+    );
+    await ticks.tickAll();
+
+    final item = polling.read(itemDetailControllerProvider(scope)).item;
+    expect(item?.processingStatus, ItemProcessingStatus.failed);
+    expect(item?.processingStatus.isInProgress, isFalse);
+    expect(item?.processingError, 'Background removal failed.');
+    expect(item?.originalImageKey, 'https://cdn.example.com/original.jpg');
+    expect(repository.getCalls, greaterThan(getsWhileProcessing));
+    expect(ticks.waiting, 0);
+
+    final getsAfterFailed = repository.getCalls;
+    await ticks.tickAll();
+    expect(repository.getCalls, getsAfterFailed);
+    expect(
+      polling
+          .read(itemsControllerProvider('wd_abc123'))
+          .items
+          .single
+          .processingStatus,
+      ItemProcessingStatus.failed,
+    );
   });
 }
