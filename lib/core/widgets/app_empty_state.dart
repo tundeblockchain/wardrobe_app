@@ -136,7 +136,7 @@ class AppButtonSpinner extends StatelessWidget {
   const AppButtonSpinner({super.key, this.color});
 
   /// Defaults to [ColorScheme.onPrimary] so the indicator stays visible on
-  /// filled purple / pink buttons.
+  /// filled burgundy / plum buttons.
   final Color? color;
 
   @override
