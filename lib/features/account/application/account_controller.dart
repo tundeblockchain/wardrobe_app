@@ -1,15 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/network/api_exception.dart';
-import '../../ai_profiles/application/generic_models_controller.dart';
-import '../../ai_profiles/application/personal_ai_profiles_controller.dart';
-import '../../ai_profiles/application/selected_ai_profile.dart';
+import '../../../core/session/session_gate.dart';
+import '../../../core/session/user_session_reset.dart';
 import '../../auth/application/auth_controller.dart';
 import '../../auth/domain/auth_failure.dart';
-import '../../items/application/items_controller.dart';
-import '../../outfits/application/outfits_controller.dart';
-import '../../recommendations/application/recommendations_controller.dart';
-import '../../wardrobes/application/wardrobe_detail_controller.dart';
 import '../../wardrobes/application/wardrobes_controller.dart';
 import '../data/dio_account_repository.dart';
 import '../domain/account_repository.dart';
@@ -19,7 +14,10 @@ import 'account_state.dart';
 /// Clear-all content and delete-account actions against `/me`.
 class AccountController extends Notifier<AccountState> {
   @override
-  AccountState build() => const AccountState();
+  AccountState build() {
+    ref.watch(sessionGateProvider.select((s) => s.allowUserDataFetch));
+    return const AccountState();
+  }
 
   AccountRepository get _repository => ref.read(accountRepositoryProvider);
 
@@ -93,14 +91,7 @@ class AccountController extends Notifier<AccountState> {
   }
 
   Future<void> _refreshLocalLists() async {
-    ref.read(wardrobesControllerProvider.notifier).clearLocal();
-    ref.invalidate(personalAiProfilesControllerProvider);
-    ref.invalidate(genericModelsControllerProvider);
-    ref.invalidate(selectedAiProfileProvider);
-    ref.invalidate(wardrobeDetailControllerProvider);
-    ref.invalidate(itemsControllerProvider);
-    ref.invalidate(outfitsControllerProvider);
-    ref.invalidate(recommendationsControllerProvider);
+    invalidateUserScopedProviders(ref);
     await ref.read(wardrobesControllerProvider.notifier).refresh();
   }
 

@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/network/api_exception.dart';
+import '../../../core/session/session_gate.dart';
 import '../data/dio_item_repository.dart';
 import '../data/dio_upload_repository.dart';
 import '../data/image_picker_item_image_picker.dart';
@@ -20,7 +21,10 @@ class AddItemController extends Notifier<AddItemState> {
   final String wardrobeId;
 
   @override
-  AddItemState build() => const AddItemState();
+  AddItemState build() {
+    ref.watch(sessionGateProvider.select((s) => s.allowUserDataFetch));
+    return const AddItemState();
+  }
 
   ItemImagePicker get _picker => ref.read(itemImagePickerProvider);
 

@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/network/api_exception.dart';
+import '../../../core/session/session_gate.dart';
 import '../../items/data/image_picker_item_image_picker.dart';
 import '../../items/domain/item_image_picker.dart';
 import '../../items/domain/picked_image.dart';
@@ -14,6 +15,9 @@ import 'selected_ai_profile.dart';
 class PersonalAiProfilesController extends Notifier<PersonalAiProfilesState> {
   @override
   PersonalAiProfilesState build() {
+    if (!watchAllowsUserDataFetch(ref)) {
+      return const PersonalAiProfilesState();
+    }
     Future<void>.microtask(refresh);
     return const PersonalAiProfilesState(isLoading: true);
   }

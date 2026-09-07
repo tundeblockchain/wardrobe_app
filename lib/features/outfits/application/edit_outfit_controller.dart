@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/network/api_exception.dart';
+import '../../../core/session/session_gate.dart';
 import '../../items/domain/item.dart';
 import '../data/dio_outfit_repository.dart';
 import '../domain/outfit.dart';
@@ -19,6 +20,7 @@ class EditOutfitController extends Notifier<EditOutfitState> {
 
   @override
   EditOutfitState build() {
+    ref.watch(sessionGateProvider.select((s) => s.allowUserDataFetch));
     ref.listen(outfitDetailControllerProvider(scope), (previous, next) {
       final outfit = next.outfit;
       if (!state.hasSeeded && outfit != null) {

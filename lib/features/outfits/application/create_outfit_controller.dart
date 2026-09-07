@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/network/api_exception.dart';
+import '../../../core/session/session_gate.dart';
 import '../../items/domain/item.dart';
 import '../data/dio_outfit_repository.dart';
 import '../domain/outfit.dart';
@@ -16,7 +17,10 @@ class CreateOutfitController extends Notifier<CreateOutfitState> {
   final String wardrobeId;
 
   @override
-  CreateOutfitState build() => const CreateOutfitState();
+  CreateOutfitState build() {
+    ref.watch(sessionGateProvider.select((s) => s.allowUserDataFetch));
+    return const CreateOutfitState();
+  }
 
   OutfitRepository get _repository => ref.read(outfitRepositoryProvider);
 

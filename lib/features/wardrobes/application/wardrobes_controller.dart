@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/network/api_exception.dart';
+import '../../../core/session/session_gate.dart';
 import '../data/dio_wardrobe_repository.dart';
 import '../domain/wardrobe.dart';
 import '../domain/wardrobe_repository.dart';
@@ -10,6 +11,9 @@ import 'wardrobes_state.dart';
 class WardrobesController extends Notifier<WardrobesState> {
   @override
   WardrobesState build() {
+    if (!watchAllowsUserDataFetch(ref)) {
+      return const WardrobesState();
+    }
     Future<void>.microtask(refresh);
     return const WardrobesState(isLoading: true);
   }
@@ -61,7 +65,10 @@ class WardrobesController extends Notifier<WardrobesState> {
 /// Submits a new wardrobe and keeps the list cache in sync.
 class CreateWardrobeController extends Notifier<CreateWardrobeState> {
   @override
-  CreateWardrobeState build() => const CreateWardrobeState();
+  CreateWardrobeState build() {
+    ref.watch(sessionGateProvider.select((s) => s.allowUserDataFetch));
+    return const CreateWardrobeState();
+  }
 
   WardrobeRepository get _repository => ref.read(wardrobeRepositoryProvider);
 

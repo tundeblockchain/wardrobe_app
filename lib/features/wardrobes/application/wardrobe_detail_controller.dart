@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/network/api_exception.dart';
+import '../../../core/session/session_gate.dart';
 import '../data/dio_wardrobe_repository.dart';
 import '../domain/wardrobe_repository.dart';
 import 'wardrobe_detail_state.dart';
@@ -14,6 +15,9 @@ class WardrobeDetailController extends Notifier<WardrobeDetailState> {
 
   @override
   WardrobeDetailState build() {
+    if (!watchAllowsUserDataFetch(ref)) {
+      return const WardrobeDetailState();
+    }
     Future<void>.microtask(refresh);
     return const WardrobeDetailState(isLoading: true);
   }

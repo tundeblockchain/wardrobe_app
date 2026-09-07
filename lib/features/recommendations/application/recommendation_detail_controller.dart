@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/network/api_exception.dart';
+import '../../../core/session/session_gate.dart';
 import '../../outfits/application/outfits_controller.dart';
 import '../../outfits/data/dio_outfit_repository.dart';
 import '../../outfits/domain/outfit.dart';
@@ -20,6 +21,9 @@ class RecommendationDetailController
 
   @override
   RecommendationDetailState build() {
+    if (!watchAllowsUserDataFetch(ref)) {
+      return const RecommendationDetailState();
+    }
     Future<void>.microtask(refresh);
     return const RecommendationDetailState(isLoading: true);
   }

@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/lifecycle/app_lifecycle.dart';
 import '../../../core/network/api_exception.dart';
+import '../../../core/session/session_gate.dart';
 import '../data/dio_item_repository.dart';
 import '../domain/item.dart';
 import '../domain/item_list_filters.dart';
@@ -17,6 +18,9 @@ class ItemsController extends Notifier<ItemsState> {
 
   @override
   ItemsState build() {
+    if (!watchAllowsUserDataFetch(ref)) {
+      return const ItemsState();
+    }
     ref.listen<int>(appLifecycleTickProvider, (previous, next) {
       if (previous != null && previous != next) {
         refresh();

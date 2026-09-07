@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/session/session_gate.dart';
 import '../../auth/application/auth_controller.dart';
 import '../../auth/domain/auth_validators.dart';
 import '../data/dio_support_repository.dart';
@@ -18,6 +19,9 @@ class SupportController extends Notifier<SupportState> {
 
   @override
   SupportState build() {
+    if (!watchAllowsUserDataFetch(ref)) {
+      return const SupportState();
+    }
     Future<void>.microtask(_loadContext);
     return const SupportState();
   }

@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/network/api_exception.dart';
+import '../../../core/session/session_gate.dart';
 import '../data/dio_ai_profile_repository.dart';
 import '../domain/ai_profile_repository.dart';
 import 'generic_models_state.dart';
@@ -9,6 +10,9 @@ import 'generic_models_state.dart';
 class GenericModelsController extends Notifier<GenericModelsState> {
   @override
   GenericModelsState build() {
+    if (!watchAllowsUserDataFetch(ref)) {
+      return const GenericModelsState();
+    }
     Future<void>.microtask(refresh);
     return const GenericModelsState(isLoading: true);
   }
