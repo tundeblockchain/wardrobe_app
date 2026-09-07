@@ -12,6 +12,7 @@ import 'package:wardrobe_app/features/items/domain/item.dart';
 import '../../../helpers/fake_item_image_picker.dart';
 import '../../../helpers/fake_item_repository.dart';
 import '../../../helpers/fake_upload_repository.dart';
+import '../../../helpers/item_processing_poll_overrides.dart';
 
 void main() {
   late FakeItemRepository items;
@@ -28,6 +29,7 @@ void main() {
         itemRepositoryProvider.overrideWithValue(items),
         uploadRepositoryProvider.overrideWithValue(uploads),
         itemImagePickerProvider.overrideWithValue(picker),
+        ...itemProcessingPollTestOverrides(),
       ],
     );
   });

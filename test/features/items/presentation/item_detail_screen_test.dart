@@ -2,14 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wardrobe_app/features/items/data/dio_item_repository.dart';
+import 'package:wardrobe_app/features/items/domain/item.dart';
 import 'package:wardrobe_app/features/items/presentation/item_detail_screen.dart';
 import 'package:wardrobe_app/features/items/presentation/widgets/processing_status_chip.dart';
 
 import '../../../helpers/date_stamp_matchers.dart';
 import '../../../helpers/fake_item_repository.dart';
+import '../../../helpers/item_processing_poll_overrides.dart';
 
 void main() {
-  Future<void> pumpDetail(WidgetTester tester) async {
+  Future<void> pumpDetail(
+    WidgetTester tester, {
+    FakeItemRepository? repository,
+  }) async {
     tester.view.physicalSize = const Size(800, 1600);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
@@ -19,8 +24,9 @@ void main() {
       ProviderScope(
         overrides: [
           itemRepositoryProvider.overrideWithValue(
-            FakeItemRepository(seed: [testItem()]),
+            repository ?? FakeItemRepository(seed: [testItem()]),
           ),
+          ...itemProcessingPollTestOverrides(),
         ],
         child: const MaterialApp(
           home: ItemDetailScreen(
@@ -46,5 +52,27 @@ void main() {
     expect(find.byKey(ItemDetailScreen.editButtonKey), findsOneWidget);
     expect(find.byKey(ItemDetailScreen.deleteButtonKey), findsOneWidget);
     expectNoCreatedUpdatedDateStamps();
+  });
+
+  testWidgets('shows FAILED banner with processingError and keeps delete', (
+    tester,
+  ) async {
+    await pumpDetail(
+      tester,
+      repository: FakeItemRepository(
+        seed: [
+          testItem(
+            processingStatus: ItemProcessingStatus.failed,
+            processingError: 'Background removal failed.',
+          ),
+        ],
+      ),
+    );
+
+    expect(find.byType(ProcessingStatusBanner), findsOneWidget);
+    expect(find.text('Failed'), findsOneWidget);
+    expect(find.text('Processing'), findsNothing);
+    expect(find.text('Background removal failed.'), findsOneWidget);
+    expect(find.byKey(ItemDetailScreen.deleteButtonKey), findsOneWidget);
   });
 }

@@ -28,6 +28,7 @@ import 'fake_recommendation_repository.dart';
 import 'fake_support_repository.dart';
 import 'fake_upload_repository.dart';
 import 'fake_wardrobe_repository.dart';
+import 'item_processing_poll_overrides.dart';
 
 /// Signed-in [WardrobeApp] with in-memory repositories for widget tests.
 class TestAppHarness {
@@ -81,6 +82,7 @@ class TestAppHarness {
         deviceContextProvider.overrideWithValue(const FakeDeviceContext()),
         sessionLocalStoreProvider.overrideWithValue(sessionStore),
         sessionImageCacheProvider.overrideWithValue(sessionImages),
+        ...itemProcessingPollTestOverrides(),
       ],
       child: const WardrobeApp(),
     );

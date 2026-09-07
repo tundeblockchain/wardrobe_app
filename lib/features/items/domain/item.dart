@@ -32,7 +32,10 @@ enum ItemCategory {
   }
 }
 
-/// Clothing-item processing states from the SQS worker (WARDROBE-16/17).
+/// Clothing-item processing states from the SQS worker (WARDROBE-16/17/59).
+///
+/// Terminal failure on the wire is exactly `FAILED` (never `ERROR`). Poll
+/// create / list / get until [ready] or [failed].
 enum ItemProcessingStatus {
   pending('PENDING', 'Pending'),
   processing('PROCESSING', 'Processing'),
@@ -44,6 +47,15 @@ enum ItemProcessingStatus {
 
   final String wireValue;
   final String label;
+
+  /// Still waiting on the worker. Keep polling.
+  bool get isInProgress =>
+      this == ItemProcessingStatus.pending ||
+      this == ItemProcessingStatus.processing;
+
+  /// Stop polling. [failed] is terminal and must not be treated as processing.
+  bool get isTerminal =>
+      this == ItemProcessingStatus.ready || this == ItemProcessingStatus.failed;
 
   static ItemProcessingStatus parse(String? value) {
     if (value == null || value.isEmpty) {

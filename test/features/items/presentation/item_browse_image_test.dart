@@ -69,6 +69,28 @@ void main() {
     );
   });
 
+  testWidgets('keeps the original image on FAILED without a processing bar', (
+    tester,
+  ) async {
+    final item = testItem(
+      originalImageKey: 'https://cdn.example.com/original.jpg',
+      processingStatus: ItemProcessingStatus.failed,
+      processingError: 'Background removal failed.',
+    );
+
+    await pumpImage(tester, item: item, withLocalPreview: true);
+
+    expect(find.byKey(ItemBrowseImage.imageKey(item.id)), findsOneWidget);
+    expect(
+      find.byKey(ItemBrowseImage.sourceKey(item.originalImageKey!)),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(ItemBrowseImage.processingIndicatorKey(item.id)),
+      findsNothing,
+    );
+  });
+
   testWidgets('switches to the processed URL when READY', (tester) async {
     final item = testItem(
       originalImageKey: 'https://cdn.example.com/original.jpg',

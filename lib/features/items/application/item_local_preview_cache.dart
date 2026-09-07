@@ -6,9 +6,9 @@ import '../../../core/session/session_gate.dart';
 
 /// In-session bytes for a just-uploaded clothing photo.
 ///
-/// Backend item payloads expose S3 object keys, not GET URLs, while status is
-/// PENDING / PROCESSING. Cards use this cache so the user's original photo
-/// stays visible until a network URL (processed or original) is available.
+/// Backend item payloads may expose S3 object keys instead of GET URLs while
+/// status is PENDING / PROCESSING / FAILED. Cards use this cache so the
+/// original photo stays visible until a network URL is available.
 class ItemLocalPreviewCache extends Notifier<Map<String, Uint8List>> {
   @override
   Map<String, Uint8List> build() {

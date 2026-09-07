@@ -12,6 +12,7 @@ import 'package:wardrobe_app/features/items/domain/item_list_filters.dart';
 import 'package:wardrobe_app/features/items/domain/item_taxonomy.dart';
 
 import '../../../helpers/fake_item_repository.dart';
+import '../../../helpers/item_processing_poll_overrides.dart';
 
 void main() {
   late FakeItemRepository repository;
@@ -20,13 +21,22 @@ void main() {
   setUp(() {
     repository = FakeItemRepository();
     container = ProviderContainer.test(
-      overrides: [itemRepositoryProvider.overrideWithValue(repository)],
+      overrides: [
+        itemRepositoryProvider.overrideWithValue(repository),
+        ...itemProcessingPollTestOverrides(),
+      ],
     );
   });
 
   tearDown(() => container.dispose());
 
   Future<void> settle() => Future<void>.delayed(Duration.zero);
+
+  Future<void> flushPoll() async {
+    for (var i = 0; i < 8; i++) {
+      await settle();
+    }
+  }
 
   test('refresh loads items for the wardrobe', () async {
     repository.items.add(testItem());
@@ -121,7 +131,9 @@ void main() {
       processingStatus: ItemProcessingStatus.ready,
       processedImageKey: 'https://cdn.example.com/processed.png',
     );
+    repository.items[0] = ready;
     container.read(itemsControllerProvider('wd_abc123').notifier).upsert(ready);
+    await flushPoll();
 
     final items = container.read(itemsControllerProvider('wd_abc123')).items;
     expect(items, hasLength(1));
@@ -188,6 +200,75 @@ void main() {
       );
     },
   );
+
+  test('polls list until FAILED and then stops', () async {
+    final processing = testItem(
+      processingStatus: ItemProcessingStatus.processing,
+      originalImageUrl: 'https://cdn.example.com/original.jpg',
+    );
+    repository.items.add(processing);
+    container.read(itemsControllerProvider('wd_abc123'));
+    await flushPoll();
+
+    expect(
+      container
+          .read(itemsControllerProvider('wd_abc123'))
+          .items
+          .single
+          .processingStatus,
+      ItemProcessingStatus.processing,
+    );
+    final callsWhileProcessing = repository.listCalls;
+
+    final failed = processing.copyWith(
+      processingStatus: ItemProcessingStatus.failed,
+      processingError: 'Background removal failed.',
+    );
+    repository.items[0] = failed;
+    await flushPoll();
+
+    final items = container.read(itemsControllerProvider('wd_abc123')).items;
+    expect(items.single.processingStatus, ItemProcessingStatus.failed);
+    expect(items.single.processingStatus.isInProgress, isFalse);
+    expect(items.single.processingStatus.isTerminal, isTrue);
+    expect(items.single.processingError, 'Background removal failed.');
+    expect(
+      items.single.originalImageKey,
+      'https://cdn.example.com/original.jpg',
+    );
+    expect(repository.listCalls, greaterThan(callsWhileProcessing));
+
+    final callsAfterFailed = repository.listCalls;
+    await flushPoll();
+    expect(repository.listCalls, callsAfterFailed);
+  });
+
+  test('refresh picks up FAILED without restarting a poll loop', () async {
+    repository.items.add(
+      testItem(processingStatus: ItemProcessingStatus.processing),
+    );
+    container.read(itemsControllerProvider('wd_abc123'));
+    await settle();
+
+    repository.items[0] = testItem(
+      processingStatus: ItemProcessingStatus.failed,
+      processingError: 'Classifier unavailable.',
+    );
+    await container
+        .read(itemsControllerProvider('wd_abc123').notifier)
+        .refresh();
+    await flushPoll();
+
+    final item = container
+        .read(itemsControllerProvider('wd_abc123'))
+        .items
+        .single;
+    expect(item.processingStatus, ItemProcessingStatus.failed);
+    expect(item.processingError, 'Classifier unavailable.');
+    final calls = repository.listCalls;
+    await flushPoll();
+    expect(repository.listCalls, calls);
+  });
 
   test('remove evicts the local upload preview', () async {
     repository.items.add(testItem());

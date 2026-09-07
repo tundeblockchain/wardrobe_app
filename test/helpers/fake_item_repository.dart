@@ -167,6 +167,7 @@ Item testItem({
   String? originalImageKey = 'users/uid/uploads/uuid.jpg',
   String? processedImageKey,
   ItemProcessingStatus processingStatus = ItemProcessingStatus.ready,
+  String? processingError,
   String? originalImageUrl,
   String? processedImageUrl,
 }) {
@@ -181,6 +182,7 @@ Item testItem({
     originalImageKey: originalImageUrl ?? originalImageKey,
     processedImageKey: processedImageUrl ?? processedImageKey,
     processingStatus: processingStatus,
+    processingError: processingError,
     createdAt: DateTime.utc(2026, 9, 3, 18, 45),
     updatedAt: DateTime.utc(2026, 9, 3, 18, 45),
   );

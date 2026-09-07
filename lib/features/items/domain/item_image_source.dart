@@ -4,8 +4,9 @@ import 'item.dart';
 ///
 /// Prefers a processed HTTP(S) URL when the worker has finished, otherwise the
 /// original upload URL. A processed *object key* never hides an original URL
-/// while status is still PENDING / PROCESSING (or whenever no processed GET
-/// exists yet). HTTP(S) values are treated as network URLs so cards can render
+/// while status is still PENDING / PROCESSING / FAILED (or whenever no
+/// processed GET exists yet). HTTP(S) values are treated as network URLs so
+/// cards can render
 /// photos from the existing item payload without inventing a backend API.
 class ItemImageSource {
   const ItemImageSource({this.key, this.networkUrl});
