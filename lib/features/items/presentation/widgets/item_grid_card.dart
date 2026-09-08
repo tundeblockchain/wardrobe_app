@@ -3,9 +3,8 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/router/app_routes.dart';
 import '../../domain/item.dart';
-import 'processing_status_chip.dart';
 
-/// Grid tile showing name, category, and processing status.
+/// Grid tile showing name and category.
 class ItemGridCard extends StatelessWidget {
   const ItemGridCard({super.key, required this.wardrobeId, required this.item});
 
@@ -26,17 +25,7 @@ class ItemGridCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                children: [
-                  CircleAvatar(child: Text(item.category.label[0])),
-                  const Spacer(),
-                  ProcessingStatusChip(
-                    key: ProcessingStatusChip.chipKey(item.id),
-                    status: item.processingStatus,
-                    processingError: item.processingError,
-                  ),
-                ],
-              ),
+              CircleAvatar(child: Text(item.category.label[0])),
               const Spacer(),
               Text(
                 item.name,

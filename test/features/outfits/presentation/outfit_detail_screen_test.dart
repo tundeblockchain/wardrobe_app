@@ -6,6 +6,7 @@ import 'package:wardrobe_app/core/widgets/destructive_confirm_dialog.dart';
 import 'package:wardrobe_app/features/items/data/dio_item_repository.dart';
 import 'package:wardrobe_app/features/items/domain/item.dart';
 import 'package:wardrobe_app/features/outfits/data/dio_outfit_repository.dart';
+import 'package:wardrobe_app/features/outfits/domain/outfit_render.dart';
 import 'package:wardrobe_app/features/outfits/presentation/outfit_detail_screen.dart';
 import 'package:wardrobe_app/features/outfits/presentation/outfits_screen.dart';
 import 'package:wardrobe_app/features/outfits/presentation/widgets/outfit_list_tile.dart';
@@ -69,7 +70,50 @@ void main() {
     expect(find.text('Try on'), findsOneWidget);
     expect(find.byKey(OutfitDetailScreen.editButtonKey), findsOneWidget);
     expect(find.byKey(OutfitDetailScreen.deleteButtonKey), findsOneWidget);
+    expect(find.text('Processing'), findsNothing);
+    expect(find.text('Processed'), findsNothing);
+    expect(find.text('Pending'), findsNothing);
+    expect(find.text('Failed'), findsNothing);
     expectNoCreatedUpdatedDateStamps();
+  });
+
+  testWidgets('outfit detail hides render job status', (tester) async {
+    tester.view.physicalSize = const Size(800, 1600);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          outfitRepositoryProvider.overrideWithValue(
+            FakeOutfitRepository(
+              seed: [
+                testOutfit(
+                  render: testOutfitRender(
+                    status: OutfitRenderStatus.processing,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          itemRepositoryProvider.overrideWithValue(FakeItemRepository()),
+        ],
+        child: const MaterialApp(
+          home: OutfitDetailScreen(
+            wardrobeId: 'wd_abc123',
+            outfitId: 'outfit_123',
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Friday Night'), findsWidgets);
+    expect(find.text('Processing'), findsNothing);
+    expect(find.text('Processed'), findsNothing);
+    expect(find.text('Failed'), findsNothing);
+    expect(find.text('Pending'), findsNothing);
   });
 
   testWidgets(

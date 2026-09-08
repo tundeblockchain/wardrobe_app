@@ -117,16 +117,49 @@ void main() {
     expect(repository.getCalls, 2);
   });
 
-  test('polls get until FAILED and then stops', () async {
-    final ticks = ItemProcessingPollTicks();
-    final polling = ProviderContainer.test(
-      overrides: [
-        itemRepositoryProvider.overrideWithValue(repository),
-        ...ticks.overrides(),
-      ],
+  test('seeds detail from the list cache before get completes', () async {
+    container.read(itemsControllerProvider('wd_abc123'));
+    await settle();
+    final created = testItem(
+      processingStatus: ItemProcessingStatus.processing,
+      originalImageUrl: 'https://cdn.example.com/original.jpg',
     );
-    addTearDown(polling.dispose);
+    container
+        .read(itemsControllerProvider('wd_abc123').notifier)
+        .upsert(created);
 
+    final state = container.read(itemDetailControllerProvider(scope));
+    expect(state.item?.name, 'Black Nike T-Shirt');
+    expect(state.item?.category, ItemCategory.top);
+    expect(state.item?.brand, 'Nike');
+    expect(
+      state.item?.originalImageKey,
+      'https://cdn.example.com/original.jpg',
+    );
+    expect(state.isLoading, isFalse);
+    expect(repository.getCalls, 0);
+  });
+
+  test('replace shows saved fields without waiting on processingStatus', () {
+    final created = testItem(
+      processingStatus: ItemProcessingStatus.pending,
+      originalImageKey: 'users/uid/uploads/uuid.jpg',
+    );
+
+    container
+        .read(itemDetailControllerProvider(scope).notifier)
+        .replace(created);
+
+    final state = container.read(itemDetailControllerProvider(scope));
+    expect(state.item?.name, created.name);
+    expect(state.item?.category, created.category);
+    expect(state.item?.colours, created.colours);
+    expect(state.item?.brand, created.brand);
+    expect(state.item?.originalImageKey, created.originalImageKey);
+    expect(state.isLoading, isFalse);
+  });
+
+  test('refresh can apply later AI fields without requiring a poll', () async {
     final processing = testItem(
       processingStatus: ItemProcessingStatus.processing,
       originalImageUrl: 'https://cdn.example.com/original.jpg',
@@ -135,40 +168,25 @@ void main() {
       ..clear()
       ..add(processing);
 
-    polling.read(itemDetailControllerProvider(scope));
+    container.read(itemDetailControllerProvider(scope));
     await settle();
-
-    expect(
-      polling.read(itemDetailControllerProvider(scope)).item?.processingStatus,
-      ItemProcessingStatus.processing,
-    );
-    expect(ticks.waiting, greaterThan(0));
-    final getsWhileProcessing = repository.getCalls;
+    expect(repository.getCalls, 1);
 
     repository.items[0] = processing.copyWith(
-      processingStatus: ItemProcessingStatus.failed,
-      processingError: 'Background removal failed.',
+      processingStatus: ItemProcessingStatus.ready,
+      processedImageKey: 'https://cdn.example.com/processed.png',
+      category: ItemCategory.top,
     );
-    await ticks.tickAll();
+    await container
+        .read(itemDetailControllerProvider(scope).notifier)
+        .refresh();
 
-    final item = polling.read(itemDetailControllerProvider(scope)).item;
-    expect(item?.processingStatus, ItemProcessingStatus.failed);
-    expect(item?.processingStatus.isInProgress, isFalse);
-    expect(item?.processingError, 'Background removal failed.');
+    final item = container.read(itemDetailControllerProvider(scope)).item;
+    expect(item?.processedImageKey, 'https://cdn.example.com/processed.png');
     expect(item?.originalImageKey, 'https://cdn.example.com/original.jpg');
-    expect(repository.getCalls, greaterThan(getsWhileProcessing));
-    expect(ticks.waiting, 0);
+    expect(repository.getCalls, 2);
 
-    final getsAfterFailed = repository.getCalls;
-    await ticks.tickAll();
-    expect(repository.getCalls, getsAfterFailed);
-    expect(
-      polling
-          .read(itemsControllerProvider('wd_abc123'))
-          .items
-          .single
-          .processingStatus,
-      ItemProcessingStatus.failed,
-    );
+    await settle();
+    expect(repository.getCalls, 2);
   });
 }

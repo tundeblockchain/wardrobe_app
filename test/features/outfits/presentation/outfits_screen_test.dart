@@ -35,6 +35,10 @@ void main() {
     expect(find.text('3 items'), findsOneWidget);
     expect(find.byKey(OutfitsScreen.createButtonKey), findsOneWidget);
     expect(find.byKey(OutfitListTile.deleteKey('outfit_123')), findsOneWidget);
+    expect(find.text('Processing'), findsNothing);
+    expect(find.text('Processed'), findsNothing);
+    expect(find.text('Pending'), findsNothing);
+    expect(find.text('Failed'), findsNothing);
     expectNoCreatedUpdatedDateStamps();
   });
 

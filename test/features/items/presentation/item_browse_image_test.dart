@@ -43,12 +43,11 @@ void main() {
 
     expect(find.byKey(ItemBrowseImage.imageKey(item.id)), findsOneWidget);
     expect(find.byKey(ItemBrowseImage.localSourceKey(item.id)), findsOneWidget);
-    expect(
-      find.byKey(ItemBrowseImage.processingIndicatorKey(item.id)),
-      findsOneWidget,
-    );
     expect(find.byType(Image), findsOneWidget);
     expect(find.byIcon(Icons.checkroom_outlined), findsNothing);
+    expect(find.text('Processing'), findsNothing);
+    expect(find.text('Processed'), findsNothing);
+    expect(find.text('Failed'), findsNothing);
   });
 
   testWidgets('shows an original network URL while PROCESSING', (tester) async {
@@ -63,13 +62,10 @@ void main() {
       find.byKey(ItemBrowseImage.sourceKey(item.originalImageKey!)),
       findsOneWidget,
     );
-    expect(
-      find.byKey(ItemBrowseImage.processingIndicatorKey(item.id)),
-      findsOneWidget,
-    );
+    expect(find.text('Processing'), findsNothing);
   });
 
-  testWidgets('keeps the original image on FAILED without a processing bar', (
+  testWidgets('keeps the original image on FAILED with no status chrome', (
     tester,
   ) async {
     final item = testItem(
@@ -85,10 +81,8 @@ void main() {
       find.byKey(ItemBrowseImage.sourceKey(item.originalImageKey!)),
       findsOneWidget,
     );
-    expect(
-      find.byKey(ItemBrowseImage.processingIndicatorKey(item.id)),
-      findsNothing,
-    );
+    expect(find.text('Failed'), findsNothing);
+    expect(find.text('Background removal failed.'), findsNothing);
   });
 
   testWidgets('switches to the processed URL when READY', (tester) async {
@@ -104,9 +98,7 @@ void main() {
       findsOneWidget,
     );
     expect(find.byKey(ItemBrowseImage.localSourceKey(item.id)), findsNothing);
-    expect(
-      find.byKey(ItemBrowseImage.processingIndicatorKey(item.id)),
-      findsNothing,
-    );
+    expect(find.text('Ready'), findsNothing);
+    expect(find.text('Processed'), findsNothing);
   });
 }

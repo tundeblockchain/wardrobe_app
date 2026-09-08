@@ -9,8 +9,9 @@ import '../../../core/widgets/app_empty_state.dart';
 import '../../../core/widgets/entity_delete.dart';
 import '../application/item_detail_controller.dart';
 import '../application/item_detail_state.dart';
+import '../application/item_local_preview_cache.dart';
 import '../application/item_scope.dart';
-import 'widgets/processing_status_chip.dart';
+import 'widgets/item_browse_image.dart';
 
 /// Clothing item detail with edit and delete.
 class ItemDetailScreen extends ConsumerStatefulWidget {
@@ -130,9 +131,19 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen>
 
     final item = state.item!;
     final ai = item.ai;
+    final localPreview = ref.watch(itemLocalPreviewCacheProvider)[item.id];
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        ClipRRect(
+          borderRadius: AppRadii.card,
+          child: SizedBox(
+            height: 220,
+            width: double.infinity,
+            child: ItemBrowseImage(item: item, localPreviewBytes: localPreview),
+          ),
+        ),
+        const SizedBox(height: 16),
         Text(item.name, style: Theme.of(context).textTheme.headlineSmall),
         const SizedBox(height: 8),
         Text(item.category.label),
@@ -140,11 +151,6 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen>
           Text(item.subcategory!),
         if (item.brand != null && item.brand!.isNotEmpty) Text(item.brand!),
         if (item.colours.isNotEmpty) Text(item.colours.join(', ')),
-        const SizedBox(height: 16),
-        ProcessingStatusBanner(
-          status: item.processingStatus,
-          processingError: item.processingError,
-        ),
         if (ai != null) ...[
           const SizedBox(height: 16),
           Text('Detected', style: Theme.of(context).textTheme.titleSmall),
