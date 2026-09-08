@@ -182,7 +182,7 @@ void main() {
     expect(find.byKey(ItemSwipeDeck.swipeLayerKey), findsOneWidget);
   });
 
-  testWidgets('swipe left advances to the next item', (tester) async {
+  testWidgets('swipe left does not advance or dismiss the card', (tester) async {
     await pumpDeck(tester, items: [shirt, jeans]);
 
     await tester.fling(
@@ -192,9 +192,10 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('Blue jeans'), findsOneWidget);
-    expect(find.text('2 of 2'), findsOneWidget);
-    expect(find.byKey(ItemSwipeCard.cardKey(shirt.id)), findsNothing);
+    expect(find.text('Black Nike T-Shirt'), findsOneWidget);
+    expect(find.text('1 of 2'), findsOneWidget);
+    expect(find.byKey(ItemSwipeCard.cardKey(shirt.id)), findsOneWidget);
+    expect(find.byKey(ItemSwipeDeck.endKey), findsNothing);
   });
 
   testWidgets('swipe right advances to the next item', (tester) async {
@@ -208,9 +209,10 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Blue jeans'), findsOneWidget);
+    expect(find.text('2 of 2'), findsOneWidget);
   });
 
-  testWidgets('swipe up advances to the next item', (tester) async {
+  testWidgets('vertical drag does not flip or advance the card', (tester) async {
     await pumpDeck(tester, items: [shirt, jeans]);
 
     await tester.fling(
@@ -220,7 +222,58 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('Blue jeans'), findsOneWidget);
+    expect(find.text('Black Nike T-Shirt'), findsOneWidget);
+    expect(find.text('1 of 2'), findsOneWidget);
+    expect(find.byKey(ItemSwipeCard.cardKey(shirt.id)), findsOneWidget);
+
+    await tester.fling(
+      find.byKey(ItemSwipeCard.cardKey(shirt.id)),
+      const Offset(0, 300),
+      1200,
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Black Nike T-Shirt'), findsOneWidget);
+    expect(find.text('1 of 2'), findsOneWidget);
+  });
+
+  testWidgets('vertical drag on the card scrolls the parent instead of swiping', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(400, 520);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        child: MaterialApp(
+          theme: AppTheme.light(),
+          home: Scaffold(
+            body: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: ItemSwipeDeck(items: [shirt, jeans], onOpenItem: (_) {}),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final scrollable = tester.state<ScrollableState>(find.byType(Scrollable));
+    expect(scrollable.position.pixels, 0);
+
+    await tester.drag(
+      find.byKey(ItemSwipeCard.cardKey(shirt.id)),
+      const Offset(0, -160),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Black Nike T-Shirt'), findsOneWidget);
+    expect(find.text('1 of 2'), findsOneWidget);
+    expect(scrollable.position.pixels, greaterThan(0));
   });
 
   testWidgets('next-item affordance advances the stack', (tester) async {

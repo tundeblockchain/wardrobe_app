@@ -1,4 +1,4 @@
-/// Swipe directions that advance the wardrobe item card stack.
+/// Swipe directions that can finish a wardrobe item card animation.
 enum ItemSwipeDirection { left, right, up }
 
 /// A single item stays a static large card (WARDROBE-55). Swipe needs 2+.
@@ -12,8 +12,9 @@ const itemSwipeFlingVelocity = 800.0;
 
 /// Resolves a pan into a stack-advance swipe, or `null` to snap back.
 ///
-/// Left, right, and up all mean "next item". Down is ignored so it does not
-/// fight pull-to-refresh on the wardrobe detail screen.
+/// Only swipe right advances. Swipe left is ignored (no previous / dismiss).
+/// Vertical-dominant movement is ignored so a scroll cannot flip or advance
+/// the card.
 ItemSwipeDirection? resolveItemSwipe({
   required double dx,
   required double dy,
@@ -25,21 +26,15 @@ ItemSwipeDirection? resolveItemSwipe({
   final absDx = dx.abs();
   final absDy = dy.abs();
   final cardWidth = width <= 0 ? 320.0 : width;
-  final cardHeight = height <= 0 ? 420.0 : height;
 
-  final crossedHorizontal = absDx >= cardWidth * itemSwipeDistanceFraction;
-  final crossedVertical = absDy >= cardHeight * itemSwipeDistanceFraction;
-  final flungHorizontal = vx.abs() >= itemSwipeFlingVelocity;
-  final flungUp = vy <= -itemSwipeFlingVelocity;
-
-  if (absDx >= absDy) {
-    if (crossedHorizontal || flungHorizontal) {
-      return dx < 0 ? ItemSwipeDirection.left : ItemSwipeDirection.right;
-    }
+  if (absDy > absDx) {
     return null;
   }
-  if (dy < 0 && (crossedVertical || flungUp)) {
-    return ItemSwipeDirection.up;
+
+  final crossedRight = dx >= cardWidth * itemSwipeDistanceFraction;
+  final flungRight = vx >= itemSwipeFlingVelocity;
+  if (dx > 0 && (crossedRight || flungRight)) {
+    return ItemSwipeDirection.right;
   }
   return null;
 }

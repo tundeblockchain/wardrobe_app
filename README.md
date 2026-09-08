@@ -83,8 +83,9 @@ Upload flow:
 
 Response `itemId` maps to domain `id`. Image keys stay on the domain as
 `originalImageKey` / `processedImageKey`. Wardrobe item browse is a
-Tinder-style card stack (WARDROBE-41): swipe left / right / up (or Next item)
-to advance; tap the card or View details to open the existing item screen.
+Tinder-style card stack (WARDROBE-41): swipe right (or Next item)
+to advance; swipe left and vertical scroll do not flip or advance the card.
+Tap the card or View details to open the existing item screen.
 Cards prefer a processed HTTP(S) photo when present, otherwise the original
 upload (network URL or the just-uploaded local bytes). They still show
 `processingStatus` (`PENDING` / `PROCESSING` / `READY` / `FAILED`) as a chip
