@@ -7,7 +7,7 @@ import '../../domain/item.dart';
 import '../../domain/item_swipe.dart';
 import 'item_swipe_card.dart';
 
-/// Tinder-style stack of wardrobe items. Swipe left / right / up for next.
+/// Tinder-style stack of wardrobe items. Swipe right (or Next) for the next item.
 class ItemSwipeDeck extends StatefulWidget {
   const ItemSwipeDeck({
     super.key,
@@ -29,7 +29,7 @@ class ItemSwipeDeck extends StatefulWidget {
   static const counterKey = Key('item_swipe_counter');
   static const swipeHintKey = Key('item_swipe_hint');
   static const swipeLayerKey = Key('item_swipe_layer');
-  static const swipeHintText = 'Swipe left, right, or up for the next item';
+  static const swipeHintText = 'Swipe right for the next item';
 
   @override
   State<ItemSwipeDeck> createState() => _ItemSwipeDeckState();
@@ -127,7 +127,8 @@ class _ItemSwipeDeckState extends State<ItemSwipeDeck>
     if (!_swipeEnabled || _atEnd || _controller.isAnimating) {
       return;
     }
-    setState(() => _drag += details.delta);
+    final nextDx = (_drag.dx + details.delta.dx).clamp(0.0, double.infinity);
+    setState(() => _drag = Offset(nextDx, 0));
   }
 
   void _onPanEnd(DragEndDetails details, Size size) {
@@ -298,10 +299,10 @@ class _ItemSwipeDeckState extends State<ItemSwipeDeck>
         return RawGestureDetector(
           key: ItemSwipeDeck.swipeLayerKey,
           gestures: {
-            _EagerPanGestureRecognizer:
+            _RightSwipeGestureRecognizer:
                 GestureRecognizerFactoryWithHandlers<
-                  _EagerPanGestureRecognizer
-                >(_EagerPanGestureRecognizer.new, (instance) {
+                  _RightSwipeGestureRecognizer
+                >(_RightSwipeGestureRecognizer.new, (instance) {
                   instance
                     ..onUpdate = _onPanUpdate
                     ..onEnd = (details) => _onPanEnd(details, size);
@@ -371,13 +372,11 @@ class _EndOfStack extends StatelessWidget {
   }
 }
 
-/// Pan recognizer that keeps the card stack ahead of the parent [ListView].
-class _EagerPanGestureRecognizer extends PanGestureRecognizer {
-  @override
-  void rejectGesture(int pointer) {
-    acceptGesture(pointer);
-  }
-}
+/// Horizontal recognizer that yields vertical movement to a parent [ListView].
+///
+/// Unlike a pan that eagerly accepts every pointer, this only claims a
+/// primarily-horizontal drag so a scroll cannot flip or advance the card.
+class _RightSwipeGestureRecognizer extends HorizontalDragGestureRecognizer {}
 
 bool _listEquals(List<String> a, List<String> b) {
   if (identical(a, b)) {

@@ -18,21 +18,7 @@ void main() {
   });
 
   group('resolveItemSwipe', () {
-    test('advances on a left swipe past the distance threshold', () {
-      expect(
-        resolveItemSwipe(
-          dx: -width * 0.4,
-          dy: 8,
-          vx: 0,
-          vy: 0,
-          width: width,
-          height: height,
-        ),
-        ItemSwipeDirection.left,
-      );
-    });
-
-    test('advances on a right swipe past the distance threshold', () {
+    test('advances only on a right swipe past the distance threshold', () {
       expect(
         resolveItemSwipe(
           dx: width * 0.4,
@@ -46,7 +32,21 @@ void main() {
       );
     });
 
-    test('advances on an upward swipe', () {
+    test('ignores a left swipe so it cannot dismiss or go previous', () {
+      expect(
+        resolveItemSwipe(
+          dx: -width * 0.4,
+          dy: 8,
+          vx: 0,
+          vy: 0,
+          width: width,
+          height: height,
+        ),
+        isNull,
+      );
+    });
+
+    test('ignores an upward swipe so a vertical scroll cannot advance', () {
       expect(
         resolveItemSwipe(
           dx: 10,
@@ -56,11 +56,11 @@ void main() {
           width: width,
           height: height,
         ),
-        ItemSwipeDirection.up,
+        isNull,
       );
     });
 
-    test('ignores a downward drag so pull-to-refresh can win', () {
+    test('ignores a downward drag so pull-to-refresh and scroll can win', () {
       expect(
         resolveItemSwipe(
           dx: 0,
@@ -74,10 +74,24 @@ void main() {
       );
     });
 
+    test('ignores a vertical-dominant drag that also moves a little right', () {
+      expect(
+        resolveItemSwipe(
+          dx: 40,
+          dy: -height * 0.5,
+          vx: 200,
+          vy: -900,
+          width: width,
+          height: height,
+        ),
+        isNull,
+      );
+    });
+
     test('snaps back when the drag is too short', () {
       expect(
         resolveItemSwipe(
-          dx: -20,
+          dx: 20,
           dy: 4,
           vx: 0,
           vy: 0,
@@ -88,7 +102,21 @@ void main() {
       );
     });
 
-    test('accepts a fast horizontal fling below the distance threshold', () {
+    test('accepts a fast rightward fling below the distance threshold', () {
+      expect(
+        resolveItemSwipe(
+          dx: 30,
+          dy: 2,
+          vx: 900,
+          vy: 0,
+          width: width,
+          height: height,
+        ),
+        ItemSwipeDirection.right,
+      );
+    });
+
+    test('ignores a fast leftward fling', () {
       expect(
         resolveItemSwipe(
           dx: -30,
@@ -98,11 +126,11 @@ void main() {
           width: width,
           height: height,
         ),
-        ItemSwipeDirection.left,
+        isNull,
       );
     });
 
-    test('accepts a fast upward fling', () {
+    test('ignores a fast upward fling', () {
       expect(
         resolveItemSwipe(
           dx: 4,
@@ -112,32 +140,22 @@ void main() {
           width: width,
           height: height,
         ),
-        ItemSwipeDirection.up,
+        isNull,
       );
     });
   });
 
   group('itemSwipeExitOffset', () {
-    test('sends the card off-screen in the swipe direction', () {
+    test('sends the card off-screen to the right for an accepted swipe', () {
       expect(
         itemSwipeExitOffset(
-          direction: ItemSwipeDirection.left,
+          direction: ItemSwipeDirection.right,
           width: width,
           height: height,
-          currentDx: -40,
+          currentDx: 40,
           currentDy: 12,
         ).dx,
-        -width * 1.4,
-      );
-      expect(
-        itemSwipeExitOffset(
-          direction: ItemSwipeDirection.up,
-          width: width,
-          height: height,
-          currentDx: 8,
-          currentDy: -20,
-        ).dy,
-        -height * 1.4,
+        width * 1.4,
       );
     });
   });
