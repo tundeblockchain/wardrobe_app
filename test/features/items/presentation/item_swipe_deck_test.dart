@@ -97,7 +97,7 @@ void main() {
     );
   });
 
-  testWidgets('shows FAILED and processingError instead of processing', (
+  testWidgets('hides FAILED status and processingError on the card', (
     tester,
   ) async {
     final failed = testItem(
@@ -110,36 +110,26 @@ void main() {
 
     await pumpDeck(tester, items: [failed]);
 
-    expect(find.byKey(ProcessingStatusChip.chipKey(failed.id)), findsOneWidget);
-    expect(find.text('Failed'), findsOneWidget);
+    expect(find.byType(ProcessingStatusChip), findsNothing);
+    expect(find.text('Failed'), findsNothing);
     expect(find.text('Processing'), findsNothing);
-    expect(
-      find.byKey(ItemSwipeCard.processingErrorKey(failed.id)),
-      findsOneWidget,
-    );
-    expect(find.text('Background removal failed.'), findsOneWidget);
+    expect(find.text('Processed'), findsNothing);
+    expect(find.text('Background removal failed.'), findsNothing);
     expect(
       find.byKey(ItemBrowseImage.sourceKey(failed.originalImageKey!)),
       findsOneWidget,
     );
-    expect(
-      find.byKey(ItemBrowseImage.processingIndicatorKey(failed.id)),
-      findsNothing,
-    );
+    expect(find.text('Torn shirt'), findsOneWidget);
   });
 
-  testWidgets('keeps the processing status badge on the card', (tester) async {
+  testWidgets('hides processing status chrome on the card', (tester) async {
     await pumpDeck(tester, items: [sneakers]);
 
-    expect(
-      find.byKey(ProcessingStatusChip.chipKey(sneakers.id)),
-      findsOneWidget,
-    );
-    expect(find.text('Processing'), findsOneWidget);
-    expect(
-      find.byKey(ItemBrowseImage.processingIndicatorKey(sneakers.id)),
-      findsOneWidget,
-    );
+    expect(find.byType(ProcessingStatusChip), findsNothing);
+    expect(find.text('Processing'), findsNothing);
+    expect(find.text('Processed'), findsNothing);
+    expect(find.text('Pending'), findsNothing);
+    expect(find.text('Failed'), findsNothing);
     expect(find.text('White sneakers'), findsOneWidget);
   });
 
@@ -318,7 +308,7 @@ void main() {
 
       expect(find.byKey(ItemSwipeCard.deleteKey(sneakers.id)), findsOneWidget);
       expect(find.byKey(ItemSwipeDeck.removeButtonKey), findsOneWidget);
-      expect(find.text('Processing'), findsOneWidget);
+      expect(find.text('Processing'), findsNothing);
 
       await tester.tap(find.byKey(ItemSwipeDeck.removeButtonKey));
       await tester.pumpAndSettle();

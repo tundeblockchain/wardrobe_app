@@ -8,8 +8,8 @@ import '../../domain/item_image_source.dart';
 
 /// Full-bleed item photo: processed URL when present, otherwise original.
 ///
-/// A PENDING / PROCESSING chip or thin bar never replaces the photo. Local
-/// upload bytes fill in when the payload only has S3 object keys.
+/// Local upload bytes fill in when the payload only has S3 object keys.
+/// Job status is never drawn on the photo.
 class ItemBrowseImage extends StatelessWidget {
   const ItemBrowseImage({
     super.key,
@@ -29,11 +29,6 @@ class ItemBrowseImage extends StatelessWidget {
 
   static Key localSourceKey(String itemId) =>
       Key('item_browse_image_source_local_$itemId');
-
-  static Key processingIndicatorKey(String itemId) =>
-      Key('item_browse_processing_$itemId');
-
-  bool get _isInProgress => item.processingStatus.isInProgress;
 
   @override
   Widget build(BuildContext context) {
@@ -77,28 +72,7 @@ class ItemBrowseImage extends StatelessWidget {
 
     return KeyedSubtree(
       key: imageKey(item.id),
-      child: KeyedSubtree(
-        key: sourceSubtreeKey,
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            photo,
-            if (_isInProgress)
-              Positioned(
-                key: processingIndicatorKey(item.id),
-                top: 0,
-                left: 0,
-                right: 0,
-                child: SizedBox(
-                  height: 2,
-                  child: ColoredBox(
-                    color: Theme.of(context).colorScheme.secondary,
-                  ),
-                ),
-              ),
-          ],
-        ),
-      ),
+      child: KeyedSubtree(key: sourceSubtreeKey, child: photo),
     );
   }
 

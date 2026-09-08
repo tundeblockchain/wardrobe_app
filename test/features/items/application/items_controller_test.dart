@@ -193,56 +193,27 @@ void main() {
     },
   );
 
-  test('polls list until FAILED and then stops', () async {
-    final ticks = ItemProcessingPollTicks();
-    final polling = ProviderContainer.test(
-      overrides: [
-        itemRepositoryProvider.overrideWithValue(repository),
-        ...ticks.overrides(),
-      ],
-    );
-    addTearDown(polling.dispose);
-
+  test('does not poll list while an item is still processing', () async {
     final processing = testItem(
       processingStatus: ItemProcessingStatus.processing,
       originalImageUrl: 'https://cdn.example.com/original.jpg',
     );
     repository.items.add(processing);
-    polling.read(itemsControllerProvider('wd_abc123'));
+    container.read(itemsControllerProvider('wd_abc123'));
     await settle();
 
     expect(
-      polling
+      container
           .read(itemsControllerProvider('wd_abc123'))
           .items
           .single
           .processingStatus,
       ItemProcessingStatus.processing,
     );
-    expect(ticks.waiting, 1);
-    final callsWhileProcessing = repository.listCalls;
-
-    repository.items[0] = processing.copyWith(
-      processingStatus: ItemProcessingStatus.failed,
-      processingError: 'Background removal failed.',
-    );
-    await ticks.tickAll();
-
-    final items = polling.read(itemsControllerProvider('wd_abc123')).items;
-    expect(items.single.processingStatus, ItemProcessingStatus.failed);
-    expect(items.single.processingStatus.isInProgress, isFalse);
-    expect(items.single.processingStatus.isTerminal, isTrue);
-    expect(items.single.processingError, 'Background removal failed.');
-    expect(
-      items.single.originalImageKey,
-      'https://cdn.example.com/original.jpg',
-    );
-    expect(repository.listCalls, greaterThan(callsWhileProcessing));
-    expect(ticks.waiting, 0);
-
-    final callsAfterFailed = repository.listCalls;
-    await ticks.tickAll();
-    expect(repository.listCalls, callsAfterFailed);
+    final callsAfterLoad = repository.listCalls;
+    await settle();
+    await settle();
+    expect(repository.listCalls, callsAfterLoad);
   });
 
   test('refresh picks up FAILED without restarting a poll loop', () async {

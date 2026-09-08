@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:wardrobe_app/features/items/data/dio_item_repository.dart';
 import 'package:wardrobe_app/features/items/domain/item.dart';
 import 'package:wardrobe_app/features/items/presentation/item_detail_screen.dart';
+import 'package:wardrobe_app/features/items/presentation/widgets/item_browse_image.dart';
 import 'package:wardrobe_app/features/items/presentation/widgets/processing_status_chip.dart';
 
 import '../../../helpers/date_stamp_matchers.dart';
@@ -48,13 +49,18 @@ void main() {
     expect(find.text('Black Nike T-Shirt'), findsWidgets);
     expect(find.text('Top'), findsOneWidget);
     expect(find.text('Nike'), findsOneWidget);
-    expect(find.byType(ProcessingStatusBanner), findsOneWidget);
+    expect(find.byKey(ItemBrowseImage.imageKey('item_xyz123')), findsOneWidget);
+    expect(find.byType(ProcessingStatusBanner), findsNothing);
+    expect(find.text('Processing'), findsNothing);
+    expect(find.text('Processed'), findsNothing);
+    expect(find.text('Ready'), findsNothing);
+    expect(find.text('Failed'), findsNothing);
     expect(find.byKey(ItemDetailScreen.editButtonKey), findsOneWidget);
     expect(find.byKey(ItemDetailScreen.deleteButtonKey), findsOneWidget);
     expectNoCreatedUpdatedDateStamps();
   });
 
-  testWidgets('shows FAILED banner with processingError and keeps delete', (
+  testWidgets('hides FAILED status and processingError while keeping delete', (
     tester,
   ) async {
     await pumpDetail(
@@ -69,10 +75,13 @@ void main() {
       ),
     );
 
-    expect(find.byType(ProcessingStatusBanner), findsOneWidget);
-    expect(find.text('Failed'), findsOneWidget);
+    expect(find.byType(ProcessingStatusBanner), findsNothing);
+    expect(find.text('Failed'), findsNothing);
     expect(find.text('Processing'), findsNothing);
-    expect(find.text('Background removal failed.'), findsOneWidget);
+    expect(find.text('Processed'), findsNothing);
+    expect(find.text('Background removal failed.'), findsNothing);
+    expect(find.text('Black Nike T-Shirt'), findsWidgets);
+    expect(find.byKey(ItemBrowseImage.imageKey('item_xyz123')), findsOneWidget);
     expect(find.byKey(ItemDetailScreen.deleteButtonKey), findsOneWidget);
   });
 }

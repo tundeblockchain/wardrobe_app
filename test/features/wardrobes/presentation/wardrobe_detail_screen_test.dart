@@ -188,7 +188,9 @@ void main() {
 
     expect(find.byKey(ItemSwipeCard.deleteKey(testItem().id)), findsOneWidget);
     expect(find.byKey(ItemSwipeDeck.removeButtonKey), findsOneWidget);
-    expect(find.text('Processing'), findsOneWidget);
+    expect(find.text('Processing'), findsNothing);
+    expect(find.text('Processed'), findsNothing);
+    expect(find.text('Failed'), findsNothing);
   });
 
   testWidgets('item card delete works for FAILED and PROCESSING items', (
