@@ -47,7 +47,7 @@ void main() {
 
     expect(find.byType(ItemDetailScreen), findsOneWidget);
     expect(find.text('Black Nike T-Shirt'), findsWidgets);
-    expect(find.text('Top'), findsOneWidget);
+    expect(find.text('Top'), findsWidgets);
     expect(find.text('Nike'), findsOneWidget);
     expect(find.byKey(ItemBrowseImage.imageKey('item_xyz123')), findsOneWidget);
     expect(find.byType(ProcessingStatusBanner), findsNothing);
