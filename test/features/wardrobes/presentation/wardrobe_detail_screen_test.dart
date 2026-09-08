@@ -65,9 +65,10 @@ void main() {
     expect(find.byType(WardrobeDetailScreen), findsOneWidget);
     expect(find.text('Summer Clothes'), findsWidgets);
     expectNoCreatedUpdatedDateStamps();
+    expect(find.text('Items'), findsOneWidget);
     expect(find.text('Outfits'), findsOneWidget);
     expect(find.text('Suggestions'), findsOneWidget);
-    expect(find.text('Items'), findsOneWidget);
+    expect(find.text('Dressing room'), findsOneWidget);
     expect(find.text('Create outfit'), findsOneWidget);
     expect(find.byKey(WardrobeDetailScreen.addItemButtonKey), findsOneWidget);
     expect(find.byKey(WardrobeDetailScreen.renameButtonKey), findsOneWidget);
@@ -84,6 +85,41 @@ void main() {
     expect(find.byType(ItemSwipeDeck), findsNothing);
     expect(find.byType(ItemFilterBar), findsNothing);
   });
+
+  testWidgets(
+    'wardrobe detail sections are items, outfits, suggestions, then dressing room',
+    (tester) async {
+      await pumpDetail(tester);
+
+      final itemsY = tester.getTopLeft(find.text('Items')).dy;
+      final outfitsY = tester.getTopLeft(find.text('Outfits')).dy;
+      final suggestionsY = tester.getTopLeft(find.text('Suggestions')).dy;
+      final dressingY = tester.getTopLeft(find.text('Dressing room')).dy;
+
+      expect(itemsY, lessThan(outfitsY));
+      expect(outfitsY, lessThan(suggestionsY));
+      expect(suggestionsY, lessThan(dressingY));
+
+      expect(find.byKey(WardrobeDetailScreen.itemsEmptyKey), findsOneWidget);
+      expect(find.text('No items yet'), findsOneWidget);
+      expect(
+        find.text('Build a look from items in this wardrobe'),
+        findsOneWidget,
+      );
+      expect(find.text('No suggestions yet'), findsOneWidget);
+      expect(find.text('Virtual try-on'), findsOneWidget);
+      expect(
+        find.byKey(WardrobeDetailScreen.dressingRoomButtonKey),
+        findsOneWidget,
+      );
+
+      final emptyItemsY = tester
+          .getTopLeft(find.byKey(WardrobeDetailScreen.itemsEmptyKey))
+          .dy;
+      expect(emptyItemsY, greaterThan(itemsY));
+      expect(emptyItemsY, lessThan(outfitsY));
+    },
+  );
 
   testWidgets('single item stays a large card without swipe', (tester) async {
     await pumpDetail(tester, items: [testItem()]);
