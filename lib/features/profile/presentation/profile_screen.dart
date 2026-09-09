@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/router/app_routes.dart';
+import '../../../core/theme/theme_controller.dart';
 import '../../../core/widgets/type_to_confirm_dialog.dart';
 import '../../account/application/account_controller.dart';
 import '../../auth/application/auth_controller.dart';
@@ -14,6 +15,7 @@ class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
 
   static const screenKey = Key('profile_screen');
+  static const themeToggleKey = Key('profile_theme_toggle');
   static const rateTileKey = Key('profile_rate_app');
   static const aiTryOnTileKey = Key('profile_ai_try_on');
   static const contactTileKey = Key('profile_contact_us');
@@ -32,8 +34,13 @@ class ProfileScreen extends ConsumerWidget {
     final auth = ref.watch(authControllerProvider);
     final rate = ref.watch(rateAppControllerProvider);
     final account = ref.watch(accountControllerProvider);
+    final themeMode = ref.watch(themeControllerProvider);
     final user = auth.user;
     final busy = auth.isBusy || account.isBusy || rate.isBusy;
+    final isDark = themeModeIsDark(
+      themeMode,
+      MediaQuery.platformBrightnessOf(context),
+    );
 
     ref.listen(accountControllerProvider, (previous, next) {
       if (next.isAccountDeleted && context.mounted) {
@@ -49,6 +56,19 @@ class ProfileScreen extends ConsumerWidget {
         children: [
           _AccountCard(user: user),
           const SizedBox(height: 24),
+          SwitchListTile(
+            key: themeToggleKey,
+            contentPadding: EdgeInsets.zero,
+            secondary: Icon(
+              isDark ? Icons.dark_mode_outlined : Icons.light_mode_outlined,
+            ),
+            title: const Text('Dark theme'),
+            subtitle: const Text('Burgundy and plum in light and dark'),
+            value: isDark,
+            onChanged: (dark) {
+              ref.read(themeControllerProvider.notifier).setDark(dark);
+            },
+          ),
           ListTile(
             key: aiTryOnTileKey,
             contentPadding: EdgeInsets.zero,
