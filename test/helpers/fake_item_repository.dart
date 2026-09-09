@@ -170,6 +170,7 @@ Item testItem({
   String? processingError,
   String? originalImageUrl,
   String? processedImageUrl,
+  ItemAiMetadata? ai,
 }) {
   return Item(
     id: id,
@@ -183,6 +184,7 @@ Item testItem({
     processedImageKey: processedImageUrl ?? processedImageKey,
     processingStatus: processingStatus,
     processingError: processingError,
+    ai: ai,
     createdAt: DateTime.utc(2026, 9, 3, 18, 45),
     updatedAt: DateTime.utc(2026, 9, 3, 18, 45),
   );
