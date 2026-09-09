@@ -30,19 +30,18 @@ class AiProfilePickerImage extends StatelessWidget {
         : Icons.person_outline;
 
     final Widget child;
+    final Key sourceKey;
     if (url != null) {
+      sourceKey = urlKey(url);
       child = Image.network(
         url,
-        key: urlKey(url),
         fit: BoxFit.cover,
         width: diameter,
         height: diameter,
         errorBuilder: (context, error, stackTrace) {
-          return _Placeholder(
-            profileId: profile.id,
-            icon: icon,
-            background: scheme.primaryContainer,
-            foreground: scheme.onPrimaryContainer,
+          return ColoredBox(
+            color: scheme.primaryContainer,
+            child: Center(child: Icon(icon, color: scheme.onPrimaryContainer)),
           );
         },
         loadingBuilder: (context, image, progress) {
@@ -65,8 +64,8 @@ class AiProfilePickerImage extends StatelessWidget {
         },
       );
     } else {
+      sourceKey = placeholderKey(profile.id);
       child = _Placeholder(
-        profileId: profile.id,
         icon: icon,
         background: scheme.primaryContainer,
         foreground: scheme.onPrimaryContainer,
@@ -77,20 +76,20 @@ class AiProfilePickerImage extends StatelessWidget {
       key: imageKey(profile.id),
       width: diameter,
       height: diameter,
-      child: ClipOval(child: child),
+      child: ClipOval(
+        child: KeyedSubtree(key: sourceKey, child: child),
+      ),
     );
   }
 }
 
 class _Placeholder extends StatelessWidget {
   const _Placeholder({
-    required this.profileId,
     required this.icon,
     required this.background,
     required this.foreground,
   });
 
-  final String profileId;
   final IconData icon;
   final Color background;
   final Color foreground;
@@ -98,7 +97,6 @@ class _Placeholder extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ColoredBox(
-      key: AiProfilePickerImage.placeholderKey(profileId),
       color: background,
       child: Center(child: Icon(icon, color: foreground)),
     );
