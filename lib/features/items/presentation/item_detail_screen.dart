@@ -7,11 +7,15 @@ import '../../../core/router/app_routes.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/app_empty_state.dart';
 import '../../../core/widgets/entity_delete.dart';
+import '../../outfits/application/outfits_controller.dart';
+import '../../wardrobes/application/wardrobes_controller.dart';
 import '../application/item_detail_controller.dart';
 import '../application/item_detail_state.dart';
 import '../application/item_local_preview_cache.dart';
 import '../application/item_scope.dart';
+import '../domain/item_detail_meta.dart';
 import 'widgets/item_browse_image.dart';
+import 'widgets/item_detail_meta_block.dart';
 
 /// Clothing item detail with edit and delete.
 class ItemDetailScreen extends ConsumerStatefulWidget {
@@ -68,6 +72,17 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen>
   Widget build(BuildContext context) {
     final state = ref.watch(itemDetailControllerProvider(_scope));
     final item = state.item;
+    final wardrobes = [
+      for (final wardrobe in ref.watch(wardrobesControllerProvider).wardrobes)
+        if (item != null && wardrobe.id == item.wardrobeId)
+          ItemDetailMetaLink(id: wardrobe.id, label: wardrobe.name),
+    ];
+    final outfits = [
+      for (final outfit
+          in ref.watch(outfitsControllerProvider(widget.wardrobeId)).outfits)
+        if (item != null && outfit.items.any((slot) => slot.itemId == item.id))
+          ItemDetailMetaLink(id: outfit.id, label: outfit.name),
+    ];
 
     ref.listen(itemDetailControllerProvider(_scope), (previous, next) {
       if (next.isDeleted && context.mounted) {
@@ -106,14 +121,19 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen>
           child: ListView(
             physics: const AlwaysScrollableScrollPhysics(),
             padding: AppSpacing.pageInsets,
-            children: [_buildBody(context, state)],
+            children: [_buildBody(context, state, wardrobes, outfits)],
           ),
         ),
       ),
     );
   }
 
-  Widget _buildBody(BuildContext context, ItemDetailState state) {
+  Widget _buildBody(
+    BuildContext context,
+    ItemDetailState state,
+    List<ItemDetailMetaLink> wardrobes,
+    List<ItemDetailMetaLink> outfits,
+  ) {
     if (state.isLoading && state.item == null) {
       return const Padding(
         padding: EdgeInsets.symmetric(vertical: 48),
@@ -130,7 +150,6 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen>
     }
 
     final item = state.item!;
-    final ai = item.ai;
     final localPreview = ref.watch(itemLocalPreviewCacheProvider)[item.id];
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -145,22 +164,16 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen>
         ),
         const SizedBox(height: 16),
         Text(item.name, style: Theme.of(context).textTheme.headlineSmall),
-        const SizedBox(height: 8),
-        Text(item.category.label),
-        if (item.subcategory != null && item.subcategory!.isNotEmpty)
-          Text(item.subcategory!),
-        if (item.brand != null && item.brand!.isNotEmpty) Text(item.brand!),
-        if (item.colours.isNotEmpty) Text(item.colours.join(', ')),
-        if (ai != null) ...[
-          const SizedBox(height: 16),
-          Text('Detected', style: Theme.of(context).textTheme.titleSmall),
-          if (ai.detectedCategory != null) Text(ai.detectedCategory!.label),
-          if (ai.detectedSubcategory != null &&
-              ai.detectedSubcategory!.isNotEmpty)
-            Text(ai.detectedSubcategory!),
-          if (ai.detectedColours.isNotEmpty)
-            Text(ai.detectedColours.join(', ')),
-        ],
+        const SizedBox(height: 16),
+        ItemDetailMetaBlock(
+          item: item,
+          wardrobes: wardrobes,
+          outfits: outfits,
+          onWardrobeTap: (wardrobeId) =>
+              context.push(AppRoutes.wardrobeDetail(wardrobeId)),
+          onOutfitTap: (outfitId) =>
+              context.push(AppRoutes.outfitDetail(widget.wardrobeId, outfitId)),
+        ),
         if (state.errorMessage != null) ...[
           const SizedBox(height: 16),
           Text(
