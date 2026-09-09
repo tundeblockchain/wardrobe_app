@@ -43,7 +43,7 @@ abstract final class ItemDetailMeta {
 
   static bool isPlaceholder(String value) => value == emptyPlaceholder;
 
-  /// Title-cases a backend token (`TSHIRT` → `Tshirt`, `NAVY_BLUE` → `Navy blue`).
+  /// Title-cases a backend token (`NAVY_BLUE` → `Navy Blue`).
   static String humanizeToken(String value) {
     final trimmed = value.trim();
     if (trimmed.isEmpty) {

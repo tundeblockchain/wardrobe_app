@@ -63,8 +63,8 @@ void main() {
   });
 
   test('humanizes unknown tokens and blank brand', () {
-    expect(ItemDetailMeta.humanizeToken('NAVY_BLUE'), 'Navy blue');
-    expect(ItemDetailMeta.colourLabel('CUSTOM_TEAL'), 'Custom teal');
+    expect(ItemDetailMeta.humanizeToken('NAVY_BLUE'), 'Navy Blue');
+    expect(ItemDetailMeta.colourLabel('CUSTOM_TEAL'), 'Custom Teal');
     expect(ItemDetailMeta.brandLabel(testItem(brand: '   ')), 'Not set');
   });
 }
