@@ -88,8 +88,7 @@ class AiTryOnScreen extends ConsumerWidget {
             const SizedBox(height: AppSpacing.lg),
             Text(
               key: comingSoonKey,
-              'Open a wardrobe outfit and tap Try on. Your selected profile '
-              'is sent as aiProfileId to the render API.',
+              'Open a wardrobe outfit and tap Try on.',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),

@@ -161,5 +161,8 @@ void main() {
     expect(find.byKey(AiTryOnScreen.selectedBannerKey), findsOneWidget);
     expect(find.text('Selected: Jordan'), findsOneWidget);
     expect(find.byKey(AiTryOnScreen.comingSoonKey), findsOneWidget);
+    expect(find.text('Open a wardrobe outfit and tap Try on.'), findsOneWidget);
+    expect(find.textContaining('aiProfileId'), findsNothing);
+    expect(find.textContaining('render API'), findsNothing);
   });
 }
