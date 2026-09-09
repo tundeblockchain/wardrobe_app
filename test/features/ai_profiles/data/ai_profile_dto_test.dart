@@ -46,6 +46,29 @@ void main() {
       expect(domain.referenceImages, [
         'shared/ai-profiles/generic/alex/front.jpg',
       ]);
+      expect(domain.pickerImageUrl, isNull);
+    });
+
+    test('maps a frontal http(s) reference after WARDROBE-72 style URLs', () {
+      final domain = AiProfileResponse.fromJson({
+        ...genericJson,
+        'referenceImages': [
+          'https://cdn.example.com/alex/side.jpg',
+          'https://cdn.example.com/alex/front.png',
+        ],
+      }).toDomain();
+
+      expect(domain.pickerImageUrl, 'https://cdn.example.com/alex/front.png');
+    });
+
+    test('keeps PERSONAL picker empty when only S3 keys are present', () {
+      final domain = AiProfileResponse.fromJson({
+        ...personalJson,
+        'referenceImages': ['users/uid/ai-profiles/profile_abc123xyz0/ref.jpg'],
+      }).toDomain();
+
+      expect(domain.referenceImages, hasLength(1));
+      expect(domain.pickerImageUrl, isNull);
     });
 
     test('parses PROCESSING and FAILED statuses', () {

@@ -9,12 +9,14 @@ AiProfile testPersonalProfile({
   String id = 'profile_personal_1',
   AiProfileStatus status = AiProfileStatus.ready,
   List<String> referenceImages = const [],
+  String? previewImageUrl,
 }) {
   return AiProfile(
     id: id,
     type: AiProfileType.personal,
     referenceImages: referenceImages,
     status: status,
+    previewImageUrl: previewImageUrl,
     createdAt: DateTime.utc(2026, 9, 6, 8),
     updatedAt: DateTime.utc(2026, 9, 6, 8),
   );
@@ -24,6 +26,7 @@ AiProfile testGenericModel({
   String id = 'profile_generic_01',
   String label = 'Alex',
   String imageKey = 'shared/ai-profiles/generic/alex/front.jpg',
+  String? previewImageUrl,
 }) {
   return AiProfile(
     id: id,
@@ -31,6 +34,7 @@ AiProfile testGenericModel({
     label: label,
     referenceImages: [imageKey],
     status: AiProfileStatus.ready,
+    previewImageUrl: previewImageUrl,
     createdAt: DateTime.utc(2026, 9, 6),
     updatedAt: DateTime.utc(2026, 9, 6),
   );

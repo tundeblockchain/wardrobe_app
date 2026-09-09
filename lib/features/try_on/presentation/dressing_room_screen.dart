@@ -6,6 +6,7 @@ import '../../../core/router/app_routes.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/app_empty_state.dart';
 import '../../ai_profiles/application/selected_ai_profile.dart';
+import '../../ai_profiles/presentation/widgets/ai_profile_picker_image.dart';
 import '../../outfits/application/outfits_controller.dart';
 import '../../outfits/domain/outfit.dart';
 
@@ -58,10 +59,7 @@ class DressingRoomScreen extends ConsumerWidget {
               Card(
                 color: Theme.of(context).colorScheme.primaryContainer,
                 child: ListTile(
-                  leading: Icon(
-                    Icons.checkroom_outlined,
-                    color: Theme.of(context).colorScheme.onPrimaryContainer,
-                  ),
+                  leading: AiProfilePickerImage(profile: selected, radius: 22),
                   title: Text('Selected: ${selected.displayName}'),
                   subtitle: Text(
                     selected.isGenericModel

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_spacing.dart';
 import '../../domain/ai_profile.dart';
+import 'ai_profile_picker_image.dart';
 import 'ai_profile_status_chip.dart';
 
 /// GENERIC_MODEL catalog tile. Tap selects it for WARDROBE-51 try-on prep.
@@ -23,9 +24,6 @@ class GenericModelCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
-    final initial = profile.displayName.isEmpty
-        ? '?'
-        : profile.displayName[0].toUpperCase();
 
     return Card(
       key: cardKey(profile.id),
@@ -41,12 +39,7 @@ class GenericModelCard extends StatelessWidget {
               Stack(
                 alignment: Alignment.topRight,
                 children: [
-                  CircleAvatar(
-                    radius: 28,
-                    backgroundColor: scheme.tertiaryContainer,
-                    foregroundColor: scheme.onTertiaryContainer,
-                    child: Text(initial, style: theme.textTheme.titleLarge),
-                  ),
+                  AiProfilePickerImage(profile: profile),
                   if (selected)
                     Icon(Icons.check_circle, color: scheme.primary, size: 20),
                 ],

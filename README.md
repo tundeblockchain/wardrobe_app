@@ -169,6 +169,8 @@ Status chips show `PENDING` / `PROCESSING` / `READY` / `FAILED`. Users can delet
 
 The catalog (`GET /ai-profiles/models`) is expected to include seeded models Alex, Jordan, Sam, and Riley (`profile_generic_01`–`04`). Tapping a model (or a personal profile) stores `selectedAiProfileId` for the dressing room.
 
+Picker tiles ([WARDROBE-71](https://tundetunde000.atlassian.net/browse/WARDROBE-71)) show a frontal photo when get/list returns an http(s) URL (`referenceImages` entry such as `front.png`, or aliases like `frontImageUrl` / `referenceImageUrls` / `imageUrl`). Current Backend get/list (WARDROBE-43/45) only returns S3 keys in `referenceImages` — no PERSONAL URL field — so those options use a burgundy/plum placeholder until WARDROBE-72 (or a follow-up) returns GET URLs. S3 keys are never turned into fabricated URLs.
+
 ## Virtual try-on (WARDROBE-51)
 
 Authenticated routes:

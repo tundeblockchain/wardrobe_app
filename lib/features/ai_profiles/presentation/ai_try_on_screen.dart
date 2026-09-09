@@ -10,6 +10,7 @@ import '../application/personal_ai_profiles_controller.dart';
 import '../application/personal_ai_profiles_state.dart';
 import '../application/selected_ai_profile.dart';
 import '../domain/ai_profile.dart';
+import 'widgets/ai_profile_picker_image.dart';
 import 'widgets/generic_model_card.dart';
 import 'widgets/personal_ai_profile_card.dart';
 
@@ -112,10 +113,7 @@ class _SelectedBanner extends ConsumerWidget {
       key: AiTryOnScreen.selectedBannerKey,
       color: scheme.primaryContainer,
       child: ListTile(
-        leading: Icon(
-          Icons.checkroom_outlined,
-          color: scheme.onPrimaryContainer,
-        ),
+        leading: AiProfilePickerImage(profile: profile, radius: 22),
         title: Text('Selected: ${profile.displayName}'),
         subtitle: Text(
           profile.isGenericModel

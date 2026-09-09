@@ -8,6 +8,7 @@ import 'package:wardrobe_app/features/ai_profiles/data/dio_ai_profile_repository
 import 'package:wardrobe_app/features/outfits/data/dio_outfit_repository.dart';
 import 'package:wardrobe_app/features/outfits/domain/outfit_render.dart';
 import 'package:wardrobe_app/features/try_on/application/try_on_poll.dart';
+import 'package:wardrobe_app/features/ai_profiles/presentation/widgets/ai_profile_picker_image.dart';
 import 'package:wardrobe_app/features/try_on/presentation/try_on_screen.dart';
 import 'package:wardrobe_app/features/try_on/presentation/widgets/try_on_result_image.dart';
 import 'package:wardrobe_app/features/try_on/presentation/widgets/try_on_status_banner.dart';
@@ -104,6 +105,10 @@ void main() {
 
     expect(find.byKey(TryOnScreen.selectedProfileKey), findsOneWidget);
     expect(find.text('Alex'), findsWidgets);
+    expect(
+      find.byKey(AiProfilePickerImage.placeholderKey('profile_generic_01')),
+      findsWidgets,
+    );
 
     await tester.tap(find.byKey(TryOnScreen.submitButtonKey));
     await tester.pumpAndSettle();
