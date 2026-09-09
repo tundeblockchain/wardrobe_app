@@ -112,7 +112,12 @@ class _SelectedBanner extends ConsumerWidget {
       key: AiTryOnScreen.selectedBannerKey,
       color: scheme.primaryContainer,
       child: ListTile(
-        leading: AiProfilePickerImage(profile: profile, radius: 22),
+        leading: SizedBox(
+          width: 56,
+          height: 72,
+          child: AiProfilePickerImage(profile: profile),
+        ),
+        minLeadingWidth: 56,
         title: Text('Selected: ${profile.displayName}'),
         subtitle: Text(
           profile.isGenericModel
@@ -268,7 +273,7 @@ class _ModelsSection extends ConsumerWidget {
         crossAxisCount: 2,
         mainAxisSpacing: AppSpacing.md,
         crossAxisSpacing: AppSpacing.md,
-        childAspectRatio: 0.9,
+        childAspectRatio: 0.62,
       ),
       itemBuilder: (context, index) {
         final profile = models.models[index];

@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/router/app_routes.dart';
 import '../../../../core/widgets/entity_delete.dart';
 import '../../domain/outfit.dart';
+import 'outfit_list_preview.dart';
 
 /// Saved-outfit row with an optional delete control on the trailing edge.
 class OutfitListTile extends StatelessWidget {
@@ -30,7 +31,8 @@ class OutfitListTile extends StatelessWidget {
     return Card(
       child: ListTile(
         key: tileKey ?? defaultTileKey(outfit.id),
-        leading: const CircleAvatar(child: Icon(Icons.checkroom_outlined)),
+        leading: OutfitListPreview(outfit: outfit),
+        minLeadingWidth: 56,
         title: Text(outfit.name),
         subtitle: Text(slotCount == 1 ? '1 item' : '$slotCount items'),
         trailing: onDelete == null

@@ -44,6 +44,7 @@ void main() {
     expect(find.byKey(ItemBrowseImage.imageKey(item.id)), findsOneWidget);
     expect(find.byKey(ItemBrowseImage.localSourceKey(item.id)), findsOneWidget);
     expect(find.byType(Image), findsOneWidget);
+    expect(tester.widget<Image>(find.byType(Image)).fit, BoxFit.contain);
     expect(find.byIcon(Icons.checkroom_outlined), findsNothing);
     expect(find.text('Processing'), findsNothing);
     expect(find.text('Processed'), findsNothing);
@@ -97,6 +98,7 @@ void main() {
       find.byKey(ItemBrowseImage.sourceKey(item.processedImageKey!)),
       findsOneWidget,
     );
+    expect(tester.widget<Image>(find.byType(Image)).fit, BoxFit.contain);
     expect(find.byKey(ItemBrowseImage.localSourceKey(item.id)), findsNothing);
     expect(find.text('Ready'), findsNothing);
     expect(find.text('Processed'), findsNothing);

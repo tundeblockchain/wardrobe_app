@@ -14,6 +14,7 @@ import '../../outfits/application/outfit_scope.dart';
 import '../../outfits/domain/outfit.dart';
 import '../application/try_on_controller.dart';
 import '../application/try_on_state.dart';
+import 'widgets/try_on_persona_card.dart';
 import 'widgets/try_on_result_image.dart';
 import 'widgets/try_on_status_banner.dart';
 
@@ -117,7 +118,12 @@ class TryOnScreen extends ConsumerWidget {
             key: selectedProfileKey,
             color: Theme.of(context).colorScheme.primaryContainer,
             child: ListTile(
-              leading: AiProfilePickerImage(profile: selected, radius: 22),
+              leading: SizedBox(
+                width: 56,
+                height: 72,
+                child: AiProfilePickerImage(profile: selected),
+              ),
+              minLeadingWidth: 56,
               title: Text(selected.displayName),
               subtitle: Text(
                 selected.isGenericModel
@@ -133,21 +139,24 @@ class TryOnScreen extends ConsumerWidget {
           ),
         if (readyProfiles.isNotEmpty) ...[
           const SizedBox(height: AppSpacing.md),
-          Wrap(
-            spacing: AppSpacing.sm,
-            runSpacing: AppSpacing.sm,
-            children: [
-              for (final profile in readyProfiles)
-                FilterChip(
-                  key: Key('try_on_profile_chip_${profile.id}'),
+          SizedBox(
+            height: TryOnPersonaCard.photoHeight + 64,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              itemCount: readyProfiles.length,
+              separatorBuilder: (context, index) =>
+                  const SizedBox(width: AppSpacing.sm),
+              itemBuilder: (context, index) {
+                final profile = readyProfiles[index];
+                return TryOnPersonaCard(
+                  profile: profile,
                   selected: selected?.id == profile.id,
-                  avatar: AiProfilePickerImage(profile: profile, radius: 12),
-                  label: Text(profile.displayName),
-                  onSelected: (_) => ref
+                  onSelect: () => ref
                       .read(selectedAiProfileProvider.notifier)
                       .select(profile),
-                ),
-            ],
+                );
+              },
+            ),
           ),
         ],
         if (blocked != null && selected != null) ...[

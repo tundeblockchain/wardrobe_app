@@ -45,50 +45,69 @@ void main() {
     const url = 'https://cdn.example.com/alex/front.png';
     final profile = testGenericModel(previewImageUrl: url);
 
-    await pump(tester, AiProfilePickerImage(profile: profile));
+    await pump(
+      tester,
+      SizedBox(
+        width: 160,
+        height: 220,
+        child: AiProfilePickerImage(profile: profile),
+      ),
+    );
 
     expect(find.byKey(AiProfilePickerImage.urlKey(url)), findsOneWidget);
     expect(
       find.byKey(AiProfilePickerImage.placeholderKey(profile.id)),
       findsNothing,
     );
+    expect(find.byType(ClipOval), findsNothing);
+    expect(tester.widget<Image>(find.byType(Image)).fit, BoxFit.contain);
   });
 
   testWidgets('generic and personal picker cards include the photo slot', (
     tester,
   ) async {
+    tester.view.physicalSize = const Size(400, 1200);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
     final model = testGenericModel(
       previewImageUrl: 'https://cdn.example.com/alex/front.png',
     );
     final personal = testPersonalProfile();
 
-    await pump(
-      tester,
-      Column(
-        children: [
-          SizedBox(
-            width: 180,
-            height: 200,
-            child: GenericModelCard(
-              profile: model,
-              selected: true,
-              onSelect: () {},
-            ),
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.light(),
+        home: Scaffold(
+          body: ListView(
+            children: [
+              SizedBox(
+                width: 180,
+                height: 280,
+                child: GenericModelCard(
+                  profile: model,
+                  selected: true,
+                  onSelect: () {},
+                ),
+              ),
+              PersonalAiProfileCard(
+                profile: personal,
+                selected: false,
+                busy: false,
+                uploading: false,
+                deleting: false,
+                onSelect: () {},
+                onCamera: () {},
+                onGallery: () {},
+                onDelete: () {},
+              ),
+            ],
           ),
-          PersonalAiProfileCard(
-            profile: personal,
-            selected: false,
-            busy: false,
-            uploading: false,
-            deleting: false,
-            onSelect: () {},
-            onCamera: () {},
-            onGallery: () {},
-            onDelete: () {},
-          ),
-        ],
+        ),
       ),
     );
+    await tester.pump();
 
     expect(find.byKey(AiProfilePickerImage.imageKey(model.id)), findsOneWidget);
     expect(
@@ -99,5 +118,7 @@ void main() {
       find.byKey(AiProfilePickerImage.placeholderKey(personal.id)),
       findsOneWidget,
     );
+    expect(find.byType(ClipOval), findsNothing);
+    expect(tester.widget<Image>(find.byType(Image)).fit, BoxFit.contain);
   });
 }
