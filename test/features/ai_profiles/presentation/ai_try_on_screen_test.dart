@@ -158,8 +158,13 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(container.read(selectedAiProfileIdProvider), 'profile_generic_02');
+    await tester.drag(scrollable, const Offset(0, 4000));
+    await tester.pumpAndSettle();
     expect(find.byKey(AiTryOnScreen.selectedBannerKey), findsOneWidget);
     expect(find.text('Selected: Jordan'), findsOneWidget);
+
+    await tester.drag(scrollable, const Offset(0, -4000));
+    await tester.pumpAndSettle();
     expect(find.byKey(AiTryOnScreen.comingSoonKey), findsOneWidget);
     expect(find.text('Open a wardrobe outfit and tap Try on.'), findsOneWidget);
     expect(find.textContaining('aiProfileId'), findsNothing);

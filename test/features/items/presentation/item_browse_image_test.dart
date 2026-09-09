@@ -98,7 +98,12 @@ void main() {
       find.byKey(ItemBrowseImage.sourceKey(item.processedImageKey!)),
       findsOneWidget,
     );
-    expect(tester.widget<Image>(find.byType(Image)).fit, BoxFit.contain);
+    expect(
+      tester
+          .widgetList<Image>(find.byType(Image))
+          .every((image) => image.fit == BoxFit.contain),
+      isTrue,
+    );
     expect(find.byKey(ItemBrowseImage.localSourceKey(item.id)), findsNothing);
     expect(find.text('Ready'), findsNothing);
     expect(find.text('Processed'), findsNothing);
