@@ -9,6 +9,7 @@ import '../../ai_profiles/application/generic_models_controller.dart';
 import '../../ai_profiles/application/personal_ai_profiles_controller.dart';
 import '../../ai_profiles/application/selected_ai_profile.dart';
 import '../../ai_profiles/domain/ai_profile.dart';
+import '../../ai_profiles/presentation/widgets/ai_profile_picker_image.dart';
 import '../../outfits/application/outfit_scope.dart';
 import '../../outfits/domain/outfit.dart';
 import '../application/try_on_controller.dart';
@@ -116,12 +117,7 @@ class TryOnScreen extends ConsumerWidget {
             key: selectedProfileKey,
             color: Theme.of(context).colorScheme.primaryContainer,
             child: ListTile(
-              leading: Icon(
-                selected.isGenericModel
-                    ? Icons.people_outline
-                    : Icons.person_outline,
-                color: Theme.of(context).colorScheme.onPrimaryContainer,
-              ),
+              leading: AiProfilePickerImage(profile: selected, radius: 22),
               title: Text(selected.displayName),
               subtitle: Text(
                 selected.isGenericModel
@@ -145,6 +141,7 @@ class TryOnScreen extends ConsumerWidget {
                 FilterChip(
                   key: Key('try_on_profile_chip_${profile.id}'),
                   selected: selected?.id == profile.id,
+                  avatar: AiProfilePickerImage(profile: profile, radius: 12),
                   label: Text(profile.displayName),
                   onSelected: (_) => ref
                       .read(selectedAiProfileProvider.notifier)

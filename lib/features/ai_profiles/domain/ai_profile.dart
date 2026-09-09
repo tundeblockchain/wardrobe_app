@@ -1,5 +1,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
+import 'ai_profile_preview.dart';
+
 part 'ai_profile.freezed.dart';
 
 /// Backend `type` values for an AI try-on profile.
@@ -65,9 +67,19 @@ abstract class AiProfile with _$AiProfile {
     String? label,
     @Default([]) List<String> referenceImages,
     @Default(AiProfileStatus.ready) AiProfileStatus status,
+    String? previewImageUrl,
     required DateTime createdAt,
     required DateTime updatedAt,
   }) = _AiProfile;
+
+  /// HTTP(S) photo for the model/persona picker. Null when get/list has no URL.
+  String? get pickerImageUrl {
+    final explicit = previewImageUrl?.trim();
+    if (explicit != null && explicit.isNotEmpty) {
+      return explicit;
+    }
+    return pickFrontalHttpUrl(referenceImages);
+  }
 
   /// Picker title: seeded [label] when present, otherwise a type fallback.
   String get displayName {

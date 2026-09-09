@@ -14,7 +14,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$AiProfile {
 
- String get id; AiProfileType get type; String? get label; List<String> get referenceImages; AiProfileStatus get status; DateTime get createdAt; DateTime get updatedAt;
+ String get id; AiProfileType get type; String? get label; List<String> get referenceImages; AiProfileStatus get status; String? get previewImageUrl; DateTime get createdAt; DateTime get updatedAt;
 /// Create a copy of AiProfile
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -25,16 +25,16 @@ $AiProfileCopyWith<AiProfile> get copyWith => _$AiProfileCopyWithImpl<AiProfile>
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is AiProfile&&(identical(other.id, id) || other.id == id)&&(identical(other.type, type) || other.type == type)&&(identical(other.label, label) || other.label == label)&&const DeepCollectionEquality().equals(other.referenceImages, referenceImages)&&(identical(other.status, status) || other.status == status)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is AiProfile&&(identical(other.id, id) || other.id == id)&&(identical(other.type, type) || other.type == type)&&(identical(other.label, label) || other.label == label)&&const DeepCollectionEquality().equals(other.referenceImages, referenceImages)&&(identical(other.status, status) || other.status == status)&&(identical(other.previewImageUrl, previewImageUrl) || other.previewImageUrl == previewImageUrl)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,type,label,const DeepCollectionEquality().hash(referenceImages),status,createdAt,updatedAt);
+int get hashCode => Object.hash(runtimeType,id,type,label,const DeepCollectionEquality().hash(referenceImages),status,previewImageUrl,createdAt,updatedAt);
 
 @override
 String toString() {
-  return 'AiProfile(id: $id, type: $type, label: $label, referenceImages: $referenceImages, status: $status, createdAt: $createdAt, updatedAt: $updatedAt)';
+  return 'AiProfile(id: $id, type: $type, label: $label, referenceImages: $referenceImages, status: $status, previewImageUrl: $previewImageUrl, createdAt: $createdAt, updatedAt: $updatedAt)';
 }
 
 
@@ -45,7 +45,7 @@ abstract mixin class $AiProfileCopyWith<$Res>  {
   factory $AiProfileCopyWith(AiProfile value, $Res Function(AiProfile) _then) = _$AiProfileCopyWithImpl;
 @useResult
 $Res call({
- String id, AiProfileType type, String? label, List<String> referenceImages, AiProfileStatus status, DateTime createdAt, DateTime updatedAt
+ String id, AiProfileType type, String? label, List<String> referenceImages, AiProfileStatus status, String? previewImageUrl, DateTime createdAt, DateTime updatedAt
 });
 
 
@@ -62,14 +62,15 @@ class _$AiProfileCopyWithImpl<$Res>
 
 /// Create a copy of AiProfile
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? type = null,Object? label = freezed,Object? referenceImages = null,Object? status = null,Object? createdAt = null,Object? updatedAt = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? type = null,Object? label = freezed,Object? referenceImages = null,Object? status = null,Object? previewImageUrl = freezed,Object? createdAt = null,Object? updatedAt = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,type: null == type ? _self.type : type // ignore: cast_nullable_to_non_nullable
 as AiProfileType,label: freezed == label ? _self.label : label // ignore: cast_nullable_to_non_nullable
 as String?,referenceImages: null == referenceImages ? _self.referenceImages : referenceImages // ignore: cast_nullable_to_non_nullable
 as List<String>,status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
-as AiProfileStatus,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
+as AiProfileStatus,previewImageUrl: freezed == previewImageUrl ? _self.previewImageUrl : previewImageUrl // ignore: cast_nullable_to_non_nullable
+as String?,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime,updatedAt: null == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
 as DateTime,
   ));
@@ -156,10 +157,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  AiProfileType type,  String? label,  List<String> referenceImages,  AiProfileStatus status,  DateTime createdAt,  DateTime updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  AiProfileType type,  String? label,  List<String> referenceImages,  AiProfileStatus status,  String? previewImageUrl,  DateTime createdAt,  DateTime updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _AiProfile() when $default != null:
-return $default(_that.id,_that.type,_that.label,_that.referenceImages,_that.status,_that.createdAt,_that.updatedAt);case _:
+return $default(_that.id,_that.type,_that.label,_that.referenceImages,_that.status,_that.previewImageUrl,_that.createdAt,_that.updatedAt);case _:
   return orElse();
 
 }
@@ -177,10 +178,10 @@ return $default(_that.id,_that.type,_that.label,_that.referenceImages,_that.stat
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  AiProfileType type,  String? label,  List<String> referenceImages,  AiProfileStatus status,  DateTime createdAt,  DateTime updatedAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  AiProfileType type,  String? label,  List<String> referenceImages,  AiProfileStatus status,  String? previewImageUrl,  DateTime createdAt,  DateTime updatedAt)  $default,) {final _that = this;
 switch (_that) {
 case _AiProfile():
-return $default(_that.id,_that.type,_that.label,_that.referenceImages,_that.status,_that.createdAt,_that.updatedAt);case _:
+return $default(_that.id,_that.type,_that.label,_that.referenceImages,_that.status,_that.previewImageUrl,_that.createdAt,_that.updatedAt);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -197,10 +198,10 @@ return $default(_that.id,_that.type,_that.label,_that.referenceImages,_that.stat
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  AiProfileType type,  String? label,  List<String> referenceImages,  AiProfileStatus status,  DateTime createdAt,  DateTime updatedAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  AiProfileType type,  String? label,  List<String> referenceImages,  AiProfileStatus status,  String? previewImageUrl,  DateTime createdAt,  DateTime updatedAt)?  $default,) {final _that = this;
 switch (_that) {
 case _AiProfile() when $default != null:
-return $default(_that.id,_that.type,_that.label,_that.referenceImages,_that.status,_that.createdAt,_that.updatedAt);case _:
+return $default(_that.id,_that.type,_that.label,_that.referenceImages,_that.status,_that.previewImageUrl,_that.createdAt,_that.updatedAt);case _:
   return null;
 
 }
@@ -212,7 +213,7 @@ return $default(_that.id,_that.type,_that.label,_that.referenceImages,_that.stat
 
 
 class _AiProfile extends AiProfile {
-  const _AiProfile({required this.id, required this.type, this.label, this.referenceImages = const [], this.status = AiProfileStatus.ready, required this.createdAt, required this.updatedAt}): super._();
+  const _AiProfile({required this.id, required this.type, this.label, this.referenceImages = const [], this.status = AiProfileStatus.ready, this.previewImageUrl, required this.createdAt, required this.updatedAt}): super._();
   
 
 @override final  String id;
@@ -220,6 +221,7 @@ class _AiProfile extends AiProfile {
 @override final  String? label;
 @override@JsonKey() final  List<String> referenceImages;
 @override@JsonKey() final  AiProfileStatus status;
+@override final  String? previewImageUrl;
 @override final  DateTime createdAt;
 @override final  DateTime updatedAt;
 
@@ -233,16 +235,16 @@ _$AiProfileCopyWith<_AiProfile> get copyWith => __$AiProfileCopyWithImpl<_AiProf
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AiProfile&&(identical(other.id, id) || other.id == id)&&(identical(other.type, type) || other.type == type)&&(identical(other.label, label) || other.label == label)&&const DeepCollectionEquality().equals(other.referenceImages, referenceImages)&&(identical(other.status, status) || other.status == status)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AiProfile&&(identical(other.id, id) || other.id == id)&&(identical(other.type, type) || other.type == type)&&(identical(other.label, label) || other.label == label)&&const DeepCollectionEquality().equals(other.referenceImages, referenceImages)&&(identical(other.status, status) || other.status == status)&&(identical(other.previewImageUrl, previewImageUrl) || other.previewImageUrl == previewImageUrl)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,type,label,const DeepCollectionEquality().hash(referenceImages),status,createdAt,updatedAt);
+int get hashCode => Object.hash(runtimeType,id,type,label,const DeepCollectionEquality().hash(referenceImages),status,previewImageUrl,createdAt,updatedAt);
 
 @override
 String toString() {
-  return 'AiProfile(id: $id, type: $type, label: $label, referenceImages: $referenceImages, status: $status, createdAt: $createdAt, updatedAt: $updatedAt)';
+  return 'AiProfile(id: $id, type: $type, label: $label, referenceImages: $referenceImages, status: $status, previewImageUrl: $previewImageUrl, createdAt: $createdAt, updatedAt: $updatedAt)';
 }
 
 
@@ -253,7 +255,7 @@ abstract mixin class _$AiProfileCopyWith<$Res> implements $AiProfileCopyWith<$Re
   factory _$AiProfileCopyWith(_AiProfile value, $Res Function(_AiProfile) _then) = __$AiProfileCopyWithImpl;
 @override @useResult
 $Res call({
- String id, AiProfileType type, String? label, List<String> referenceImages, AiProfileStatus status, DateTime createdAt, DateTime updatedAt
+ String id, AiProfileType type, String? label, List<String> referenceImages, AiProfileStatus status, String? previewImageUrl, DateTime createdAt, DateTime updatedAt
 });
 
 
@@ -270,14 +272,15 @@ class __$AiProfileCopyWithImpl<$Res>
 
 /// Create a copy of AiProfile
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? type = null,Object? label = freezed,Object? referenceImages = null,Object? status = null,Object? createdAt = null,Object? updatedAt = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? type = null,Object? label = freezed,Object? referenceImages = null,Object? status = null,Object? previewImageUrl = freezed,Object? createdAt = null,Object? updatedAt = null,}) {
   return _then(_AiProfile(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,type: null == type ? _self.type : type // ignore: cast_nullable_to_non_nullable
 as AiProfileType,label: freezed == label ? _self.label : label // ignore: cast_nullable_to_non_nullable
 as String?,referenceImages: null == referenceImages ? _self.referenceImages : referenceImages // ignore: cast_nullable_to_non_nullable
 as List<String>,status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
-as AiProfileStatus,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
+as AiProfileStatus,previewImageUrl: freezed == previewImageUrl ? _self.previewImageUrl : previewImageUrl // ignore: cast_nullable_to_non_nullable
+as String?,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime,updatedAt: null == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
 as DateTime,
   ));

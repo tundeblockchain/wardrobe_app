@@ -9,6 +9,7 @@ import '../../items/domain/upload_ticket.dart';
 import '../domain/ai_profile.dart';
 import '../domain/ai_profile_repository.dart';
 import 'ai_profile_dtos.dart';
+import 'ai_profile_image_urls.dart';
 
 /// Dio implementation of [AiProfileRepository] against `/ai-profiles`.
 class DioAiProfileRepository implements AiProfileRepository {
@@ -139,11 +140,15 @@ class DioAiProfileRepository implements AiProfileRepository {
 /// Parses `{ "aiProfiles": [...] }` or a bare array.
 List<AiProfile> parseAiProfileList(dynamic data) {
   if (data is List) {
-    return data.whereType<Map>().map(parseAiProfile).toList();
+    return data.whereType<Map>().map(mapAiProfileJson).toList();
   }
   if (data is Map) {
-    return AiProfileListResponse.fromJson(Map<String, dynamic>.from(data))
-        .toDomain();
+    final json = Map<String, dynamic>.from(data);
+    final profiles = json['aiProfiles'];
+    if (profiles is List) {
+      return profiles.whereType<Map>().map(mapAiProfileJson).toList();
+    }
+    return AiProfileListResponse.fromJson(json).toDomain();
   }
   throw const ApiException(
     message: 'Unexpected AI profiles response.',
@@ -153,13 +158,23 @@ List<AiProfile> parseAiProfileList(dynamic data) {
 
 AiProfile parseAiProfile(dynamic data) {
   if (data is Map) {
-    return AiProfileResponse.fromJson(Map<String, dynamic>.from(data))
-        .toDomain();
+    return mapAiProfileJson(data);
   }
   throw const ApiException(
     message: 'Unexpected AI profile response.',
     code: 'INVALID_RESPONSE',
   );
+}
+
+/// Maps get/list JSON, including optional WARDROBE-72 image URL aliases.
+AiProfile mapAiProfileJson(Map<dynamic, dynamic> data) {
+  final json = Map<String, dynamic>.from(data);
+  final normalized = Map<String, dynamic>.from(json);
+  normalized['referenceImages'] = parseReferenceImageKeys(
+    json['referenceImages'],
+  );
+  final domain = AiProfileResponse.fromJson(normalized).toDomain();
+  return domain.copyWith(previewImageUrl: extractAiProfileImageUrl(json));
 }
 
 UploadTicket parseAiProfileUpload(dynamic data) {

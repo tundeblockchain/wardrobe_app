@@ -4,6 +4,7 @@ import '../../../core/network/api_exception.dart';
 import '../../items/data/upload_dtos.dart';
 import '../../items/domain/upload_ticket.dart';
 import '../domain/ai_profile.dart';
+import '../domain/ai_profile_preview.dart';
 
 part 'ai_profile_dtos.freezed.dart';
 part 'ai_profile_dtos.g.dart';
@@ -40,6 +41,7 @@ abstract class AiProfileResponse with _$AiProfileResponse {
       label: _optional(label),
       referenceImages: [...?referenceImages],
       status: AiProfileStatus.parse(status),
+      previewImageUrl: pickFrontalHttpUrl([...?referenceImages]),
       createdAt: createdAt,
       updatedAt: updatedAt,
     );

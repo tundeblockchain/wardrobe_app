@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_spacing.dart';
 import '../../domain/ai_profile.dart';
+import 'ai_profile_picker_image.dart';
 import 'ai_profile_status_chip.dart';
 
 /// PERSONAL profile card: status, reference count, upload, select, delete.
@@ -54,11 +55,7 @@ class PersonalAiProfileCard extends StatelessWidget {
           children: [
             Row(
               children: [
-                CircleAvatar(
-                  backgroundColor: scheme.secondaryContainer,
-                  foregroundColor: scheme.onSecondaryContainer,
-                  child: const Icon(Icons.person_outline),
-                ),
+                AiProfilePickerImage(profile: profile, radius: 24),
                 const SizedBox(width: AppSpacing.md),
                 Expanded(
                   child: Column(

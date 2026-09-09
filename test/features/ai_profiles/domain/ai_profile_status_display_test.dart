@@ -27,4 +27,26 @@ void main() {
       );
     },
   );
+
+  test('pickerImageUrl stays null for S3 keys and uses a stored URL', () {
+    expect(testGenericModel().pickerImageUrl, isNull);
+    expect(
+      testPersonalProfile(
+        referenceImages: const ['users/uid/ai-profiles/p/ref.jpg'],
+      ).pickerImageUrl,
+      isNull,
+    );
+    expect(
+      testGenericModel(
+        previewImageUrl: 'https://cdn.example.com/alex/front.png',
+      ).pickerImageUrl,
+      'https://cdn.example.com/alex/front.png',
+    );
+    expect(
+      testPersonalProfile(
+        referenceImages: const ['https://cdn.example.com/me/front.png'],
+      ).pickerImageUrl,
+      'https://cdn.example.com/me/front.png',
+    );
+  });
 }

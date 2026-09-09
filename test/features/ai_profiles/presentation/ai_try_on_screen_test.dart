@@ -8,6 +8,7 @@ import 'package:wardrobe_app/features/ai_profiles/application/selected_ai_profil
 import 'package:wardrobe_app/features/ai_profiles/data/dio_ai_profile_repository.dart';
 import 'package:wardrobe_app/features/ai_profiles/domain/ai_profile.dart';
 import 'package:wardrobe_app/features/ai_profiles/presentation/ai_try_on_screen.dart';
+import 'package:wardrobe_app/features/ai_profiles/presentation/widgets/ai_profile_picker_image.dart';
 import 'package:wardrobe_app/features/ai_profiles/presentation/widgets/generic_model_card.dart';
 import 'package:wardrobe_app/features/ai_profiles/presentation/widgets/personal_ai_profile_card.dart';
 import 'package:wardrobe_app/features/items/data/image_picker_item_image_picker.dart';
@@ -141,6 +142,10 @@ void main() {
     expect(find.text('Jordan'), findsOneWidget);
     expect(find.text('Sam'), findsOneWidget);
     expect(find.text('Riley'), findsOneWidget);
+    expect(
+      find.byKey(AiProfilePickerImage.placeholderKey('profile_generic_01')),
+      findsOneWidget,
+    );
 
     await tester.scrollUntilVisible(
       find.byKey(GenericModelCard.cardKey('profile_generic_02')),
@@ -156,5 +161,8 @@ void main() {
     expect(find.byKey(AiTryOnScreen.selectedBannerKey), findsOneWidget);
     expect(find.text('Selected: Jordan'), findsOneWidget);
     expect(find.byKey(AiTryOnScreen.comingSoonKey), findsOneWidget);
+    expect(find.text('Open a wardrobe outfit and tap Try on.'), findsOneWidget);
+    expect(find.textContaining('aiProfileId'), findsNothing);
+    expect(find.textContaining('render API'), findsNothing);
   });
 }

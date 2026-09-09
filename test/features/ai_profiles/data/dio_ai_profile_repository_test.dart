@@ -93,8 +93,43 @@ void main() {
 
     expect(result.single.id, 'profile_generic_01');
     expect(result.single.label, 'Alex');
+    expect(result.single.pickerImageUrl, isNull);
     expect(adapter.requests.single.path, '/ai-profiles/models');
   });
+
+  test(
+    'listGenericModels prefers a frontal URL when get/list returns one',
+    () async {
+      repository = buildRepository(
+        api: [
+          HttpScript(
+            statusCode: 200,
+            body: {
+              'aiProfiles': [
+                {
+                  ...alex,
+                  'referenceImages': [
+                    'shared/ai-profiles/generic/alex/front.jpg',
+                  ],
+                  'frontImageUrl': 'https://cdn.example.com/alex/front.png',
+                },
+              ],
+            },
+          ),
+        ],
+      );
+
+      final result = await repository.listGenericModels();
+
+      expect(
+        result.single.pickerImageUrl,
+        'https://cdn.example.com/alex/front.png',
+      );
+      expect(result.single.referenceImages, [
+        'shared/ai-profiles/generic/alex/front.jpg',
+      ]);
+    },
+  );
 
   test('listPersonal accepts a bare array', () async {
     repository = buildRepository(

@@ -10,6 +10,7 @@ import '../application/personal_ai_profiles_controller.dart';
 import '../application/personal_ai_profiles_state.dart';
 import '../application/selected_ai_profile.dart';
 import '../domain/ai_profile.dart';
+import 'widgets/ai_profile_picker_image.dart';
 import 'widgets/generic_model_card.dart';
 import 'widgets/personal_ai_profile_card.dart';
 
@@ -87,8 +88,7 @@ class AiTryOnScreen extends ConsumerWidget {
             const SizedBox(height: AppSpacing.lg),
             Text(
               key: comingSoonKey,
-              'Open a wardrobe outfit and tap Try on. Your selected profile '
-              'is sent as aiProfileId to the render API.',
+              'Open a wardrobe outfit and tap Try on.',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
@@ -112,10 +112,7 @@ class _SelectedBanner extends ConsumerWidget {
       key: AiTryOnScreen.selectedBannerKey,
       color: scheme.primaryContainer,
       child: ListTile(
-        leading: Icon(
-          Icons.checkroom_outlined,
-          color: scheme.onPrimaryContainer,
-        ),
+        leading: AiProfilePickerImage(profile: profile, radius: 22),
         title: Text('Selected: ${profile.displayName}'),
         subtitle: Text(
           profile.isGenericModel
