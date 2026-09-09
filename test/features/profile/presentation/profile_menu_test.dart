@@ -3,6 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:wardrobe_app/core/router/app_routes.dart';
+import 'package:wardrobe_app/core/theme/app_colors.dart';
+import 'package:wardrobe_app/core/theme/app_theme.dart';
+import 'package:wardrobe_app/core/theme/theme_controller.dart';
+import 'package:wardrobe_app/core/theme/theme_preferences.dart';
 import 'package:wardrobe_app/features/auth/application/auth_controller.dart';
 import 'package:wardrobe_app/features/auth/domain/app_user.dart';
 import 'package:wardrobe_app/features/account/data/dio_account_repository.dart';
@@ -45,7 +49,10 @@ void main() {
 
   tearDown(() => auth.dispose());
 
-  Future<void> pumpMenu(WidgetTester tester) async {
+  Future<void> pumpMenu(
+    WidgetTester tester, {
+    ThemePreferences? themePreferences,
+  }) async {
     final router = GoRouter(
       initialLocation: AppRoutes.profile,
       routes: [
@@ -82,8 +89,19 @@ void main() {
           ),
           itemImagePickerProvider.overrideWithValue(FakeItemImagePicker()),
           deviceContextProvider.overrideWithValue(const FakeDeviceContext()),
+          if (themePreferences != null)
+            themePreferencesProvider.overrideWithValue(themePreferences),
         ],
-        child: MaterialApp.router(routerConfig: router),
+        child: Consumer(
+          builder: (context, ref, _) {
+            return MaterialApp.router(
+              theme: AppTheme.light(),
+              darkTheme: AppTheme.dark(),
+              themeMode: ref.watch(themeControllerProvider),
+              routerConfig: router,
+            );
+          },
+        ),
       ),
     );
     await tester.pumpAndSettle();
@@ -96,6 +114,8 @@ void main() {
     expect(find.text('Ada Lovelace'), findsOneWidget);
     expect(find.text('ada@example.com'), findsOneWidget);
     expect(find.text('Signed in with Google'), findsOneWidget);
+    expect(find.byKey(ProfileScreen.themeToggleKey), findsOneWidget);
+    expect(find.text('Dark theme'), findsOneWidget);
     expect(find.byKey(ProfileScreen.aiTryOnTileKey), findsOneWidget);
     expectNoCreatedUpdatedDateStamps();
     expect(find.byKey(ProfileScreen.rateTileKey), findsOneWidget);
@@ -147,6 +167,35 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Unable to open the store right now.'), findsOneWidget);
+  });
+
+  testWidgets('theme toggle switches to dark AppTheme tokens and persists', (
+    tester,
+  ) async {
+    final store = InMemoryThemePreferences(ThemeMode.light);
+    await pumpMenu(tester, themePreferences: store);
+
+    expect(find.byKey(ProfileScreen.themeToggleKey), findsOneWidget);
+    var scheme = Theme.of(tester.element(find.byType(ProfileScreen)))
+        .colorScheme;
+    expect(scheme.brightness, Brightness.light);
+    expect(scheme.primary, AppColors.lightPrimary);
+    expect(scheme.secondary, AppColors.lightSecondary);
+
+    await tester.tap(find.byKey(ProfileScreen.themeToggleKey));
+    await tester.pumpAndSettle();
+
+    expect(store.read(), ThemeMode.dark);
+    scheme = Theme.of(tester.element(find.byType(ProfileScreen))).colorScheme;
+    expect(scheme.brightness, Brightness.dark);
+    expect(scheme.primary, AppColors.darkPrimary);
+    expect(scheme.secondary, AppColors.darkSecondary);
+
+    await tester.pumpWidget(const SizedBox.shrink());
+    await pumpMenu(tester, themePreferences: store);
+    scheme = Theme.of(tester.element(find.byType(ProfileScreen))).colorScheme;
+    expect(scheme.brightness, Brightness.dark);
+    expect(scheme.primary, AppColors.darkPrimary);
   });
 
   testWidgets('AI try-on opens the profile setup screen', (tester) async {

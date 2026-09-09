@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/lifecycle/app_lifecycle.dart';
 import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
+import 'core/theme/theme_controller.dart';
 
 /// Root widget. Tests can wrap this in [ProviderScope] with overrides.
 class WardrobeApp extends ConsumerWidget {
@@ -12,12 +13,13 @@ class WardrobeApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(routerProvider);
+    final themeMode = ref.watch(themeControllerProvider);
     return LifecycleRefreshBinder(
       child: MaterialApp.router(
         title: 'Wardrobe',
         theme: AppTheme.light(),
         darkTheme: AppTheme.dark(),
-        themeMode: ThemeMode.system,
+        themeMode: themeMode,
         routerConfig: router,
       ),
     );

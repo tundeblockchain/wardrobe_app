@@ -5,6 +5,7 @@ import 'package:wardrobe_app/app.dart';
 import 'package:wardrobe_app/core/theme/app_colors.dart';
 import 'package:wardrobe_app/core/theme/app_spacing.dart';
 import 'package:wardrobe_app/core/theme/app_theme.dart';
+import 'package:wardrobe_app/core/theme/theme_preferences.dart';
 import 'package:wardrobe_app/core/widgets/app_empty_state.dart';
 import 'package:wardrobe_app/features/auth/application/auth_controller.dart';
 import 'package:wardrobe_app/features/auth/presentation/login_screen.dart';
@@ -126,14 +127,57 @@ void main() {
     expect(find.byType(LoginScreen), findsOneWidget);
 
     final materialApp = tester.widget<MaterialApp>(find.byType(MaterialApp));
+    expect(materialApp.themeMode, ThemeMode.system);
     expect(materialApp.theme!.colorScheme.primary, AppColors.lightPrimary);
     expect(materialApp.theme!.colorScheme.secondary, AppColors.lightSecondary);
     expect(materialApp.darkTheme!.colorScheme.primary, AppColors.darkPrimary);
+    expect(
+      materialApp.darkTheme!.colorScheme.secondary,
+      AppColors.darkSecondary,
+    );
 
     final scheme = Theme.of(tester.element(find.byType(LoginScreen)))
         .colorScheme;
     expect(scheme.primary, AppColors.lightPrimary);
     expect(find.byType(FilledButton), findsOneWidget);
+  });
+
+  testWidgets('WardrobeApp uses persisted dark ThemeMode and dark tokens', (
+    tester,
+  ) async {
+    final repository = FakeAuthRepository();
+    addTearDown(repository.dispose);
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          authRepositoryProvider.overrideWithValue(repository),
+          wardrobeRepositoryProvider.overrideWithValue(
+            FakeWardrobeRepository(),
+          ),
+          itemRepositoryProvider.overrideWithValue(FakeItemRepository()),
+          outfitRepositoryProvider.overrideWithValue(FakeOutfitRepository()),
+          recommendationRepositoryProvider.overrideWithValue(
+            FakeRecommendationRepository(),
+          ),
+          uploadRepositoryProvider.overrideWithValue(FakeUploadRepository()),
+          itemImagePickerProvider.overrideWithValue(FakeItemImagePicker()),
+          themePreferencesProvider.overrideWithValue(
+            InMemoryThemePreferences(ThemeMode.dark),
+          ),
+        ],
+        child: const WardrobeApp(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final materialApp = tester.widget<MaterialApp>(find.byType(MaterialApp));
+    expect(materialApp.themeMode, ThemeMode.dark);
+
+    final scheme = Theme.of(tester.element(find.byType(LoginScreen)))
+        .colorScheme;
+    expect(scheme.brightness, Brightness.dark);
+    expect(scheme.primary, AppColors.darkPrimary);
+    expect(scheme.secondary, AppColors.darkSecondary);
   });
 
   testWidgets('empty state and chips follow the color scheme', (tester) async {

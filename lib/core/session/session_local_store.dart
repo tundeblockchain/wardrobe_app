@@ -3,15 +3,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// Disk leftovers that must not survive sign-out.
 ///
-/// This app does not currently write SharedPreferences or FlutterSecureStorage.
-/// The hook still runs on every session reset so a future store cannot leak
-/// the previous account. Firebase Auth persistence is cleared by Firebase
-/// `signOut`, not here.
+/// Theme mode (WARDROBE-70) is device-scoped SharedPreferences and is not
+/// cleared here. Account-scoped prefs / secure storage still go through this
+/// hook so a future store cannot leak the previous account. Firebase Auth
+/// persistence is cleared by Firebase `signOut`, not here.
 abstract class SessionLocalStore {
   Future<void> clear();
 }
 
-/// Default store: no SharedPreferences / secure-storage keys exist today.
+/// Default store: no account-scoped SharedPreferences / secure-storage keys.
 class EmptySessionLocalStore implements SessionLocalStore {
   const EmptySessionLocalStore();
 
