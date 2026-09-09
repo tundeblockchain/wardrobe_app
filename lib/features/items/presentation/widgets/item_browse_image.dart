@@ -6,8 +6,9 @@ import '../../../../core/theme/app_spacing.dart';
 import '../../domain/item.dart';
 import '../../domain/item_image_source.dart';
 
-/// Full-bleed item photo: processed URL when present, otherwise original.
+/// Item photo: processed URL when present, otherwise original.
 ///
+/// Uses [BoxFit.contain] so the whole picture is visible (letterboxed).
 /// Local upload bytes fill in when the payload only has S3 object keys.
 /// Job status is never drawn on the photo.
 class ItemBrowseImage extends StatelessWidget {
@@ -41,7 +42,8 @@ class ItemBrowseImage extends StatelessWidget {
       sourceSubtreeKey = sourceKey(source.key!);
       photo = Image.network(
         source.networkUrl!,
-        fit: BoxFit.cover,
+        fit: BoxFit.contain,
+        alignment: Alignment.center,
         width: double.infinity,
         height: double.infinity,
         errorBuilder: (context, error, stackTrace) {
@@ -70,16 +72,20 @@ class ItemBrowseImage extends StatelessWidget {
       photo = _ItemImagePlaceholder(item: item);
     }
 
-    return KeyedSubtree(
-      key: imageKey(item.id),
-      child: KeyedSubtree(key: sourceSubtreeKey, child: photo),
+    return ColoredBox(
+      color: Theme.of(context).colorScheme.primaryContainer,
+      child: KeyedSubtree(
+        key: imageKey(item.id),
+        child: KeyedSubtree(key: sourceSubtreeKey, child: photo),
+      ),
     );
   }
 
   Widget _localImage(Uint8List bytes) {
     return Image.memory(
       bytes,
-      fit: BoxFit.cover,
+      fit: BoxFit.contain,
+      alignment: Alignment.center,
       width: double.infinity,
       height: double.infinity,
       gaplessPlayback: true,

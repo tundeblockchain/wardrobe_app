@@ -9,6 +9,7 @@ import '../../ai_profiles/application/selected_ai_profile.dart';
 import '../../ai_profiles/presentation/widgets/ai_profile_picker_image.dart';
 import '../../outfits/application/outfits_controller.dart';
 import '../../outfits/domain/outfit.dart';
+import '../../outfits/presentation/widgets/outfit_list_preview.dart';
 
 /// Wardrobe-level outfit picker that opens the try-on screen.
 class DressingRoomScreen extends ConsumerWidget {
@@ -59,7 +60,12 @@ class DressingRoomScreen extends ConsumerWidget {
               Card(
                 color: Theme.of(context).colorScheme.primaryContainer,
                 child: ListTile(
-                  leading: AiProfilePickerImage(profile: selected, radius: 22),
+                  leading: SizedBox(
+                    width: 56,
+                    height: 72,
+                    child: AiProfilePickerImage(profile: selected),
+                  ),
+                  minLeadingWidth: 56,
                   title: Text('Selected: ${selected.displayName}'),
                   subtitle: Text(
                     selected.isGenericModel
@@ -136,7 +142,8 @@ class _DressingRoomOutfitTile extends StatelessWidget {
     return Card(
       child: ListTile(
         key: Key('dressing_room_outfit_${outfit.id}'),
-        leading: const CircleAvatar(child: Icon(Icons.checkroom_outlined)),
+        leading: OutfitListPreview(outfit: outfit),
+        minLeadingWidth: 56,
         title: Text(outfit.name),
         subtitle: Text(count == 1 ? '1 item' : '$count items'),
         trailing: const Icon(Icons.chevron_right),

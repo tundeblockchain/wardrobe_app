@@ -10,6 +10,7 @@ import 'package:wardrobe_app/features/outfits/domain/outfit_render.dart';
 import 'package:wardrobe_app/features/try_on/application/try_on_poll.dart';
 import 'package:wardrobe_app/features/ai_profiles/presentation/widgets/ai_profile_picker_image.dart';
 import 'package:wardrobe_app/features/try_on/presentation/try_on_screen.dart';
+import 'package:wardrobe_app/features/try_on/presentation/widgets/try_on_persona_card.dart';
 import 'package:wardrobe_app/features/try_on/presentation/widgets/try_on_result_image.dart';
 import 'package:wardrobe_app/features/try_on/presentation/widgets/try_on_status_banner.dart';
 
@@ -83,6 +84,11 @@ void main() {
     expect(find.byKey(TryOnScreen.profileEmptyKey), findsOneWidget);
     expect(find.text('No profile selected'), findsOneWidget);
     expect(
+      find.byKey(TryOnPersonaCard.cardKey('profile_generic_01')),
+      findsOneWidget,
+    );
+    expect(find.byType(FilterChip), findsNothing);
+    expect(
       tester
           .widget<FilledButton>(find.byKey(TryOnScreen.submitButtonKey))
           .onPressed,
@@ -104,6 +110,10 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byKey(TryOnScreen.selectedProfileKey), findsOneWidget);
+    expect(
+      find.byKey(TryOnPersonaCard.cardKey('profile_generic_01')),
+      findsWidgets,
+    );
     expect(find.text('Alex'), findsWidgets);
     expect(
       find.byKey(AiProfilePickerImage.placeholderKey('profile_generic_01')),
@@ -154,5 +164,29 @@ void main() {
 
     expect(find.text('Outfit not found.'), findsOneWidget);
     expect(find.byKey(TryOnScreen.retryButtonKey), findsOneWidget);
+  });
+
+  testWidgets('persona cards select a ready model without FilterChips', (
+    tester,
+  ) async {
+    profiles.models[0] = testGenericModel(
+      previewImageUrl: 'https://cdn.example.com/alex/front.png',
+    );
+    final container = await pumpScreen(tester);
+
+    expect(find.byType(FilterChip), findsNothing);
+    await tester.tap(
+      find.byKey(TryOnPersonaCard.cardKey('profile_generic_01')),
+    );
+    await tester.pumpAndSettle();
+
+    expect(container.read(selectedAiProfileIdProvider), 'profile_generic_01');
+    expect(find.byKey(TryOnScreen.selectedProfileKey), findsOneWidget);
+    expect(
+      find.byKey(
+        AiProfilePickerImage.urlKey('https://cdn.example.com/alex/front.png'),
+      ),
+      findsWidgets,
+    );
   });
 }

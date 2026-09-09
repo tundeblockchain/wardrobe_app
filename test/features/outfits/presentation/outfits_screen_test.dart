@@ -5,6 +5,7 @@ import 'package:wardrobe_app/core/network/api_exception.dart';
 import 'package:wardrobe_app/core/widgets/destructive_confirm_dialog.dart';
 import 'package:wardrobe_app/features/outfits/data/dio_outfit_repository.dart';
 import 'package:wardrobe_app/features/outfits/presentation/outfits_screen.dart';
+import 'package:wardrobe_app/features/outfits/presentation/widgets/outfit_list_preview.dart';
 import 'package:wardrobe_app/features/outfits/presentation/widgets/outfit_list_tile.dart';
 
 import '../../../helpers/date_stamp_matchers.dart';
@@ -35,6 +36,10 @@ void main() {
     expect(find.text('3 items'), findsOneWidget);
     expect(find.byKey(OutfitsScreen.createButtonKey), findsOneWidget);
     expect(find.byKey(OutfitListTile.deleteKey('outfit_123')), findsOneWidget);
+    expect(
+      find.byKey(OutfitListPreview.hangerKey('outfit_123')),
+      findsOneWidget,
+    );
     expect(find.text('Processing'), findsNothing);
     expect(find.text('Processed'), findsNothing);
     expect(find.text('Pending'), findsNothing);
@@ -115,5 +120,31 @@ void main() {
     expect(repository.deleteCalls, 1);
     expect(find.text('Friday Night'), findsOneWidget);
     expect(find.text('Outfit not found.'), findsWidgets);
+  });
+
+  testWidgets('outfit list shows render preview instead of hanger', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          outfitRepositoryProvider.overrideWithValue(
+            FakeOutfitRepository(
+              seed: [testOutfit(render: testOutfitRender())],
+            ),
+          ),
+        ],
+        child: const MaterialApp(home: OutfitsScreen(wardrobeId: 'wd_abc123')),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(OutfitListPreview.imageKey('outfit_123')),
+      findsOneWidget,
+    );
+    expect(find.byKey(OutfitListPreview.hangerKey('outfit_123')), findsNothing);
+    expect(tester.widget<Image>(find.byType(Image)).fit, BoxFit.contain);
+    expect(find.text('Processing'), findsNothing);
   });
 }

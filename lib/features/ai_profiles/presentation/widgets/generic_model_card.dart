@@ -5,7 +5,9 @@ import '../../domain/ai_profile.dart';
 import 'ai_profile_picker_image.dart';
 import 'ai_profile_status_chip.dart';
 
-/// GENERIC_MODEL catalog tile. Tap selects it for WARDROBE-51 try-on prep.
+/// GENERIC_MODEL catalog card. Tap selects it for WARDROBE-51 try-on prep.
+///
+/// Large uncropped frontal photo so the user can see which model they pick.
 class GenericModelCard extends StatelessWidget {
   const GenericModelCard({
     super.key,
@@ -31,29 +33,49 @@ class GenericModelCard extends StatelessWidget {
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onSelect,
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.md),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Stack(
-                alignment: Alignment.topRight,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Expanded(
+              child: Stack(
+                fit: StackFit.expand,
                 children: [
                   AiProfilePickerImage(profile: profile),
                   if (selected)
-                    Icon(Icons.check_circle, color: scheme.primary, size: 20),
+                    Positioned(
+                      top: AppSpacing.sm,
+                      right: AppSpacing.sm,
+                      child: Icon(
+                        Icons.check_circle,
+                        color: scheme.primary,
+                        size: 22,
+                      ),
+                    ),
                 ],
               ),
-              const SizedBox(height: AppSpacing.sm),
-              Text(
-                profile.displayName,
-                style: theme.textTheme.titleMedium,
-                textAlign: TextAlign.center,
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.sm,
+                AppSpacing.sm,
+                AppSpacing.sm,
+                AppSpacing.md,
               ),
-              const SizedBox(height: 4),
-              AiProfileStatusChip(status: profile.status),
-            ],
-          ),
+              child: Column(
+                children: [
+                  Text(
+                    profile.displayName,
+                    style: theme.textTheme.titleMedium,
+                    textAlign: TextAlign.center,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 4),
+                  AiProfileStatusChip(status: profile.status),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );
