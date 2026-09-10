@@ -1,22 +1,23 @@
 import 'ai_profile_body_context.dart';
 
-/// Light range checks for optional AI-profile body fields (WARDROBE-81).
+/// Light range checks aligned with Backend WARDROBE-80.
 ///
 /// Empty / whitespace values are always valid so try-on is never blocked.
 abstract final class AiProfileBodyValidators {
   static const minHeightCm = 50;
   static const maxHeightCm = 250;
-  static const minAge = 1;
-  static const maxAge = 120;
+  static const minWeightKg = 15;
+  static const maxWeightKg = 400;
   static const minBustCm = 40;
   static const maxBustCm = 200;
   static const minHipsCm = 40;
   static const maxHipsCm = 200;
-  static const minWeightKg = 20;
-  static const maxWeightKg = 400;
-  static const maxSizeLength = 16;
+  static const minAgeYears = 1;
+  static const maxAgeYears = 120;
+  static const maxClothingSizeLength = 32;
+  static const maxTokenLength = 32;
 
-  static String? height(String? value) {
+  static String? heightCm(String? value) {
     return _optionalNumber(
       value,
       min: minHeightCm,
@@ -26,22 +27,17 @@ abstract final class AiProfileBodyValidators {
     );
   }
 
-  static String? age(String? value) {
-    final trimmed = value?.trim() ?? '';
-    if (trimmed.isEmpty) {
-      return null;
-    }
-    final parsed = int.tryParse(trimmed);
-    if (parsed == null) {
-      return 'Enter a whole number for age.';
-    }
-    if (parsed < minAge || parsed > maxAge) {
-      return 'Age must be between $minAge and $maxAge.';
-    }
-    return null;
+  static String? weightKg(String? value) {
+    return _optionalNumber(
+      value,
+      min: minWeightKg,
+      max: maxWeightKg,
+      label: 'Weight',
+      unit: 'kg',
+    );
   }
 
-  static String? bust(String? value) {
+  static String? bustCm(String? value) {
     return _optionalNumber(
       value,
       min: minBustCm,
@@ -51,7 +47,7 @@ abstract final class AiProfileBodyValidators {
     );
   }
 
-  static String? hips(String? value) {
+  static String? hipsCm(String? value) {
     return _optionalNumber(
       value,
       min: minHipsCm,
@@ -61,23 +57,32 @@ abstract final class AiProfileBodyValidators {
     );
   }
 
-  static String? size(String? value) {
+  static String? ageYears(String? value) {
     final trimmed = value?.trim() ?? '';
-    if (trimmed.length > maxSizeLength) {
-      return 'Size must be $maxSizeLength characters or fewer.';
+    if (trimmed.isEmpty) {
+      return null;
+    }
+    final parsed = int.tryParse(trimmed);
+    if (parsed == null) {
+      return 'Enter a whole number for age.';
+    }
+    if (parsed < minAgeYears || parsed > maxAgeYears) {
+      return 'Age must be between $minAgeYears and $maxAgeYears years.';
     }
     return null;
   }
 
-  static String? weight(String? value) {
-    return _optionalNumber(
-      value,
-      min: minWeightKg,
-      max: maxWeightKg,
-      label: 'Weight',
-      unit: 'kg',
-    );
+  static String? clothingSize(String? value) {
+    final trimmed = value?.trim() ?? '';
+    if (trimmed.length > maxClothingSizeLength) {
+      return 'Clothing size must be $maxClothingSizeLength characters or fewer.';
+    }
+    return null;
   }
+
+  static String? bodyType(String? value) => _optionalToken(value, 'Body type');
+
+  static String? gender(String? value) => _optionalToken(value, 'Gender');
 
   /// Parses a validated optional number field. Empty → null.
   static num? parseNumber(String? value) {
@@ -97,7 +102,7 @@ abstract final class AiProfileBodyValidators {
     return int.tryParse(trimmed);
   }
 
-  static String? parseSize(String? value) {
+  static String? parseToken(String? value) {
     final trimmed = value?.trim() ?? '';
     if (trimmed.isEmpty) {
       return null;
@@ -106,21 +111,36 @@ abstract final class AiProfileBodyValidators {
   }
 
   static AiProfileBodyContext parseForm({
-    required String height,
-    required String age,
-    required String bust,
-    required String hips,
-    required String size,
-    required String weight,
+    required String heightCm,
+    required String weightKg,
+    required String bustCm,
+    required String hipsCm,
+    required String clothingSize,
+    required String ageYears,
+    String? bodyType,
+    String? gender,
   }) {
     return AiProfileBodyContext(
-      height: parseNumber(height),
-      age: parseInt(age),
-      bust: parseNumber(bust),
-      hips: parseNumber(hips),
-      size: parseSize(size),
-      weight: parseNumber(weight),
+      heightCm: parseNumber(heightCm),
+      weightKg: parseNumber(weightKg),
+      bustCm: parseNumber(bustCm),
+      hipsCm: parseNumber(hipsCm),
+      clothingSize: parseToken(clothingSize),
+      ageYears: parseInt(ageYears),
+      bodyType: parseToken(bodyType),
+      gender: parseToken(gender),
     );
+  }
+
+  static String? _optionalToken(String? value, String label) {
+    final trimmed = value?.trim() ?? '';
+    if (trimmed.isEmpty) {
+      return null;
+    }
+    if (trimmed.length > maxTokenLength) {
+      return '$label must be $maxTokenLength characters or fewer.';
+    }
+    return null;
   }
 
   static String? _optionalNumber(

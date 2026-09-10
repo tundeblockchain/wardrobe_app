@@ -60,18 +60,26 @@ class AiProfileBodyScreen extends ConsumerWidget {
     );
   }
 
-  void _save(
+  Future<void> _save(
     BuildContext context,
     WidgetRef ref,
     AiProfileBodyContext bodyContext,
-  ) {
-    ref
+  ) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final saved = await ref
         .read(personalAiProfilesControllerProvider.notifier)
-        .applyBodyContext(aiProfileId, bodyContext);
+        .updateBodyContext(aiProfileId, bodyContext);
     if (!context.mounted) {
       return;
     }
-    ScaffoldMessenger.of(context).showSnackBar(
+    if (!saved) {
+      final message =
+          ref.read(personalAiProfilesControllerProvider).errorMessage ??
+          'Could not save body details.';
+      messenger.showSnackBar(SnackBar(content: Text(message)));
+      return;
+    }
+    messenger.showSnackBar(
       SnackBar(
         content: Text(
           bodyContext.isEmpty

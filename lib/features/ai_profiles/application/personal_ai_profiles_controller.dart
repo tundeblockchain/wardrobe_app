@@ -34,10 +34,7 @@ class PersonalAiProfilesController extends Notifier<PersonalAiProfilesState> {
       if (!ref.mounted) {
         return;
       }
-      state = state.copyWith(
-        isLoading: false,
-        profiles: _mergeIncoming(profiles),
-      );
+      state = state.copyWith(isLoading: false, profiles: profiles);
     } on ApiException catch (error) {
       if (!ref.mounted) {
         return;
@@ -54,10 +51,12 @@ class PersonalAiProfilesController extends Notifier<PersonalAiProfilesState> {
     }
   }
 
-  Future<AiProfile?> createPersonal() async {
+  Future<AiProfile?> createPersonal({
+    AiProfileBodyContext body = AiProfileBodyContext.empty,
+  }) async {
     state = state.copyWith(isCreating: true, clearError: true);
     try {
-      final profile = await _repository.createPersonal();
+      final profile = await _repository.createPersonal(body: body);
       if (!ref.mounted) {
         return profile;
       }
@@ -143,16 +142,34 @@ class PersonalAiProfilesController extends Notifier<PersonalAiProfilesState> {
     }
   }
 
-  /// Applies optional body/context fields on a PERSONAL profile in memory.
+  /// Persists optional WARDROBE-80 fields via `PATCH /ai-profiles/{id}`.
   ///
-  /// There is no Backend update route for these fields yet (WARDROBE-80).
-  /// Values are not POSTed. Empty [bodyContext] does not block try-on.
-  void applyBodyContext(String aiProfileId, AiProfileBodyContext bodyContext) {
+  /// Empty [bodyContext] clears stored values and does not block try-on.
+  Future<bool> updateBodyContext(
+    String aiProfileId,
+    AiProfileBodyContext bodyContext,
+  ) async {
     final current = _find(aiProfileId);
     if (current == null || !current.isPersonal) {
-      return;
+      return false;
     }
-    _upsert(current.copyWith(bodyContext: bodyContext), keepIncomingBody: true);
+    state = state.copyWith(updatingProfileId: aiProfileId, clearError: true);
+    try {
+      final updated = await _repository.updatePersonal(
+        aiProfileId: aiProfileId,
+        body: bodyContext,
+      );
+      if (!ref.mounted) {
+        return true;
+      }
+      _upsert(updated);
+      state = state.copyWith(clearUpdating: true);
+      return true;
+    } on ApiException catch (error) {
+      return _failUpdate(error.message);
+    } catch (_) {
+      return _failUpdate('Something went wrong. Please try again.');
+    }
   }
 
   Future<bool> deletePersonal(String aiProfileId) async {
@@ -188,42 +205,21 @@ class PersonalAiProfilesController extends Notifier<PersonalAiProfilesState> {
       clearError: true,
       clearUploading: true,
       clearDeleting: true,
+      clearUpdating: true,
       phase: AiProfileUploadPhase.idle,
     );
   }
 
-  List<AiProfile> _mergeIncoming(List<AiProfile> incoming) {
-    return [
-      for (final profile in incoming)
-        _withPreservedBody(profile, _find(profile.id)),
-    ];
-  }
-
-  void _upsert(AiProfile profile, {bool keepIncomingBody = false}) {
-    final existing = _find(profile.id);
-    final merged = keepIncomingBody
-        ? profile
-        : _withPreservedBody(profile, existing);
+  void _upsert(AiProfile profile) {
     final next = [...state.profiles];
-    final index = next.indexWhere((item) => item.id == merged.id);
+    final index = next.indexWhere((item) => item.id == profile.id);
     if (index >= 0) {
-      next[index] = merged;
+      next[index] = profile;
     } else {
-      next.add(merged);
+      next.add(profile);
     }
     state = state.copyWith(profiles: next, clearError: true);
-    _syncSelected(merged);
-  }
-
-  /// Keeps session-local body edits when get/list still omit WARDROBE-80 keys.
-  AiProfile _withPreservedBody(AiProfile incoming, AiProfile? existing) {
-    if (incoming.bodyContext.isNotEmpty || existing == null) {
-      return incoming;
-    }
-    if (existing.bodyContext.isEmpty) {
-      return incoming;
-    }
-    return incoming.copyWith(bodyContext: existing.bodyContext);
+    _syncSelected(profile);
   }
 
   void _syncSelected(AiProfile profile) {
@@ -259,6 +255,14 @@ class PersonalAiProfilesController extends Notifier<PersonalAiProfilesState> {
       phase: AiProfileUploadPhase.idle,
       errorMessage: message,
     );
+  }
+
+  bool _failUpdate(String message) {
+    if (!ref.mounted) {
+      return false;
+    }
+    state = state.copyWith(clearUpdating: true, errorMessage: message);
+    return false;
   }
 
   bool _failDelete(String message) {

@@ -1,51 +1,73 @@
 import '../domain/ai_profile_body_context.dart';
 
-/// WARDROBE-80 pairing-set keys inspected on AI-profile get/list JSON.
-///
-/// Current Backend `toAiProfile` / `toAiProfileDto` (wardrobe-backend main)
-/// returns only `aiProfileId`, `type`, `label`, `referenceImages`, `status`,
-/// `createdAt`, `updatedAt`, plus optional `frontImageUrl` /
-/// `referenceImageUrls`. There is no PATCH / update AI-profile route and no
-/// body fields on create.
-///
-/// These keys are prepared for WARDROBE-80. They are never added to
-/// [CreateAiProfileRequest] and are never POSTed. Unknown extra JSON is
-/// ignored. Empty / missing values stay empty and do not block try-on.
+/// WARDROBE-80 body/context keys on AI-profile create/get/list/PATCH JSON.
 const aiProfileBodyContextWireKeys = <String>[
-  'height',
-  'age',
-  'bust',
-  'hips',
-  'size',
-  'weight',
+  'heightCm',
+  'weightKg',
+  'bustCm',
+  'hipsCm',
+  'clothingSize',
+  'ageYears',
+  'bodyType',
+  'gender',
 ];
 
 /// Reads optional WARDROBE-80 body keys from get/list JSON when present.
+///
+/// Missing / null / blank values are soft-omitted. Empty context does not
+/// block try-on. Unknown extra JSON is ignored.
 AiProfileBodyContext parseAiProfileBodyContext(Map<String, dynamic> json) {
-  final size = _readString(json['size']);
   return AiProfileBodyContext(
-    height: _readNum(json['height']),
-    age: _readInt(json['age']),
-    bust: _readNum(json['bust']),
-    hips: _readNum(json['hips']),
-    size: size,
-    weight: _readNum(json['weight']),
+    heightCm: _readNum(json['heightCm']),
+    weightKg: _readNum(json['weightKg']),
+    bustCm: _readNum(json['bustCm']),
+    hipsCm: _readNum(json['hipsCm']),
+    clothingSize: _readString(json['clothingSize']),
+    ageYears: _readInt(json['ageYears']),
+    bodyType: _readString(json['bodyType']),
+    gender: _readString(json['gender']),
   );
 }
 
-/// Serializes filled fields only, using WARDROBE-80 wire names.
-///
-/// Empty context → `{}`. Callers must not invent an endpoint to send this.
+/// Create / POST body: filled WARDROBE-80 fields only (soft-omit empties).
 Map<String, dynamic> aiProfileBodyContextToJson(AiProfileBodyContext context) {
   return <String, dynamic>{
-    if (context.height != null) 'height': _jsonNum(context.height!),
-    if (context.age != null) 'age': context.age,
-    if (context.bust != null) 'bust': _jsonNum(context.bust!),
-    if (context.hips != null) 'hips': _jsonNum(context.hips!),
-    if (context.size != null && context.size!.trim().isNotEmpty)
-      'size': context.size!.trim(),
-    if (context.weight != null) 'weight': _jsonNum(context.weight!),
+    if (context.heightCm != null) 'heightCm': _jsonNum(context.heightCm!),
+    if (context.weightKg != null) 'weightKg': _jsonNum(context.weightKg!),
+    if (context.bustCm != null) 'bustCm': _jsonNum(context.bustCm!),
+    if (context.hipsCm != null) 'hipsCm': _jsonNum(context.hipsCm!),
+    if (context.clothingSize != null && context.clothingSize!.trim().isNotEmpty)
+      'clothingSize': context.clothingSize!.trim(),
+    if (context.ageYears != null) 'ageYears': context.ageYears,
+    if (context.bodyType != null && context.bodyType!.trim().isNotEmpty)
+      'bodyType': context.bodyType!.trim(),
+    if (context.gender != null && context.gender!.trim().isNotEmpty)
+      'gender': context.gender!.trim(),
   };
+}
+
+/// PATCH body: every WARDROBE-80 key, with `null` to clear a stored field.
+Map<String, dynamic> aiProfileBodyContextToPatchJson(
+  AiProfileBodyContext context,
+) {
+  return <String, dynamic>{
+    'heightCm': context.heightCm == null ? null : _jsonNum(context.heightCm!),
+    'weightKg': context.weightKg == null ? null : _jsonNum(context.weightKg!),
+    'bustCm': context.bustCm == null ? null : _jsonNum(context.bustCm!),
+    'hipsCm': context.hipsCm == null ? null : _jsonNum(context.hipsCm!),
+    'clothingSize': _patchString(context.clothingSize),
+    'ageYears': context.ageYears,
+    'bodyType': _patchString(context.bodyType),
+    'gender': _patchString(context.gender),
+  };
+}
+
+String? _patchString(String? value) {
+  final trimmed = value?.trim();
+  if (trimmed == null || trimmed.isEmpty) {
+    return null;
+  }
+  return trimmed;
 }
 
 num? _readNum(dynamic value) {

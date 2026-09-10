@@ -159,18 +159,21 @@ void main() {
     );
   });
 
-  test('applyBodyContext stores WARDROBE-80 fields in memory only', () async {
+  test('updateBodyContext PATCHes WARDROBE-80 fields and upserts', () async {
     final profile = testPersonalProfile();
     repository.personal.add(profile);
     container.read(personalAiProfilesControllerProvider);
     await settle();
     container.read(selectedAiProfileProvider.notifier).select(profile);
 
-    const body = AiProfileBodyContext(height: 170, size: 'M');
-    container
+    const body = AiProfileBodyContext(heightCm: 170, clothingSize: 'M');
+    final saved = await container
         .read(personalAiProfilesControllerProvider.notifier)
-        .applyBodyContext(profile.id, body);
+        .updateBodyContext(profile.id, body);
 
+    expect(saved, isTrue);
+    expect(repository.updateCalls, 1);
+    expect(repository.lastUpdateBody, body);
     expect(
       container
           .read(personalAiProfilesControllerProvider)
@@ -180,22 +183,53 @@ void main() {
       body,
     );
     expect(container.read(selectedAiProfileProvider)?.bodyContext, body);
-    expect(repository.createCalls, 0);
-    expect(repository.listPersonalCalls, 1);
+    expect(
+      container.read(personalAiProfilesControllerProvider).updatingProfileId,
+      isNull,
+    );
   });
 
-  test('refresh keeps session body details when get/list omit them', () async {
+  test('updateBodyContext records ApiException and does not upsert', () async {
     repository.personal.add(testPersonalProfile());
     container.read(personalAiProfilesControllerProvider);
     await settle();
+    repository.nextFailure = const ApiException(
+      message: 'GENERIC_MODEL profiles cannot be updated.',
+      code: 'VALIDATION_ERROR',
+    );
 
-    container
+    final saved = await container
         .read(personalAiProfilesControllerProvider.notifier)
-        .applyBodyContext(
+        .updateBodyContext(
           'profile_personal_1',
-          const AiProfileBodyContext(height: 168, weight: 60),
+          const AiProfileBodyContext(heightCm: 170),
         );
 
+    expect(saved, isFalse);
+    expect(
+      container.read(personalAiProfilesControllerProvider).errorMessage,
+      contains('cannot be updated'),
+    );
+    expect(
+      container
+          .read(personalAiProfilesControllerProvider)
+          .profiles
+          .single
+          .bodyContext,
+      AiProfileBodyContext.empty,
+    );
+  });
+
+  test('refresh uses server body fields instead of session merge', () async {
+    repository.personal.add(
+      testPersonalProfile(
+        bodyContext: const AiProfileBodyContext(heightCm: 168),
+      ),
+    );
+    container.read(personalAiProfilesControllerProvider);
+    await settle();
+
+    repository.personal[0] = testPersonalProfile();
     await container
         .read(personalAiProfilesControllerProvider.notifier)
         .refresh();
@@ -205,35 +239,30 @@ void main() {
           .read(personalAiProfilesControllerProvider)
           .profiles
           .single
-          .bodyContext
-          .height,
-      168,
+          .bodyContext,
+      AiProfileBodyContext.empty,
     );
     expect(repository.listPersonalCalls, 2);
   });
 
-  test('gallery upload preserves session body details', () async {
-    repository.personal.add(
-      testPersonalProfile(referenceImages: const ['users/uid/existing.jpg']),
-    );
+  test('createPersonal can send optional body fields', () async {
     container.read(personalAiProfilesControllerProvider);
     await settle();
-    container
-        .read(personalAiProfilesControllerProvider.notifier)
-        .applyBodyContext(
-          'profile_personal_1',
-          const AiProfileBodyContext(age: 30),
-        );
 
-    await container
+    const body = AiProfileBodyContext(heightCm: 170, gender: 'FEMALE');
+    final created = await container
         .read(personalAiProfilesControllerProvider.notifier)
-        .pickFromGallery('profile_personal_1');
+        .createPersonal(body: body);
 
-    final updated = container
-        .read(personalAiProfilesControllerProvider)
-        .profiles
-        .single;
-    expect(updated.bodyContext.age, 30);
-    expect(updated.referenceImages, hasLength(2));
+    expect(created?.bodyContext, body);
+    expect(repository.lastCreateBody, body);
+    expect(
+      container
+          .read(personalAiProfilesControllerProvider)
+          .profiles
+          .single
+          .bodyContext,
+      body,
+    );
   });
 }

@@ -1,48 +1,55 @@
 /// Optional body/context measurements for Gemini try-on (WARDROBE-81).
 ///
-/// Wire names follow the Backend WARDROBE-80 pairing set: `height`, `age`,
-/// `bust`, `hips`, `size`, `weight`. Gender / body-type are omitted because
-/// they are not on the current Flutter or Backend AI-profile schema.
-///
-/// Missing or empty values must never block try-on.
+/// Wire names match Backend WARDROBE-80:
+/// `heightCm`, `weightKg`, `bustCm`, `hipsCm`, `clothingSize`, `ageYears`,
+/// `bodyType`, `gender`. Missing or empty values must never block try-on.
 class AiProfileBodyContext {
   const AiProfileBodyContext({
-    this.height,
-    this.age,
-    this.bust,
-    this.hips,
-    this.size,
-    this.weight,
+    this.heightCm,
+    this.weightKg,
+    this.bustCm,
+    this.hipsCm,
+    this.clothingSize,
+    this.ageYears,
+    this.bodyType,
+    this.gender,
   });
 
   static const empty = AiProfileBodyContext();
 
-  /// Height in centimetres. Wire key `height`.
-  final num? height;
+  /// Height in centimetres. Wire key `heightCm`.
+  final num? heightCm;
 
-  /// Age in years. Wire key `age`.
-  final int? age;
+  /// Weight in kilograms. Wire key `weightKg`.
+  final num? weightKg;
 
-  /// Bust measurement in centimetres. Wire key `bust`.
-  final num? bust;
+  /// Bust measurement in centimetres. Wire key `bustCm`.
+  final num? bustCm;
 
-  /// Hip measurement in centimetres. Wire key `hips`.
-  final num? hips;
+  /// Hip measurement in centimetres. Wire key `hipsCm`.
+  final num? hipsCm;
 
-  /// Clothing size label. Wire key `size`.
-  final String? size;
+  /// Clothing size label. Wire key `clothingSize`.
+  final String? clothingSize;
 
-  /// Weight in kilograms. Wire key `weight`.
-  final num? weight;
+  /// Age in years. Wire key `ageYears`.
+  final int? ageYears;
+
+  /// Body type token. Wire key `bodyType`.
+  final String? bodyType;
+
+  /// Gender token. Wire key `gender`.
+  final String? gender;
 
   bool get isEmpty {
-    final trimmedSize = size?.trim();
-    return height == null &&
-        age == null &&
-        bust == null &&
-        hips == null &&
-        (trimmedSize == null || trimmedSize.isEmpty) &&
-        weight == null;
+    return heightCm == null &&
+        weightKg == null &&
+        bustCm == null &&
+        hipsCm == null &&
+        (clothingSize == null || clothingSize!.trim().isEmpty) &&
+        ageYears == null &&
+        (bodyType == null || bodyType!.trim().isEmpty) &&
+        (gender == null || gender!.trim().isEmpty);
   }
 
   bool get isNotEmpty => !isEmpty;
@@ -50,12 +57,17 @@ class AiProfileBodyContext {
   /// Short card line, or null when every field is empty.
   String? get summary {
     final parts = <String>[
-      if (height != null) '${formatBodyNumber(height!)} cm',
-      if (age != null) 'age $age',
-      if (bust != null) 'bust ${formatBodyNumber(bust!)} cm',
-      if (hips != null) 'hips ${formatBodyNumber(hips!)} cm',
-      if (size != null && size!.trim().isNotEmpty) 'size ${size!.trim()}',
-      if (weight != null) '${formatBodyNumber(weight!)} kg',
+      if (heightCm != null) '${formatBodyNumber(heightCm!)} cm',
+      if (weightKg != null) '${formatBodyNumber(weightKg!)} kg',
+      if (ageYears != null) '$ageYears years',
+      if (bustCm != null) 'bust ${formatBodyNumber(bustCm!)} cm',
+      if (hipsCm != null) 'hips ${formatBodyNumber(hipsCm!)} cm',
+      if (clothingSize != null && clothingSize!.trim().isNotEmpty)
+        'size ${clothingSize!.trim()}',
+      if (bodyType != null && bodyType!.trim().isNotEmpty)
+        aiProfileTokenLabel(bodyType!),
+      if (gender != null && gender!.trim().isNotEmpty)
+        aiProfileTokenLabel(gender!),
     ];
     if (parts.isEmpty) {
       return null;
@@ -63,51 +75,57 @@ class AiProfileBodyContext {
     return parts.join(' · ');
   }
 
-  AiProfileBodyContext copyWith({
-    num? height,
-    int? age,
-    num? bust,
-    num? hips,
-    String? size,
-    num? weight,
-    bool clearHeight = false,
-    bool clearAge = false,
-    bool clearBust = false,
-    bool clearHips = false,
-    bool clearSize = false,
-    bool clearWeight = false,
-  }) {
-    return AiProfileBodyContext(
-      height: clearHeight ? null : (height ?? this.height),
-      age: clearAge ? null : (age ?? this.age),
-      bust: clearBust ? null : (bust ?? this.bust),
-      hips: clearHips ? null : (hips ?? this.hips),
-      size: clearSize ? null : (size ?? this.size),
-      weight: clearWeight ? null : (weight ?? this.weight),
-    );
-  }
-
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         other is AiProfileBodyContext &&
-            other.height == height &&
-            other.age == age &&
-            other.bust == bust &&
-            other.hips == hips &&
-            other.size == size &&
-            other.weight == weight;
+            other.heightCm == heightCm &&
+            other.weightKg == weightKg &&
+            other.bustCm == bustCm &&
+            other.hipsCm == hipsCm &&
+            other.clothingSize == clothingSize &&
+            other.ageYears == ageYears &&
+            other.bodyType == bodyType &&
+            other.gender == gender;
   }
 
   @override
-  int get hashCode => Object.hash(height, age, bust, hips, size, weight);
+  int get hashCode => Object.hash(
+    heightCm,
+    weightKg,
+    bustCm,
+    hipsCm,
+    clothingSize,
+    ageYears,
+    bodyType,
+    gender,
+  );
 
   @override
   String toString() {
-    return 'AiProfileBodyContext(height: $height, age: $age, bust: $bust, '
-        'hips: $hips, size: $size, weight: $weight)';
+    return 'AiProfileBodyContext(heightCm: $heightCm, weightKg: $weightKg, '
+        'bustCm: $bustCm, hipsCm: $hipsCm, clothingSize: $clothingSize, '
+        'ageYears: $ageYears, bodyType: $bodyType, gender: $gender)';
   }
 }
+
+/// Recommended `gender` tokens (WARDROBE-80). Other non-empty strings are kept.
+const aiProfileGenders = <String>[
+  'FEMALE',
+  'MALE',
+  'NON_BINARY',
+  'UNSPECIFIED',
+];
+
+/// Recommended `bodyType` tokens (WARDROBE-80). Other non-empty strings are kept.
+const aiProfileBodyTypes = <String>[
+  'SLIM',
+  'AVERAGE',
+  'ATHLETIC',
+  'CURVY',
+  'PLUS',
+  'PETITE',
+];
 
 /// Formats a measurement without a trailing `.0`.
 String formatBodyNumber(num value) {
@@ -115,4 +133,21 @@ String formatBodyNumber(num value) {
     return value.round().toString();
   }
   return value.toString();
+}
+
+/// Human label for a recommended gender / body-type token.
+String aiProfileTokenLabel(String value) {
+  return switch (value) {
+    'FEMALE' => 'Female',
+    'MALE' => 'Male',
+    'NON_BINARY' => 'Non-binary',
+    'UNSPECIFIED' => 'Unspecified',
+    'SLIM' => 'Slim',
+    'AVERAGE' => 'Average',
+    'ATHLETIC' => 'Athletic',
+    'CURVY' => 'Curvy',
+    'PLUS' => 'Plus',
+    'PETITE' => 'Petite',
+    _ => value,
+  };
 }

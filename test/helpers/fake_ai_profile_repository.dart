@@ -2,6 +2,7 @@ import 'dart:typed_data';
 
 import 'package:wardrobe_app/core/network/api_exception.dart';
 import 'package:wardrobe_app/features/ai_profiles/domain/ai_profile.dart';
+import 'package:wardrobe_app/features/ai_profiles/domain/ai_profile_body_context.dart';
 import 'package:wardrobe_app/features/ai_profiles/domain/ai_profile_repository.dart';
 import 'package:wardrobe_app/features/items/domain/upload_ticket.dart';
 
@@ -10,6 +11,7 @@ AiProfile testPersonalProfile({
   AiProfileStatus status = AiProfileStatus.ready,
   List<String> referenceImages = const [],
   String? previewImageUrl,
+  AiProfileBodyContext bodyContext = AiProfileBodyContext.empty,
 }) {
   return AiProfile(
     id: id,
@@ -17,6 +19,7 @@ AiProfile testPersonalProfile({
     referenceImages: referenceImages,
     status: status,
     previewImageUrl: previewImageUrl,
+    bodyContext: bodyContext,
     createdAt: DateTime.utc(2026, 9, 6, 8),
     updatedAt: DateTime.utc(2026, 9, 6, 8),
   );
@@ -74,6 +77,7 @@ class FakeAiProfileRepository implements AiProfileRepository {
   int listModelsCalls = 0;
   int getCalls = 0;
   int createCalls = 0;
+  int updateCalls = 0;
   int deleteCalls = 0;
   int createUploadCalls = 0;
   int uploadCalls = 0;
@@ -83,6 +87,8 @@ class FakeAiProfileRepository implements AiProfileRepository {
   String? lastUploadUrl;
   Uint8List? lastBytes;
   String? lastObjectKey;
+  AiProfileBodyContext? lastCreateBody;
+  AiProfileBodyContext? lastUpdateBody;
 
   @override
   Future<List<AiProfile>> listPersonal() async {
@@ -106,12 +112,38 @@ class FakeAiProfileRepository implements AiProfileRepository {
   }
 
   @override
-  Future<AiProfile> createPersonal() async {
+  Future<AiProfile> createPersonal({
+    AiProfileBodyContext body = AiProfileBodyContext.empty,
+  }) async {
     createCalls++;
+    lastCreateBody = body;
     _maybeFail();
-    final created = testPersonalProfile(id: 'profile_$createCalls');
+    final created = testPersonalProfile(
+      id: 'profile_$createCalls',
+      bodyContext: body,
+    );
     personal.add(created);
     return created;
+  }
+
+  @override
+  Future<AiProfile> updatePersonal({
+    required String aiProfileId,
+    required AiProfileBodyContext body,
+  }) async {
+    updateCalls++;
+    lastUpdateBody = body;
+    _maybeFail();
+    final current = _require(aiProfileId);
+    final updated = current.copyWith(
+      bodyContext: body,
+      updatedAt: DateTime.utc(2026, 9, 6, 10),
+    );
+    final index = personal.indexWhere((profile) => profile.id == aiProfileId);
+    if (index >= 0) {
+      personal[index] = updated;
+    }
+    return updated;
   }
 
   @override

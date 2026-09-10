@@ -2,6 +2,7 @@ import 'dart:typed_data';
 
 import '../../items/domain/upload_ticket.dart';
 import 'ai_profile.dart';
+import 'ai_profile_body_context.dart';
 
 /// AI profile CRUD, generic-model catalog, and PERSONAL reference uploads.
 abstract interface class AiProfileRepository {
@@ -11,7 +12,16 @@ abstract interface class AiProfileRepository {
 
   Future<AiProfile> getProfile(String aiProfileId);
 
-  Future<AiProfile> createPersonal();
+  /// `POST /ai-profiles`. Empty [body] is soft-omitted (type PERSONAL only).
+  Future<AiProfile> createPersonal({
+    AiProfileBodyContext body = AiProfileBodyContext.empty,
+  });
+
+  /// `PATCH /ai-profiles/{aiProfileId}` for PERSONAL WARDROBE-80 updates.
+  Future<AiProfile> updatePersonal({
+    required String aiProfileId,
+    required AiProfileBodyContext body,
+  });
 
   Future<void> deletePersonal(String aiProfileId);
 

@@ -8,6 +8,7 @@ import 'package:wardrobe_app/core/network/dio_client.dart';
 import 'package:wardrobe_app/core/network/id_token_source.dart';
 import 'package:wardrobe_app/features/ai_profiles/data/dio_ai_profile_repository.dart';
 import 'package:wardrobe_app/features/ai_profiles/domain/ai_profile.dart';
+import 'package:wardrobe_app/features/ai_profiles/domain/ai_profile_body_context.dart';
 
 import '../../../helpers/scripted_http_adapter.dart';
 
@@ -164,6 +165,84 @@ void main() {
     expect(adapter.requests.single.method, 'POST');
     expect(adapter.requests.single.path, '/ai-profiles');
     expect(_requestBody(adapter.requests.single), {'type': 'PERSONAL'});
+  });
+
+  test('createPersonal sends filled WARDROBE-80 fields only', () async {
+    repository = buildRepository(
+      api: [
+        HttpScript(
+          statusCode: 201,
+          body: {...personal, 'heightCm': 170, 'gender': 'FEMALE'},
+        ),
+      ],
+    );
+
+    final result = await repository.createPersonal(
+      body: const AiProfileBodyContext(heightCm: 170, gender: 'FEMALE'),
+    );
+
+    expect(result.bodyContext.heightCm, 170);
+    expect(result.bodyContext.gender, 'FEMALE');
+    expect(_requestBody(adapter.requests.single), {
+      'type': 'PERSONAL',
+      'heightCm': 170,
+      'gender': 'FEMALE',
+    });
+  });
+
+  test('updatePersonal PATCHes all WARDROBE-80 keys including nulls', () async {
+    repository = buildRepository(
+      api: [
+        HttpScript(statusCode: 200, body: {...personal, 'heightCm': 170}),
+      ],
+    );
+
+    final result = await repository.updatePersonal(
+      aiProfileId: 'profile_abc123xyz0',
+      body: const AiProfileBodyContext(heightCm: 170),
+    );
+
+    expect(result.bodyContext.heightCm, 170);
+    expect(adapter.requests.single.method, 'PATCH');
+    expect(adapter.requests.single.path, '/ai-profiles/profile_abc123xyz0');
+    expect(_requestBody(adapter.requests.single), {
+      'heightCm': 170,
+      'weightKg': null,
+      'bustCm': null,
+      'hipsCm': null,
+      'clothingSize': null,
+      'ageYears': null,
+      'bodyType': null,
+      'gender': null,
+    });
+  });
+
+  test('listPersonal maps WARDROBE-80 fields and frontImageUrl', () async {
+    repository = buildRepository(
+      api: [
+        HttpScript(
+          statusCode: 200,
+          body: {
+            'aiProfiles': [
+              {
+                ...personal,
+                'frontImageUrl': 'https://cdn.example.com/front.png',
+                'heightCm': 168,
+                'weightKg': 60,
+                'clothingSize': '10',
+              },
+            ],
+          },
+        ),
+      ],
+    );
+
+    final result = await repository.listPersonal();
+
+    expect(result.single.previewImageUrl, 'https://cdn.example.com/front.png');
+    expect(result.single.bodyContext.heightCm, 168);
+    expect(result.single.bodyContext.weightKg, 60);
+    expect(result.single.bodyContext.clothingSize, '10');
   });
 
   test('deletePersonal accepts 204 with an empty body', () async {
