@@ -60,7 +60,7 @@ void main() {
       findsNothing,
     );
     expect(find.byType(ClipOval), findsNothing);
-    expect(tester.widget<Image>(find.byType(Image)).fit, BoxFit.contain);
+    expect(tester.widget<Image>(find.byType(Image)).fit, BoxFit.cover);
   });
 
   testWidgets('generic and personal picker cards include the photo slot', (
@@ -119,6 +119,6 @@ void main() {
       findsOneWidget,
     );
     expect(find.byType(ClipOval), findsNothing);
-    expect(tester.widget<Image>(find.byType(Image)).fit, BoxFit.contain);
+    expect(tester.widget<Image>(find.byType(Image)).fit, BoxFit.cover);
   });
 }

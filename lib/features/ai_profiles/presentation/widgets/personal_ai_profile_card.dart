@@ -5,7 +5,7 @@ import '../../domain/ai_profile.dart';
 import 'ai_profile_picker_image.dart';
 import 'ai_profile_status_chip.dart';
 
-/// PERSONAL profile card: large uncropped photo, status, upload, select, delete.
+/// PERSONAL profile card: large cover-cropped photo, status, upload, select, delete.
 class PersonalAiProfileCard extends StatelessWidget {
   const PersonalAiProfileCard({
     super.key,

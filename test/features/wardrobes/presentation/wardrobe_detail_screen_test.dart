@@ -9,6 +9,7 @@ import 'package:wardrobe_app/features/items/presentation/widgets/item_filter_bar
 import 'package:wardrobe_app/features/items/presentation/widgets/item_swipe_card.dart';
 import 'package:wardrobe_app/features/items/presentation/widgets/item_swipe_deck.dart';
 import 'package:wardrobe_app/features/outfits/data/dio_outfit_repository.dart';
+import 'package:wardrobe_app/features/outfits/presentation/widgets/outfit_carousel.dart';
 import 'package:wardrobe_app/features/outfits/presentation/widgets/outfit_list_tile.dart';
 import 'package:wardrobe_app/features/recommendations/data/dio_recommendation_repository.dart';
 import 'package:wardrobe_app/features/wardrobes/data/dio_wardrobe_repository.dart';
@@ -244,6 +245,7 @@ void main() {
     final outfits = FakeOutfitRepository(seed: [testOutfit()]);
     await pumpDetail(tester, items: [testItem()], outfits: outfits);
 
+    expect(find.byKey(OutfitCarousel.carouselKey), findsOneWidget);
     await tester.ensureVisible(
       find.byKey(OutfitListTile.deleteKey('outfit_123')),
     );

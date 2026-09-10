@@ -5,8 +5,8 @@ import '../../domain/ai_profile.dart';
 /// Burgundy/plum photo for an AI model or personal profile picker option.
 ///
 /// Prefers the frontal GET URL from [AiProfile.pickerImageUrl] (`frontImageUrl`
-/// / `front.*` via WARDROBE-71/73). Uses [BoxFit.contain] so the whole picture
-/// is visible (letterboxed, never cover-cropped).
+/// / `front.*` via WARDROBE-71/73). Uses [BoxFit.cover] so the picture fills
+/// the card (WARDROBE-76). Card sizes from WARDROBE-74 stay.
 class AiProfilePickerImage extends StatelessWidget {
   const AiProfilePickerImage({super.key, required this.profile, this.radius});
 
@@ -36,7 +36,7 @@ class AiProfilePickerImage extends StatelessWidget {
       sourceKey = urlKey(url);
       child = Image.network(
         url,
-        fit: BoxFit.contain,
+        fit: BoxFit.cover,
         width: double.infinity,
         height: double.infinity,
         alignment: Alignment.center,

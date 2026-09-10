@@ -1,26 +1,23 @@
 import 'package:flutter/material.dart';
 
+import '../../../items/domain/item.dart';
 import '../../domain/outfit.dart';
+import '../../domain/outfit_cover.dart';
 
-/// Existing Backend try-on `imageUrl` when present. Never built from `imageKey`.
-String? outfitPreviewImageUrl(Outfit outfit) {
-  final url = outfit.render?.imageUrl?.trim();
-  if (url == null || url.isEmpty) {
-    return null;
-  }
-  return url;
-}
+export '../../domain/outfit_cover.dart' show outfitPreviewImageUrl;
 
-/// Outfits-list leading: render preview when Backend returned a URL, else hanger.
+/// Outfits-list leading: try-on URL, else an assigned item photo, else hanger.
 class OutfitListPreview extends StatelessWidget {
   const OutfitListPreview({
     super.key,
     required this.outfit,
+    this.wardrobeItems = const [],
     this.width = 56,
     this.height = 72,
   });
 
   final Outfit outfit;
+  final List<Item> wardrobeItems;
   final double width;
   final double height;
 
@@ -30,17 +27,20 @@ class OutfitListPreview extends StatelessWidget {
 
   static Key urlKey(String url) => Key('outfit_list_preview_url_$url');
 
+  static Key itemSourceKey(String itemId) =>
+      Key('outfit_list_preview_item_$itemId');
+
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final url = outfitPreviewImageUrl(outfit);
+    final cover = resolveOutfitCover(outfit, wardrobeItems);
 
     final Widget child;
-    if (url != null) {
+    if (cover.hasPhoto) {
       child = Image.network(
-        url,
-        key: urlKey(url),
-        fit: BoxFit.contain,
+        cover.networkUrl!,
+        key: urlKey(cover.networkUrl!),
+        fit: BoxFit.cover,
         width: double.infinity,
         height: double.infinity,
         alignment: Alignment.center,
@@ -76,11 +76,20 @@ class OutfitListPreview extends StatelessWidget {
       );
     }
 
+    final sourceKey = cover.kind == OutfitCoverKind.item && cover.item != null
+        ? itemSourceKey(cover.item!.id)
+        : null;
+
     return SizedBox(
-      key: url != null ? imageKey(outfit.id) : hangerKey(outfit.id),
+      key: cover.hasPhoto ? imageKey(outfit.id) : hangerKey(outfit.id),
       width: width,
       height: height,
-      child: ColoredBox(color: scheme.primaryContainer, child: child),
+      child: ColoredBox(
+        color: scheme.primaryContainer,
+        child: sourceKey == null
+            ? child
+            : KeyedSubtree(key: sourceKey, child: child),
+      ),
     );
   }
 }

@@ -7,7 +7,7 @@ import '../../../core/widgets/app_empty_state.dart';
 import '../../../core/router/app_routes.dart';
 import '../../items/application/items_controller.dart';
 import '../../items/domain/item.dart';
-import '../../outfits/domain/outfit.dart';
+import '../../outfits/presentation/widgets/outfit_item_slider.dart';
 import '../application/recommendation_detail_controller.dart';
 import '../application/recommendation_detail_state.dart';
 import '../application/recommendation_scope.dart';
@@ -87,7 +87,6 @@ class RecommendationDetailScreen extends ConsumerWidget {
     }
 
     final recommendation = state.recommendation!;
-    final itemsById = {for (final item in wardrobeItems) item.id: item};
     return ListView(
       children: [
         Text(
@@ -97,25 +96,14 @@ class RecommendationDetailScreen extends ConsumerWidget {
         const SizedBox(height: 8),
         const Text('Suggested look — not saved until you choose Save.'),
         const SizedBox(height: 24),
-        Text('Slots', style: Theme.of(context).textTheme.titleMedium),
+        Text('Items', style: Theme.of(context).textTheme.titleMedium),
         const SizedBox(height: 12),
-        for (final OutfitItem assignment in recommendation.items)
-          Card(
-            child: ListTile(
-              key: Key(
-                'recommendation_detail_slot_${assignment.slot.wireValue}',
-              ),
-              leading: CircleAvatar(child: Text(assignment.slot.label[0])),
-              title: Text(assignment.slot.label),
-              subtitle: Text(
-                itemsById[assignment.itemId]?.name ?? 'Item in this wardrobe',
-              ),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: () => context.push(
-                AppRoutes.itemDetail(wardrobeId, assignment.itemId),
-              ),
-            ),
-          ),
+        OutfitItemSlider(
+          assignments: recommendation.items,
+          wardrobeItems: wardrobeItems,
+          onItemTap: (itemId) =>
+              context.push(AppRoutes.itemDetail(wardrobeId, itemId)),
+        ),
         if (state.errorMessage != null) ...[
           const SizedBox(height: 16),
           Text(

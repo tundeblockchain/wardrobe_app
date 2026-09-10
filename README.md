@@ -83,8 +83,9 @@ Upload flow:
 
 Response `itemId` maps to domain `id`. Image keys stay on the domain as
 `originalImageKey` / `processedImageKey`. Wardrobe item browse is a
-Tinder-style card stack (WARDROBE-41): swipe right (or Next item)
-to advance; swipe left and vertical scroll do not flip or advance the card.
+Tinder-style card stack (WARDROBE-41 / [WARDROBE-76](https://tundetunde000.atlassian.net/browse/WARDROBE-76)):
+swipe left or right (or Next item) to advance; vertical scroll does not
+flip or advance the card.
 Tap the card or View details to open the existing item screen.
 Cards prefer a processed HTTP(S) photo when present, otherwise the original
 upload (network URL or the just-uploaded local bytes). They still show
@@ -169,9 +170,23 @@ Status chips show `PENDING` / `PROCESSING` / `READY` / `FAILED`. Users can delet
 
 The catalog (`GET /ai-profiles/models`) is expected to include seeded models Alex, Jordan, Sam, and Riley (`profile_generic_01`–`04`). Tapping a model (or a personal profile) stores `selectedAiProfileId` for the dressing room.
 
-Picker tiles ([WARDROBE-71](https://tundetunde000.atlassian.net/browse/WARDROBE-71) / [WARDROBE-74](https://tundetunde000.atlassian.net/browse/WARDROBE-74)) show a large uncropped frontal photo when get/list returns an http(s) URL (`referenceImages` entry such as `front.png`, or aliases like `frontImageUrl` / `referenceImageUrls` / `imageUrl`). Current Backend get/list (WARDROBE-43/45) only returns S3 keys in `referenceImages` — no PERSONAL URL field — so those options use a burgundy/plum placeholder until WARDROBE-72 (or a follow-up) returns GET URLs. S3 keys are never turned into fabricated URLs.
+Picker tiles ([WARDROBE-71](https://tundetunde000.atlassian.net/browse/WARDROBE-71) / [WARDROBE-74](https://tundetunde000.atlassian.net/browse/WARDROBE-74)) show a large frontal photo when get/list returns an http(s) URL (`referenceImages` entry such as `front.png`, or aliases like `frontImageUrl` / `referenceImageUrls` / `imageUrl`). Current Backend get/list (WARDROBE-43/45) only returns S3 keys in `referenceImages` — no PERSONAL URL field — so those options use a burgundy/plum placeholder until WARDROBE-72 (or a follow-up) returns GET URLs. S3 keys are never turned into fabricated URLs. WARDROBE-74 card sizes stay; WARDROBE-76 cover-crops the photo.
 
-Card photos (wardrobe, item, outfit, persona, try-on result) use `BoxFit.contain` so the whole picture is visible. The Outfits list shows a try-on `imageUrl` preview when Backend returned one, and keeps the hanger icon when there is no URL.
+Card photos (wardrobe, item, outfit, persona, try-on result) use `BoxFit.cover` so the picture fills the card ([WARDROBE-76](https://tundetunde000.atlassian.net/browse/WARDROBE-76)). Tap the item-detail photo or a generated try-on result for a full-image popup (`BoxFit.contain`). Outfit and suggestion detail show a horizontal slider of selected-item cards. Outfit detail’s hero uses `render.imageUrl` when present; if none, tapping that card goes to Try On.
+
+The wardrobe outfits list is a horizontal carousel: try-on `render.imageUrl` when Backend returned one, otherwise the first assigned item http(s) photo (`originalImageUrl` / `processedImageUrl`), otherwise the hanger.
+
+### Backend image fields inspected (WARDROBE-76)
+
+No new Backend fields were added. Display uses only existing http(s) URLs:
+
+| Surface | Fields inspected | Gap |
+| --- | --- | --- |
+| Item cards / item detail / item slider | `originalImageUrl`, `processedImageUrl` (WARDROBE-54); aliases `rawImageUrl` / `originalUrl` / `processedUrl` / `imageUrl` / `url`; nested `image` map. S3 `image.originalKey` / `image.processedKey` are not turned into URLs. | If get/list omit the GET URLs and only return keys, cards show the hanger/placeholder. |
+| Outfit get/list hero and carousel | Optional `render.imageUrl` (presigned GET). `render.imageKey` is storage-only. | List/get may omit `render` or return `imageKey` without `imageUrl`. The client then falls back to an assigned item photo from the items list. There is no dedicated outfit-photo field besides try-on `render`. |
+| Recommendation get | `name` + `items[{itemId,slot}]` only. No `imageUrl` / `render`. | Suggestion covers use wardrobe item photos only. |
+| Try-on GET `/render` | `imageUrl` when `status` is `READY`. | Same as WARDROBE-51: no URL is invented from `imageKey`. |
+| AI profile get/list | `frontImageUrl` / `front.*` / `referenceImageUrls` / `imageUrl` (WARDROBE-71/73). | PERSONAL get/list still has no GET URL (WARDROBE-43/45); placeholder until WARDROBE-72. |
 
 ## Virtual try-on (WARDROBE-51)
 

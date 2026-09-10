@@ -9,6 +9,8 @@ import 'package:wardrobe_app/features/outfits/data/dio_outfit_repository.dart';
 import 'package:wardrobe_app/features/outfits/domain/outfit_render.dart';
 import 'package:wardrobe_app/features/outfits/presentation/outfit_detail_screen.dart';
 import 'package:wardrobe_app/features/outfits/presentation/outfits_screen.dart';
+import 'package:wardrobe_app/features/outfits/presentation/widgets/outfit_hero_card.dart';
+import 'package:wardrobe_app/features/outfits/presentation/widgets/outfit_item_slider.dart';
 import 'package:wardrobe_app/features/outfits/presentation/widgets/outfit_list_tile.dart';
 import 'package:wardrobe_app/features/wardrobes/presentation/widgets/wardrobe_list_card.dart';
 
@@ -66,7 +68,10 @@ void main() {
 
     expect(find.byType(OutfitDetailScreen), findsOneWidget);
     expect(find.text('Friday Night'), findsWidgets);
-    expect(find.text('Slots'), findsOneWidget);
+    expect(find.text('Items'), findsOneWidget);
+    expect(find.byKey(OutfitHeroCard.cardKey), findsOneWidget);
+    expect(find.byKey(OutfitHeroCard.tryOnHintKey), findsOneWidget);
+    expect(find.byKey(OutfitItemSlider.sliderKey), findsOneWidget);
     expect(find.text('Try on'), findsOneWidget);
     expect(find.byKey(OutfitDetailScreen.editButtonKey), findsOneWidget);
     expect(find.byKey(OutfitDetailScreen.deleteButtonKey), findsOneWidget);
@@ -114,6 +119,42 @@ void main() {
     expect(find.text('Processed'), findsNothing);
     expect(find.text('Failed'), findsNothing);
     expect(find.text('Pending'), findsNothing);
+  });
+
+  testWidgets('outfit detail hero shows the try-on imageUrl when present', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(800, 1600);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    const url = 'https://cdn.example.com/try-on/outfit_123.png';
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          outfitRepositoryProvider.overrideWithValue(
+            FakeOutfitRepository(
+              seed: [testOutfit(render: testOutfitRender())],
+            ),
+          ),
+          itemRepositoryProvider.overrideWithValue(FakeItemRepository()),
+        ],
+        child: const MaterialApp(
+          home: OutfitDetailScreen(
+            wardrobeId: 'wd_abc123',
+            outfitId: 'outfit_123',
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(OutfitHeroCard.imageKey), findsOneWidget);
+    expect(find.byKey(OutfitHeroCard.urlKey(url)), findsOneWidget);
+    expect(find.byKey(OutfitHeroCard.tryOnHintKey), findsNothing);
+    expect(find.byKey(OutfitItemSlider.sliderKey), findsOneWidget);
+    expect(tester.widget<Image>(find.byType(Image)).fit, BoxFit.cover);
   });
 
   testWidgets(

@@ -16,7 +16,7 @@ import '../../items/presentation/widgets/item_swipe_deck.dart';
 import '../../outfits/application/outfits_controller.dart';
 import '../../outfits/application/outfits_state.dart';
 import '../../outfits/domain/outfit.dart';
-import '../../outfits/presentation/widgets/outfit_list_tile.dart';
+import '../../outfits/presentation/widgets/outfit_carousel.dart';
 import '../../recommendations/application/recommendations_controller.dart';
 import '../../recommendations/application/recommendations_state.dart';
 import '../../recommendations/domain/recommendation.dart';
@@ -327,13 +327,13 @@ class _OutfitsSection extends ConsumerWidget {
           onTap: () => context.push(AppRoutes.outfits(wardrobeId)),
         ),
         if (!state.isEmpty)
-          for (final Outfit outfit in state.outfits.take(3))
-            OutfitListTile(
-              wardrobeId: wardrobeId,
-              outfit: outfit,
-              tileKey: Key('wardrobe_outfit_tile_${outfit.id}'),
-              onDelete: () => _deleteOutfit(context, ref, outfit),
-            ),
+          OutfitCarousel(
+            wardrobeId: wardrobeId,
+            outfits: state.outfits,
+            wardrobeItems: ref.watch(itemsControllerProvider(wardrobeId)).items,
+            onDelete: (outfit) => _deleteOutfit(context, ref, outfit),
+            cardKeyFor: (outfit) => Key('wardrobe_outfit_tile_${outfit.id}'),
+          ),
         Align(
           alignment: Alignment.centerLeft,
           child: TextButton(

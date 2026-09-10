@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:wardrobe_app/core/theme/app_theme.dart';
 import 'package:wardrobe_app/features/outfits/presentation/widgets/outfit_list_preview.dart';
 
+import '../../../helpers/fake_item_repository.dart';
 import '../../../helpers/fake_outfit_repository.dart';
 
 void main() {
@@ -47,7 +48,7 @@ void main() {
     expect(find.byIcon(Icons.checkroom_outlined), findsOneWidget);
   });
 
-  testWidgets('shows the render imageUrl with contain framing', (tester) async {
+  testWidgets('shows the render imageUrl with cover framing', (tester) async {
     final outfit = testOutfit(render: testOutfitRender());
     const url = 'https://cdn.example.com/try-on/outfit_123.png';
 
@@ -56,6 +57,29 @@ void main() {
     expect(find.byKey(OutfitListPreview.imageKey(outfit.id)), findsOneWidget);
     expect(find.byKey(OutfitListPreview.urlKey(url)), findsOneWidget);
     expect(find.byKey(OutfitListPreview.hangerKey(outfit.id)), findsNothing);
-    expect(tester.widget<Image>(find.byType(Image)).fit, BoxFit.contain);
+    expect(tester.widget<Image>(find.byType(Image)).fit, BoxFit.cover);
+  });
+
+  testWidgets('falls back to an assigned item photo when there is no render', (
+    tester,
+  ) async {
+    final outfit = testOutfit();
+    final item = testItem(
+      id: 'item_top123',
+      originalImageUrl: 'https://cdn.example.com/top.jpg',
+    );
+
+    await pumpPreview(
+      tester,
+      child: OutfitListPreview(outfit: outfit, wardrobeItems: [item]),
+    );
+
+    expect(find.byKey(OutfitListPreview.imageKey(outfit.id)), findsOneWidget);
+    expect(
+      find.byKey(OutfitListPreview.itemSourceKey(item.id)),
+      findsOneWidget,
+    );
+    expect(find.byKey(OutfitListPreview.hangerKey(outfit.id)), findsNothing);
+    expect(tester.widget<Image>(find.byType(Image)).fit, BoxFit.cover);
   });
 }

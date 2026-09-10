@@ -8,18 +8,20 @@ import '../../domain/item_image_source.dart';
 
 /// Item photo: processed URL when present, otherwise original.
 ///
-/// Uses [BoxFit.contain] so the whole picture is visible (letterboxed).
-/// Local upload bytes fill in when the payload only has S3 object keys.
-/// Job status is never drawn on the photo.
+/// Cards use [BoxFit.cover] so the picture fills the frame (WARDROBE-76).
+/// Pass [BoxFit.contain] for the enlarged popup. Local upload bytes fill in
+/// when the payload only has S3 object keys. Job status is never drawn.
 class ItemBrowseImage extends StatelessWidget {
   const ItemBrowseImage({
     super.key,
     required this.item,
     this.localPreviewBytes,
+    this.fit = BoxFit.cover,
   });
 
   final Item item;
   final Uint8List? localPreviewBytes;
+  final BoxFit fit;
 
   static Key imageKey(String itemId) => Key('item_browse_image_$itemId');
 
@@ -42,7 +44,7 @@ class ItemBrowseImage extends StatelessWidget {
       sourceSubtreeKey = sourceKey(source.key!);
       photo = Image.network(
         source.networkUrl!,
-        fit: BoxFit.contain,
+        fit: fit,
         alignment: Alignment.center,
         width: double.infinity,
         height: double.infinity,
@@ -84,7 +86,7 @@ class ItemBrowseImage extends StatelessWidget {
   Widget _localImage(Uint8List bytes) {
     return Image.memory(
       bytes,
-      fit: BoxFit.contain,
+      fit: fit,
       alignment: Alignment.center,
       width: double.infinity,
       height: double.infinity,
