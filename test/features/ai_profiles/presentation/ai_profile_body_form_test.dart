@@ -9,8 +9,13 @@ void main() {
     WidgetTester tester, {
     AiProfileBodyContext initial = AiProfileBodyContext.empty,
     required ValueChanged<AiProfileBodyContext> onSubmit,
-  }) {
-    return tester.pumpWidget(
+  }) async {
+    tester.view.physicalSize = const Size(800, 1600);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(
       MaterialApp(
         theme: AppTheme.light(),
         home: Scaffold(
@@ -22,6 +27,12 @@ void main() {
     );
   }
 
+  Future<void> tapSubmit(WidgetTester tester) async {
+    await tester.ensureVisible(find.byKey(AiProfileBodyForm.submitButtonKey));
+    await tester.tap(find.byKey(AiProfileBodyForm.submitButtonKey));
+    await tester.pump();
+  }
+
   testWidgets('empty fields submit without blocking', (tester) async {
     AiProfileBodyContext? submitted;
     await pumpForm(tester, onSubmit: (value) => submitted = value);
@@ -29,8 +40,7 @@ void main() {
     expect(find.byKey(AiProfileBodyForm.optionalBannerKey), findsOneWidget);
     expect(find.textContaining('never block try-on'), findsOneWidget);
 
-    await tester.tap(find.byKey(AiProfileBodyForm.submitButtonKey));
-    await tester.pump();
+    await tapSubmit(tester);
 
     expect(submitted, AiProfileBodyContext.empty);
   });
@@ -40,8 +50,7 @@ void main() {
     await pumpForm(tester, onSubmit: (value) => submitted = value);
 
     await tester.enterText(find.byKey(AiProfileBodyForm.heightFieldKey), '12');
-    await tester.tap(find.byKey(AiProfileBodyForm.submitButtonKey));
-    await tester.pump();
+    await tapSubmit(tester);
 
     expect(find.textContaining('Height must be between'), findsOneWidget);
     expect(submitted, isNull);
@@ -57,8 +66,7 @@ void main() {
     await tester.enterText(find.byKey(AiProfileBodyForm.hipsFieldKey), '100');
     await tester.enterText(find.byKey(AiProfileBodyForm.sizeFieldKey), 'M');
     await tester.enterText(find.byKey(AiProfileBodyForm.weightFieldKey), '65');
-    await tester.tap(find.byKey(AiProfileBodyForm.submitButtonKey));
-    await tester.pump();
+    await tapSubmit(tester);
 
     expect(
       submitted,
