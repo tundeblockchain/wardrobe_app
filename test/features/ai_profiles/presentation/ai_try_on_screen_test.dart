@@ -173,6 +173,9 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byKey(AiTryOnScreen.selectedBannerKey), findsOneWidget);
     expect(find.text('Selected: Jordan'), findsOneWidget);
+    expect(find.text('Generic model'), findsOneWidget);
+    expect(find.textContaining('profile_generic_02'), findsNothing);
+    expect(find.textContaining('profile_generic_01'), findsNothing);
 
     await tester.drag(scrollable, const Offset(0, -4000));
     await tester.pumpAndSettle();
@@ -194,6 +197,9 @@ void main() {
 
     expect(find.byType(AiProfileBodyScreen), findsOneWidget);
     expect(find.byKey(AiProfileBodyForm.optionalBannerKey), findsOneWidget);
-    expect(find.textContaining('never block try-on'), findsOneWidget);
+    expect(find.text(AiProfileBodyForm.helperCopy), findsOneWidget);
+    expect(find.text('Bra size'), findsOneWidget);
+    expect(find.textContaining('profile_personal_1'), findsNothing);
+    expect(find.textContaining('profile_'), findsNothing);
   });
 }

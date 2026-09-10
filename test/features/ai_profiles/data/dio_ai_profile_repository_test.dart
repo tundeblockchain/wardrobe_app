@@ -211,6 +211,7 @@ void main() {
       'bustCm': null,
       'hipsCm': null,
       'clothingSize': null,
+      'braSize': null,
       'ageYears': null,
       'bodyType': null,
       'gender': null,
@@ -243,6 +244,27 @@ void main() {
     expect(result.single.bodyContext.heightCm, 168);
     expect(result.single.bodyContext.weightKg, 60);
     expect(result.single.bodyContext.clothingSize, '10');
+  });
+
+  test('createPersonal and getProfile map braSize when present', () async {
+    repository = buildRepository(
+      api: [
+        HttpScript(statusCode: 201, body: {...personal, 'braSize': '34B'}),
+        HttpScript(statusCode: 200, body: {...personal, 'braSize': '34B'}),
+      ],
+    );
+
+    final created = await repository.createPersonal(
+      body: const AiProfileBodyContext(braSize: '34B'),
+    );
+    expect(created.bodyContext.braSize, '34B');
+    expect(_requestBody(adapter.requests.first), {
+      'type': 'PERSONAL',
+      'braSize': '34B',
+    });
+
+    final fetched = await repository.getProfile('profile_abc123xyz0');
+    expect(fetched.bodyContext.braSize, '34B');
   });
 
   test('deletePersonal accepts 204 with an empty body', () async {

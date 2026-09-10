@@ -142,7 +142,7 @@ class PersonalAiProfilesController extends Notifier<PersonalAiProfilesState> {
     }
   }
 
-  /// Persists optional WARDROBE-80 fields via `PATCH /ai-profiles/{id}`.
+  /// Persists optional body/context fields via `PATCH /ai-profiles/{id}`.
   ///
   /// Empty [bodyContext] clears stored values and does not block try-on.
   Future<bool> updateBodyContext(

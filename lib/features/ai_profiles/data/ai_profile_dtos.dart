@@ -26,6 +26,7 @@ abstract class AiProfileResponse with _$AiProfileResponse {
     @JsonKey(includeIfNull: false) num? bustCm,
     @JsonKey(includeIfNull: false) num? hipsCm,
     @JsonKey(includeIfNull: false) String? clothingSize,
+    @JsonKey(includeIfNull: false) String? braSize,
     @JsonKey(includeIfNull: false) int? ageYears,
     @JsonKey(includeIfNull: false) String? bodyType,
     @JsonKey(includeIfNull: false) String? gender,
@@ -57,6 +58,7 @@ abstract class AiProfileResponse with _$AiProfileResponse {
         bustCm: bustCm,
         hipsCm: hipsCm,
         clothingSize: _optional(clothingSize),
+        braSize: _optional(braSize),
         ageYears: ageYears,
         bodyType: _optional(bodyType),
         gender: _optional(gender),
@@ -92,7 +94,7 @@ abstract class AiProfileListResponse with _$AiProfileListResponse {
 }
 
 /// `POST /ai-profiles` body. GENERIC_MODEL create is rejected by the API.
-/// Optional WARDROBE-80 fields are soft-omitted when null / empty.
+/// Optional WARDROBE-80 / WARDROBE-82 fields are soft-omitted when null / empty.
 @freezed
 abstract class CreateAiProfileRequest with _$CreateAiProfileRequest {
   const factory CreateAiProfileRequest({
@@ -102,6 +104,7 @@ abstract class CreateAiProfileRequest with _$CreateAiProfileRequest {
     @JsonKey(includeIfNull: false) num? bustCm,
     @JsonKey(includeIfNull: false) num? hipsCm,
     @JsonKey(includeIfNull: false) String? clothingSize,
+    @JsonKey(includeIfNull: false) String? braSize,
     @JsonKey(includeIfNull: false) int? ageYears,
     @JsonKey(includeIfNull: false) String? bodyType,
     @JsonKey(includeIfNull: false) String? gender,
@@ -117,6 +120,7 @@ abstract class CreateAiProfileRequest with _$CreateAiProfileRequest {
       bustCm: body.bustCm,
       hipsCm: body.hipsCm,
       clothingSize: _optional(body.clothingSize),
+      braSize: _optional(body.braSize),
       ageYears: body.ageYears,
       bodyType: _optional(body.bodyType),
       gender: _optional(body.gender),
@@ -133,6 +137,7 @@ abstract class UpdateAiProfileRequest with _$UpdateAiProfileRequest {
     @JsonKey(includeIfNull: true) num? bustCm,
     @JsonKey(includeIfNull: true) num? hipsCm,
     @JsonKey(includeIfNull: true) String? clothingSize,
+    @JsonKey(includeIfNull: true) String? braSize,
     @JsonKey(includeIfNull: true) int? ageYears,
     @JsonKey(includeIfNull: true) String? bodyType,
     @JsonKey(includeIfNull: true) String? gender,
@@ -148,6 +153,7 @@ abstract class UpdateAiProfileRequest with _$UpdateAiProfileRequest {
       bustCm: body.bustCm,
       hipsCm: body.hipsCm,
       clothingSize: _optional(body.clothingSize),
+      braSize: _optional(body.braSize),
       ageYears: body.ageYears,
       bodyType: _optional(body.bodyType),
       gender: _optional(body.gender),

@@ -1,6 +1,6 @@
 import 'ai_profile_body_context.dart';
 
-/// Light range checks aligned with Backend WARDROBE-80.
+/// Light range checks aligned with Backend WARDROBE-80 / WARDROBE-82.
 ///
 /// Empty / whitespace values are always valid so try-on is never blocked.
 abstract final class AiProfileBodyValidators {
@@ -15,6 +15,7 @@ abstract final class AiProfileBodyValidators {
   static const minAgeYears = 1;
   static const maxAgeYears = 120;
   static const maxClothingSizeLength = 32;
+  static const maxBraSizeLength = 32;
   static const maxTokenLength = 32;
 
   static String? heightCm(String? value) {
@@ -80,6 +81,14 @@ abstract final class AiProfileBodyValidators {
     return null;
   }
 
+  static String? braSize(String? value) {
+    final trimmed = value?.trim() ?? '';
+    if (trimmed.length > maxBraSizeLength) {
+      return 'Bra size must be $maxBraSizeLength characters or fewer.';
+    }
+    return null;
+  }
+
   static String? bodyType(String? value) => _optionalToken(value, 'Body type');
 
   static String? gender(String? value) => _optionalToken(value, 'Gender');
@@ -116,6 +125,7 @@ abstract final class AiProfileBodyValidators {
     required String bustCm,
     required String hipsCm,
     required String clothingSize,
+    String braSize = '',
     required String ageYears,
     String? bodyType,
     String? gender,
@@ -126,6 +136,7 @@ abstract final class AiProfileBodyValidators {
       bustCm: parseNumber(bustCm),
       hipsCm: parseNumber(hipsCm),
       clothingSize: parseToken(clothingSize),
+      braSize: parseToken(braSize),
       ageYears: parseInt(ageYears),
       bodyType: parseToken(bodyType),
       gender: parseToken(gender),

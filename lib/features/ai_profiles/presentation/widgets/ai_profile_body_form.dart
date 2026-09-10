@@ -23,11 +23,14 @@ class AiProfileBodyForm extends StatefulWidget {
   static const bustFieldKey = Key('ai_profile_body_bust');
   static const hipsFieldKey = Key('ai_profile_body_hips');
   static const sizeFieldKey = Key('ai_profile_body_size');
+  static const braSizeFieldKey = Key('ai_profile_body_bra_size');
   static const ageFieldKey = Key('ai_profile_body_age');
   static const bodyTypeFieldKey = Key('ai_profile_body_body_type');
   static const genderFieldKey = Key('ai_profile_body_gender');
   static const submitButtonKey = Key('ai_profile_body_submit');
   static const optionalBannerKey = Key('ai_profile_body_optional_banner');
+  static const helperCopy =
+      'These measurements provide more context to generate a more accurate preview';
 
   @override
   State<AiProfileBodyForm> createState() => AiProfileBodyFormState();
@@ -40,6 +43,7 @@ class AiProfileBodyFormState extends State<AiProfileBodyForm> {
   late final TextEditingController _bustController;
   late final TextEditingController _hipsController;
   late final TextEditingController _sizeController;
+  late final TextEditingController _braSizeController;
   late final TextEditingController _ageController;
   late String _bodyType;
   late String _gender;
@@ -62,6 +66,9 @@ class AiProfileBodyFormState extends State<AiProfileBodyForm> {
     _sizeController = TextEditingController(
       text: widget.initial.clothingSize?.trim() ?? '',
     );
+    _braSizeController = TextEditingController(
+      text: widget.initial.braSize?.trim() ?? '',
+    );
     _ageController = TextEditingController(
       text: widget.initial.ageYears == null ? '' : '${widget.initial.ageYears}',
     );
@@ -76,6 +83,7 @@ class AiProfileBodyFormState extends State<AiProfileBodyForm> {
     _bustController.dispose();
     _hipsController.dispose();
     _sizeController.dispose();
+    _braSizeController.dispose();
     _ageController.dispose();
     super.dispose();
   }
@@ -91,6 +99,7 @@ class AiProfileBodyFormState extends State<AiProfileBodyForm> {
         bustCm: _bustController.text,
         hipsCm: _hipsController.text,
         clothingSize: _sizeController.text,
+        braSize: _braSizeController.text,
         ageYears: _ageController.text,
         bodyType: _bodyType,
         gender: _gender,
@@ -126,8 +135,7 @@ class AiProfileBodyFormState extends State<AiProfileBodyForm> {
                   ),
                   const SizedBox(height: AppSpacing.sm),
                   Text(
-                    'These measurements give try-on more context. Leave any '
-                    'field empty — empty values never block try-on.',
+                    AiProfileBodyForm.helperCopy,
                     style: theme.textTheme.bodyMedium?.copyWith(
                       color: scheme.onPrimaryContainer,
                     ),
@@ -200,6 +208,19 @@ class AiProfileBodyFormState extends State<AiProfileBodyForm> {
               hintText: 'e.g. M, 10, 42',
             ),
             validator: AiProfileBodyValidators.clothingSize,
+          ),
+          const SizedBox(height: AppSpacing.md),
+          TextFormField(
+            key: AiProfileBodyForm.braSizeFieldKey,
+            controller: _braSizeController,
+            enabled: enabled,
+            textCapitalization: TextCapitalization.characters,
+            maxLength: AiProfileBodyValidators.maxBraSizeLength,
+            decoration: const InputDecoration(
+              labelText: 'Bra size',
+              hintText: 'e.g. 34B',
+            ),
+            validator: AiProfileBodyValidators.braSize,
           ),
           const SizedBox(height: AppSpacing.md),
           TextFormField(

@@ -9,7 +9,7 @@ import '../domain/ai_profile.dart';
 import '../domain/ai_profile_body_context.dart';
 import 'widgets/ai_profile_body_form.dart';
 
-/// View and edit optional PERSONAL body/context fields (WARDROBE-81).
+/// View and edit optional PERSONAL body/context fields (WARDROBE-81/83).
 ///
 /// GENERIC_MODEL catalog rows are not editable in-app.
 class AiProfileBodyScreen extends ConsumerWidget {
