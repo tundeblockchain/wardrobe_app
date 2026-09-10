@@ -43,9 +43,11 @@ void main() {
     expect(find.byKey(OutfitItemSlider.cardKey('item_top123')), findsOneWidget);
     expect(find.byKey(ItemBrowseImage.imageKey(top.id)), findsOneWidget);
     expect(tester.widget<Image>(find.byType(Image)).fit, BoxFit.cover);
-    expect(find.text('Top'), findsOneWidget);
     expect(find.text('Black tee'), findsOneWidget);
-    expect(find.text('Bottom'), findsOneWidget);
+    expect(
+      find.byKey(OutfitItemSlider.cardKey('item_missing')),
+      findsOneWidget,
+    );
 
     await tester.tap(find.byKey(OutfitItemSlider.cardKey('item_top123')));
     expect(tapped, ['item_top123']);

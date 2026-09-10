@@ -30,7 +30,10 @@ void main() {
               outfits: [
                 testOutfit(id: 'outfit_render', render: testOutfitRender()),
                 testOutfit(id: 'outfit_item'),
-                testOutfit(id: 'outfit_hanger', name: 'No photos'),
+                testOutfit(
+                  id: 'outfit_hanger',
+                  name: 'No photos',
+                ).copyWith(items: const []),
               ],
               wardrobeItems: [
                 testItem(
