@@ -23,7 +23,7 @@ If Firebase, Google Sign-In, Play Console, or App Store Connect still list
 and OAuth clients for **`com.tundetunde.wardrobe`**. The old example ids will
 not match this binary.
 
-## What Tunde must do in Firebase / Google Cloud
+## What operators must do in Firebase / Google Cloud
 
 ### 1. Add Android and iOS apps with this id (if they are not already there)
 

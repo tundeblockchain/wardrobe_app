@@ -17,7 +17,7 @@ keys, `google-services.json`, `GoogleService-Info.plist`, or
 | iOS | `PRODUCT_BUNDLE_IDENTIFIER` / `CFBundleIdentifier` | `com.tundetunde.wardrobe` |
 | Android | `applicationId` / `namespace` | `com.tundetunde.wardrobe` (no Apple button) |
 
-## What Tunde must do in Apple Developer + Firebase
+## What operators must do in Apple Developer + Firebase
 
 A paid [Apple Developer Program](https://developer.apple.com/programs/)
 membership is required. Sign in with Apple is not available on a free Apple ID.
