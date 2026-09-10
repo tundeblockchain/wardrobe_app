@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../core/router/app_routes.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/app_empty_state.dart';
 import '../../../core/widgets/destructive_confirm_dialog.dart';
@@ -188,6 +190,8 @@ class _PersonalSection extends ConsumerWidget {
               onCamera: () => controller.pickFromCamera(profile.id),
               onGallery: () => controller.pickFromGallery(profile.id),
               onDelete: () => _delete(context, ref, profile),
+              onEditBody: () =>
+                  context.push(AppRoutes.aiProfileBody(profile.id)),
             ),
             const SizedBox(height: AppSpacing.md),
           ],

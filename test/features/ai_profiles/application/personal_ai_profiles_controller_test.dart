@@ -5,6 +5,7 @@ import 'package:wardrobe_app/features/ai_profiles/application/personal_ai_profil
 import 'package:wardrobe_app/features/ai_profiles/application/selected_ai_profile.dart';
 import 'package:wardrobe_app/features/ai_profiles/data/dio_ai_profile_repository.dart';
 import 'package:wardrobe_app/features/ai_profiles/domain/ai_profile.dart';
+import 'package:wardrobe_app/features/ai_profiles/domain/ai_profile_body_context.dart';
 import 'package:wardrobe_app/features/items/data/image_picker_item_image_picker.dart';
 
 import '../../../helpers/fake_ai_profile_repository.dart';
@@ -156,5 +157,83 @@ void main() {
       container.read(personalAiProfilesControllerProvider).profiles,
       isEmpty,
     );
+  });
+
+  test('applyBodyContext stores WARDROBE-80 fields in memory only', () async {
+    final profile = testPersonalProfile();
+    repository.personal.add(profile);
+    container.read(personalAiProfilesControllerProvider);
+    await settle();
+    container.read(selectedAiProfileProvider.notifier).select(profile);
+
+    const body = AiProfileBodyContext(height: 170, size: 'M');
+    container
+        .read(personalAiProfilesControllerProvider.notifier)
+        .applyBodyContext(profile.id, body);
+
+    expect(
+      container
+          .read(personalAiProfilesControllerProvider)
+          .profiles
+          .single
+          .bodyContext,
+      body,
+    );
+    expect(container.read(selectedAiProfileProvider)?.bodyContext, body);
+    expect(repository.createCalls, 0);
+    expect(repository.listPersonalCalls, 1);
+  });
+
+  test('refresh keeps session body details when get/list omit them', () async {
+    repository.personal.add(testPersonalProfile());
+    container.read(personalAiProfilesControllerProvider);
+    await settle();
+
+    container
+        .read(personalAiProfilesControllerProvider.notifier)
+        .applyBodyContext(
+          'profile_personal_1',
+          const AiProfileBodyContext(height: 168, weight: 60),
+        );
+
+    await container
+        .read(personalAiProfilesControllerProvider.notifier)
+        .refresh();
+
+    expect(
+      container
+          .read(personalAiProfilesControllerProvider)
+          .profiles
+          .single
+          .bodyContext
+          .height,
+      168,
+    );
+    expect(repository.listPersonalCalls, 2);
+  });
+
+  test('gallery upload preserves session body details', () async {
+    repository.personal.add(
+      testPersonalProfile(referenceImages: const ['users/uid/existing.jpg']),
+    );
+    container.read(personalAiProfilesControllerProvider);
+    await settle();
+    container
+        .read(personalAiProfilesControllerProvider.notifier)
+        .applyBodyContext(
+          'profile_personal_1',
+          const AiProfileBodyContext(age: 30),
+        );
+
+    await container
+        .read(personalAiProfilesControllerProvider.notifier)
+        .pickFromGallery('profile_personal_1');
+
+    final updated = container
+        .read(personalAiProfilesControllerProvider)
+        .profiles
+        .single;
+    expect(updated.bodyContext.age, 30);
+    expect(updated.referenceImages, hasLength(2));
   });
 }

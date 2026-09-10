@@ -14,6 +14,7 @@ import '../../features/outfits/presentation/create_outfit_screen.dart';
 import '../../features/outfits/presentation/edit_outfit_screen.dart';
 import '../../features/outfits/presentation/outfit_detail_screen.dart';
 import '../../features/outfits/presentation/outfits_screen.dart';
+import '../../features/ai_profiles/presentation/ai_profile_body_screen.dart';
 import '../../features/ai_profiles/presentation/ai_try_on_screen.dart';
 import '../../features/profile/presentation/contact_us_screen.dart';
 import '../../features/profile/presentation/profile_screen.dart';
@@ -93,6 +94,15 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: 'ai-try-on',
             builder: (context, state) => const AiTryOnScreen(),
+            routes: [
+              GoRoute(
+                path: ':aiProfileId/body',
+                builder: (context, state) {
+                  final aiProfileId = state.pathParameters['aiProfileId']!;
+                  return AiProfileBodyScreen(aiProfileId: aiProfileId);
+                },
+              ),
+            ],
           ),
         ],
       ),

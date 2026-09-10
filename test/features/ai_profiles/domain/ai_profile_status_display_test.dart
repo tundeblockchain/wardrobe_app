@@ -25,6 +25,12 @@ void main() {
             .canUseForTryOn,
         isTrue,
       );
+      expect(
+        testPersonalProfile(referenceImages: const ['users/uid/ref.jpg'])
+            .bodyContext
+            .isEmpty,
+        isTrue,
+      );
     },
   );
 

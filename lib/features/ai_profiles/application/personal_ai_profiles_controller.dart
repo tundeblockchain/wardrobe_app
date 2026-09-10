@@ -7,6 +7,7 @@ import '../../items/domain/item_image_picker.dart';
 import '../../items/domain/picked_image.dart';
 import '../data/dio_ai_profile_repository.dart';
 import '../domain/ai_profile.dart';
+import '../domain/ai_profile_body_context.dart';
 import '../domain/ai_profile_repository.dart';
 import 'personal_ai_profiles_state.dart';
 import 'selected_ai_profile.dart';
@@ -33,7 +34,10 @@ class PersonalAiProfilesController extends Notifier<PersonalAiProfilesState> {
       if (!ref.mounted) {
         return;
       }
-      state = state.copyWith(isLoading: false, profiles: profiles);
+      state = state.copyWith(
+        isLoading: false,
+        profiles: _mergeIncoming(profiles),
+      );
     } on ApiException catch (error) {
       if (!ref.mounted) {
         return;
@@ -139,6 +143,18 @@ class PersonalAiProfilesController extends Notifier<PersonalAiProfilesState> {
     }
   }
 
+  /// Applies optional body/context fields on a PERSONAL profile in memory.
+  ///
+  /// There is no Backend update route for these fields yet (WARDROBE-80).
+  /// Values are not POSTed. Empty [bodyContext] does not block try-on.
+  void applyBodyContext(String aiProfileId, AiProfileBodyContext bodyContext) {
+    final current = _find(aiProfileId);
+    if (current == null || !current.isPersonal) {
+      return;
+    }
+    _upsert(current.copyWith(bodyContext: bodyContext), keepIncomingBody: true);
+  }
+
   Future<bool> deletePersonal(String aiProfileId) async {
     state = state.copyWith(deletingProfileId: aiProfileId, clearError: true);
     try {
@@ -176,15 +192,45 @@ class PersonalAiProfilesController extends Notifier<PersonalAiProfilesState> {
     );
   }
 
-  void _upsert(AiProfile profile) {
+  List<AiProfile> _mergeIncoming(List<AiProfile> incoming) {
+    return [
+      for (final profile in incoming)
+        _withPreservedBody(profile, _find(profile.id)),
+    ];
+  }
+
+  void _upsert(AiProfile profile, {bool keepIncomingBody = false}) {
+    final existing = _find(profile.id);
+    final merged = keepIncomingBody
+        ? profile
+        : _withPreservedBody(profile, existing);
     final next = [...state.profiles];
-    final index = next.indexWhere((item) => item.id == profile.id);
+    final index = next.indexWhere((item) => item.id == merged.id);
     if (index >= 0) {
-      next[index] = profile;
+      next[index] = merged;
     } else {
-      next.add(profile);
+      next.add(merged);
     }
     state = state.copyWith(profiles: next, clearError: true);
+    _syncSelected(merged);
+  }
+
+  /// Keeps session-local body edits when get/list still omit WARDROBE-80 keys.
+  AiProfile _withPreservedBody(AiProfile incoming, AiProfile? existing) {
+    if (incoming.bodyContext.isNotEmpty || existing == null) {
+      return incoming;
+    }
+    if (existing.bodyContext.isEmpty) {
+      return incoming;
+    }
+    return incoming.copyWith(bodyContext: existing.bodyContext);
+  }
+
+  void _syncSelected(AiProfile profile) {
+    final selected = ref.read(selectedAiProfileProvider);
+    if (selected?.id == profile.id) {
+      ref.read(selectedAiProfileProvider.notifier).select(profile);
+    }
   }
 
   AiProfile? _find(String aiProfileId) {

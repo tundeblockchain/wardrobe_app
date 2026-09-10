@@ -185,5 +185,11 @@ void main() {
       'Add a reference photo to your profile first.',
     );
     expect(tryOnBlockReason(testGenericModel()), isNull);
+    expect(
+      tryOnBlockReason(
+        testPersonalProfile(referenceImages: const ['users/uid/ref.jpg']),
+      ),
+      isNull,
+    );
   });
 }

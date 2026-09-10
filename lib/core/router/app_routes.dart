@@ -11,6 +11,9 @@ abstract final class AppRoutes {
   static const reportBug = '/profile/report-bug';
   static const aiTryOn = '/profile/ai-try-on';
 
+  static String aiProfileBody(String aiProfileId) =>
+      '/profile/ai-try-on/$aiProfileId/body';
+
   static String wardrobeDetail(String wardrobeId) => '/wardrobes/$wardrobeId';
 
   static String createItem(String wardrobeId) =>
