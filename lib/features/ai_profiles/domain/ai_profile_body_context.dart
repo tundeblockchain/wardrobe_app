@@ -1,9 +1,10 @@
 /// Optional body/context measurements for Gemini try-on (WARDROBE-81/83).
 ///
-/// Wire names match Backend WARDROBE-80 plus WARDROBE-82 `braSize`:
+/// Wire names match Backend WARDROBE-80 plus WARDROBE-82 `braSize`
+/// (`wardrobe-backend` main @ `5ed1375`):
 /// `heightCm`, `weightKg`, `bustCm`, `hipsCm`, `clothingSize`, `braSize`,
 /// `ageYears`, `bodyType`, `gender`. Missing or empty values must never
-/// block try-on.
+/// block try-on. No aliases.
 class AiProfileBodyContext {
   const AiProfileBodyContext({
     this.heightCm,

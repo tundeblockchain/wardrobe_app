@@ -1,6 +1,9 @@
 import '../domain/ai_profile_body_context.dart';
 
 /// WARDROBE-80 + WARDROBE-82 body/context keys on create/get/list/PATCH JSON.
+///
+/// Backend `wardrobe-backend` main @ `5ed1375` (WARDROBE-82) uses exactly
+/// `braSize` — optional string, soft-omit. No aliases (`cupSize` / `bra_size`).
 const aiProfileBodyContextWireKeys = <String>[
   'heightCm',
   'weightKg',
