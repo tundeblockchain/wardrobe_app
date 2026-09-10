@@ -7,7 +7,9 @@ import 'package:wardrobe_app/core/widgets/destructive_confirm_dialog.dart';
 import 'package:wardrobe_app/features/ai_profiles/application/selected_ai_profile.dart';
 import 'package:wardrobe_app/features/ai_profiles/data/dio_ai_profile_repository.dart';
 import 'package:wardrobe_app/features/ai_profiles/domain/ai_profile.dart';
+import 'package:wardrobe_app/features/ai_profiles/presentation/ai_profile_body_screen.dart';
 import 'package:wardrobe_app/features/ai_profiles/presentation/ai_try_on_screen.dart';
+import 'package:wardrobe_app/features/ai_profiles/presentation/widgets/ai_profile_body_form.dart';
 import 'package:wardrobe_app/features/ai_profiles/presentation/widgets/ai_profile_picker_image.dart';
 import 'package:wardrobe_app/features/ai_profiles/presentation/widgets/generic_model_card.dart';
 import 'package:wardrobe_app/features/ai_profiles/presentation/widgets/personal_ai_profile_card.dart';
@@ -38,6 +40,15 @@ void main() {
         GoRoute(
           path: AppRoutes.aiTryOn,
           builder: (context, state) => const AiTryOnScreen(),
+          routes: [
+            GoRoute(
+              path: ':aiProfileId/body',
+              builder: (context, state) {
+                final id = state.pathParameters['aiProfileId']!;
+                return AiProfileBodyScreen(aiProfileId: id);
+              },
+            ),
+          ],
         ),
       ],
     );
@@ -169,5 +180,20 @@ void main() {
     expect(find.text('Open a wardrobe outfit and tap Try on.'), findsOneWidget);
     expect(find.textContaining('aiProfileId'), findsNothing);
     expect(find.textContaining('render API'), findsNothing);
+  });
+
+  testWidgets('personal card opens optional body details', (tester) async {
+    repository.personal.add(testPersonalProfile());
+    await pumpScreen(tester);
+
+    expect(find.text('Body details'), findsOneWidget);
+    await tester.tap(
+      find.byKey(PersonalAiProfileCard.bodyKey('profile_personal_1')),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byType(AiProfileBodyScreen), findsOneWidget);
+    expect(find.byKey(AiProfileBodyForm.optionalBannerKey), findsOneWidget);
+    expect(find.textContaining('never block try-on'), findsOneWidget);
   });
 }

@@ -18,6 +18,7 @@ class PersonalAiProfileCard extends StatelessWidget {
     required this.onCamera,
     required this.onGallery,
     required this.onDelete,
+    required this.onEditBody,
   });
 
   final AiProfile profile;
@@ -29,12 +30,14 @@ class PersonalAiProfileCard extends StatelessWidget {
   final VoidCallback onCamera;
   final VoidCallback onGallery;
   final VoidCallback onDelete;
+  final VoidCallback onEditBody;
 
   static Key cardKey(String id) => Key('personal_ai_profile_$id');
   static Key cameraKey(String id) => Key('personal_ai_profile_camera_$id');
   static Key galleryKey(String id) => Key('personal_ai_profile_gallery_$id');
   static Key deleteKey(String id) => Key('personal_ai_profile_delete_$id');
   static Key selectKey(String id) => Key('personal_ai_profile_select_$id');
+  static Key bodyKey(String id) => Key('personal_ai_profile_body_$id');
 
   static const double photoHeight = 220;
 
@@ -76,6 +79,15 @@ class PersonalAiProfileCard extends StatelessWidget {
                           ),
                           const SizedBox(height: 4),
                           Text(photoLabel, style: theme.textTheme.bodyMedium),
+                          if (profile.bodyContext.summary != null) ...[
+                            const SizedBox(height: 4),
+                            Text(
+                              profile.bodyContext.summary!,
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: scheme.onSurfaceVariant,
+                              ),
+                            ),
+                          ],
                         ],
                       ),
                     ),
@@ -116,6 +128,13 @@ class PersonalAiProfileCard extends StatelessWidget {
                       ),
                     ),
                   ],
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                OutlinedButton.icon(
+                  key: bodyKey(profile.id),
+                  onPressed: busy ? null : onEditBody,
+                  icon: const Icon(Icons.straighten_outlined),
+                  label: const Text('Body details'),
                 ),
                 const SizedBox(height: AppSpacing.sm),
                 Row(

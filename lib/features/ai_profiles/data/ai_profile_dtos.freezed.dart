@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$AiProfileResponse {
 
- String get aiProfileId; String get type; String? get label; List<String>? get referenceImages; String? get status; DateTime get createdAt; DateTime get updatedAt;
+ String get aiProfileId; String get type; String? get label; List<String>? get referenceImages; String? get status;@JsonKey(includeIfNull: false) num? get heightCm;@JsonKey(includeIfNull: false) num? get weightKg;@JsonKey(includeIfNull: false) num? get bustCm;@JsonKey(includeIfNull: false) num? get hipsCm;@JsonKey(includeIfNull: false) String? get clothingSize;@JsonKey(includeIfNull: false) int? get ageYears;@JsonKey(includeIfNull: false) String? get bodyType;@JsonKey(includeIfNull: false) String? get gender; DateTime get createdAt; DateTime get updatedAt;
 /// Create a copy of AiProfileResponse
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $AiProfileResponseCopyWith<AiProfileResponse> get copyWith => _$AiProfileRespons
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is AiProfileResponse&&(identical(other.aiProfileId, aiProfileId) || other.aiProfileId == aiProfileId)&&(identical(other.type, type) || other.type == type)&&(identical(other.label, label) || other.label == label)&&const DeepCollectionEquality().equals(other.referenceImages, referenceImages)&&(identical(other.status, status) || other.status == status)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is AiProfileResponse&&(identical(other.aiProfileId, aiProfileId) || other.aiProfileId == aiProfileId)&&(identical(other.type, type) || other.type == type)&&(identical(other.label, label) || other.label == label)&&const DeepCollectionEquality().equals(other.referenceImages, referenceImages)&&(identical(other.status, status) || other.status == status)&&(identical(other.heightCm, heightCm) || other.heightCm == heightCm)&&(identical(other.weightKg, weightKg) || other.weightKg == weightKg)&&(identical(other.bustCm, bustCm) || other.bustCm == bustCm)&&(identical(other.hipsCm, hipsCm) || other.hipsCm == hipsCm)&&(identical(other.clothingSize, clothingSize) || other.clothingSize == clothingSize)&&(identical(other.ageYears, ageYears) || other.ageYears == ageYears)&&(identical(other.bodyType, bodyType) || other.bodyType == bodyType)&&(identical(other.gender, gender) || other.gender == gender)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,aiProfileId,type,label,const DeepCollectionEquality().hash(referenceImages),status,createdAt,updatedAt);
+int get hashCode => Object.hash(runtimeType,aiProfileId,type,label,const DeepCollectionEquality().hash(referenceImages),status,heightCm,weightKg,bustCm,hipsCm,clothingSize,ageYears,bodyType,gender,createdAt,updatedAt);
 
 @override
 String toString() {
-  return 'AiProfileResponse(aiProfileId: $aiProfileId, type: $type, label: $label, referenceImages: $referenceImages, status: $status, createdAt: $createdAt, updatedAt: $updatedAt)';
+  return 'AiProfileResponse(aiProfileId: $aiProfileId, type: $type, label: $label, referenceImages: $referenceImages, status: $status, heightCm: $heightCm, weightKg: $weightKg, bustCm: $bustCm, hipsCm: $hipsCm, clothingSize: $clothingSize, ageYears: $ageYears, bodyType: $bodyType, gender: $gender, createdAt: $createdAt, updatedAt: $updatedAt)';
 }
 
 
@@ -48,7 +48,7 @@ abstract mixin class $AiProfileResponseCopyWith<$Res>  {
   factory $AiProfileResponseCopyWith(AiProfileResponse value, $Res Function(AiProfileResponse) _then) = _$AiProfileResponseCopyWithImpl;
 @useResult
 $Res call({
- String aiProfileId, String type, String? label, List<String>? referenceImages, String? status, DateTime createdAt, DateTime updatedAt
+ String aiProfileId, String type, String? label, List<String>? referenceImages, String? status,@JsonKey(includeIfNull: false) num? heightCm,@JsonKey(includeIfNull: false) num? weightKg,@JsonKey(includeIfNull: false) num? bustCm,@JsonKey(includeIfNull: false) num? hipsCm,@JsonKey(includeIfNull: false) String? clothingSize,@JsonKey(includeIfNull: false) int? ageYears,@JsonKey(includeIfNull: false) String? bodyType,@JsonKey(includeIfNull: false) String? gender, DateTime createdAt, DateTime updatedAt
 });
 
 
@@ -65,13 +65,21 @@ class _$AiProfileResponseCopyWithImpl<$Res>
 
 /// Create a copy of AiProfileResponse
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? aiProfileId = null,Object? type = null,Object? label = freezed,Object? referenceImages = freezed,Object? status = freezed,Object? createdAt = null,Object? updatedAt = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? aiProfileId = null,Object? type = null,Object? label = freezed,Object? referenceImages = freezed,Object? status = freezed,Object? heightCm = freezed,Object? weightKg = freezed,Object? bustCm = freezed,Object? hipsCm = freezed,Object? clothingSize = freezed,Object? ageYears = freezed,Object? bodyType = freezed,Object? gender = freezed,Object? createdAt = null,Object? updatedAt = null,}) {
   return _then(_self.copyWith(
 aiProfileId: null == aiProfileId ? _self.aiProfileId : aiProfileId // ignore: cast_nullable_to_non_nullable
 as String,type: null == type ? _self.type : type // ignore: cast_nullable_to_non_nullable
 as String,label: freezed == label ? _self.label : label // ignore: cast_nullable_to_non_nullable
 as String?,referenceImages: freezed == referenceImages ? _self.referenceImages : referenceImages // ignore: cast_nullable_to_non_nullable
 as List<String>?,status: freezed == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
+as String?,heightCm: freezed == heightCm ? _self.heightCm : heightCm // ignore: cast_nullable_to_non_nullable
+as num?,weightKg: freezed == weightKg ? _self.weightKg : weightKg // ignore: cast_nullable_to_non_nullable
+as num?,bustCm: freezed == bustCm ? _self.bustCm : bustCm // ignore: cast_nullable_to_non_nullable
+as num?,hipsCm: freezed == hipsCm ? _self.hipsCm : hipsCm // ignore: cast_nullable_to_non_nullable
+as num?,clothingSize: freezed == clothingSize ? _self.clothingSize : clothingSize // ignore: cast_nullable_to_non_nullable
+as String?,ageYears: freezed == ageYears ? _self.ageYears : ageYears // ignore: cast_nullable_to_non_nullable
+as int?,bodyType: freezed == bodyType ? _self.bodyType : bodyType // ignore: cast_nullable_to_non_nullable
+as String?,gender: freezed == gender ? _self.gender : gender // ignore: cast_nullable_to_non_nullable
 as String?,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime,updatedAt: null == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
 as DateTime,
@@ -159,10 +167,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String aiProfileId,  String type,  String? label,  List<String>? referenceImages,  String? status,  DateTime createdAt,  DateTime updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String aiProfileId,  String type,  String? label,  List<String>? referenceImages,  String? status, @JsonKey(includeIfNull: false)  num? heightCm, @JsonKey(includeIfNull: false)  num? weightKg, @JsonKey(includeIfNull: false)  num? bustCm, @JsonKey(includeIfNull: false)  num? hipsCm, @JsonKey(includeIfNull: false)  String? clothingSize, @JsonKey(includeIfNull: false)  int? ageYears, @JsonKey(includeIfNull: false)  String? bodyType, @JsonKey(includeIfNull: false)  String? gender,  DateTime createdAt,  DateTime updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _AiProfileResponse() when $default != null:
-return $default(_that.aiProfileId,_that.type,_that.label,_that.referenceImages,_that.status,_that.createdAt,_that.updatedAt);case _:
+return $default(_that.aiProfileId,_that.type,_that.label,_that.referenceImages,_that.status,_that.heightCm,_that.weightKg,_that.bustCm,_that.hipsCm,_that.clothingSize,_that.ageYears,_that.bodyType,_that.gender,_that.createdAt,_that.updatedAt);case _:
   return orElse();
 
 }
@@ -180,10 +188,10 @@ return $default(_that.aiProfileId,_that.type,_that.label,_that.referenceImages,_
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String aiProfileId,  String type,  String? label,  List<String>? referenceImages,  String? status,  DateTime createdAt,  DateTime updatedAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String aiProfileId,  String type,  String? label,  List<String>? referenceImages,  String? status, @JsonKey(includeIfNull: false)  num? heightCm, @JsonKey(includeIfNull: false)  num? weightKg, @JsonKey(includeIfNull: false)  num? bustCm, @JsonKey(includeIfNull: false)  num? hipsCm, @JsonKey(includeIfNull: false)  String? clothingSize, @JsonKey(includeIfNull: false)  int? ageYears, @JsonKey(includeIfNull: false)  String? bodyType, @JsonKey(includeIfNull: false)  String? gender,  DateTime createdAt,  DateTime updatedAt)  $default,) {final _that = this;
 switch (_that) {
 case _AiProfileResponse():
-return $default(_that.aiProfileId,_that.type,_that.label,_that.referenceImages,_that.status,_that.createdAt,_that.updatedAt);case _:
+return $default(_that.aiProfileId,_that.type,_that.label,_that.referenceImages,_that.status,_that.heightCm,_that.weightKg,_that.bustCm,_that.hipsCm,_that.clothingSize,_that.ageYears,_that.bodyType,_that.gender,_that.createdAt,_that.updatedAt);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -200,10 +208,10 @@ return $default(_that.aiProfileId,_that.type,_that.label,_that.referenceImages,_
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String aiProfileId,  String type,  String? label,  List<String>? referenceImages,  String? status,  DateTime createdAt,  DateTime updatedAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String aiProfileId,  String type,  String? label,  List<String>? referenceImages,  String? status, @JsonKey(includeIfNull: false)  num? heightCm, @JsonKey(includeIfNull: false)  num? weightKg, @JsonKey(includeIfNull: false)  num? bustCm, @JsonKey(includeIfNull: false)  num? hipsCm, @JsonKey(includeIfNull: false)  String? clothingSize, @JsonKey(includeIfNull: false)  int? ageYears, @JsonKey(includeIfNull: false)  String? bodyType, @JsonKey(includeIfNull: false)  String? gender,  DateTime createdAt,  DateTime updatedAt)?  $default,) {final _that = this;
 switch (_that) {
 case _AiProfileResponse() when $default != null:
-return $default(_that.aiProfileId,_that.type,_that.label,_that.referenceImages,_that.status,_that.createdAt,_that.updatedAt);case _:
+return $default(_that.aiProfileId,_that.type,_that.label,_that.referenceImages,_that.status,_that.heightCm,_that.weightKg,_that.bustCm,_that.hipsCm,_that.clothingSize,_that.ageYears,_that.bodyType,_that.gender,_that.createdAt,_that.updatedAt);case _:
   return null;
 
 }
@@ -215,7 +223,7 @@ return $default(_that.aiProfileId,_that.type,_that.label,_that.referenceImages,_
 @JsonSerializable()
 
 class _AiProfileResponse extends AiProfileResponse {
-  const _AiProfileResponse({required this.aiProfileId, required this.type, this.label, this.referenceImages, this.status, required this.createdAt, required this.updatedAt}): super._();
+  const _AiProfileResponse({required this.aiProfileId, required this.type, this.label, this.referenceImages, this.status, @JsonKey(includeIfNull: false) this.heightCm, @JsonKey(includeIfNull: false) this.weightKg, @JsonKey(includeIfNull: false) this.bustCm, @JsonKey(includeIfNull: false) this.hipsCm, @JsonKey(includeIfNull: false) this.clothingSize, @JsonKey(includeIfNull: false) this.ageYears, @JsonKey(includeIfNull: false) this.bodyType, @JsonKey(includeIfNull: false) this.gender, required this.createdAt, required this.updatedAt}): super._();
   factory _AiProfileResponse.fromJson(Map<String, dynamic> json) => _$AiProfileResponseFromJson(json);
 
 @override final  String aiProfileId;
@@ -223,6 +231,14 @@ class _AiProfileResponse extends AiProfileResponse {
 @override final  String? label;
 @override final  List<String>? referenceImages;
 @override final  String? status;
+@override@JsonKey(includeIfNull: false) final  num? heightCm;
+@override@JsonKey(includeIfNull: false) final  num? weightKg;
+@override@JsonKey(includeIfNull: false) final  num? bustCm;
+@override@JsonKey(includeIfNull: false) final  num? hipsCm;
+@override@JsonKey(includeIfNull: false) final  String? clothingSize;
+@override@JsonKey(includeIfNull: false) final  int? ageYears;
+@override@JsonKey(includeIfNull: false) final  String? bodyType;
+@override@JsonKey(includeIfNull: false) final  String? gender;
 @override final  DateTime createdAt;
 @override final  DateTime updatedAt;
 
@@ -239,16 +255,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AiProfileResponse&&(identical(other.aiProfileId, aiProfileId) || other.aiProfileId == aiProfileId)&&(identical(other.type, type) || other.type == type)&&(identical(other.label, label) || other.label == label)&&const DeepCollectionEquality().equals(other.referenceImages, referenceImages)&&(identical(other.status, status) || other.status == status)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AiProfileResponse&&(identical(other.aiProfileId, aiProfileId) || other.aiProfileId == aiProfileId)&&(identical(other.type, type) || other.type == type)&&(identical(other.label, label) || other.label == label)&&const DeepCollectionEquality().equals(other.referenceImages, referenceImages)&&(identical(other.status, status) || other.status == status)&&(identical(other.heightCm, heightCm) || other.heightCm == heightCm)&&(identical(other.weightKg, weightKg) || other.weightKg == weightKg)&&(identical(other.bustCm, bustCm) || other.bustCm == bustCm)&&(identical(other.hipsCm, hipsCm) || other.hipsCm == hipsCm)&&(identical(other.clothingSize, clothingSize) || other.clothingSize == clothingSize)&&(identical(other.ageYears, ageYears) || other.ageYears == ageYears)&&(identical(other.bodyType, bodyType) || other.bodyType == bodyType)&&(identical(other.gender, gender) || other.gender == gender)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,aiProfileId,type,label,const DeepCollectionEquality().hash(referenceImages),status,createdAt,updatedAt);
+int get hashCode => Object.hash(runtimeType,aiProfileId,type,label,const DeepCollectionEquality().hash(referenceImages),status,heightCm,weightKg,bustCm,hipsCm,clothingSize,ageYears,bodyType,gender,createdAt,updatedAt);
 
 @override
 String toString() {
-  return 'AiProfileResponse(aiProfileId: $aiProfileId, type: $type, label: $label, referenceImages: $referenceImages, status: $status, createdAt: $createdAt, updatedAt: $updatedAt)';
+  return 'AiProfileResponse(aiProfileId: $aiProfileId, type: $type, label: $label, referenceImages: $referenceImages, status: $status, heightCm: $heightCm, weightKg: $weightKg, bustCm: $bustCm, hipsCm: $hipsCm, clothingSize: $clothingSize, ageYears: $ageYears, bodyType: $bodyType, gender: $gender, createdAt: $createdAt, updatedAt: $updatedAt)';
 }
 
 
@@ -259,7 +275,7 @@ abstract mixin class _$AiProfileResponseCopyWith<$Res> implements $AiProfileResp
   factory _$AiProfileResponseCopyWith(_AiProfileResponse value, $Res Function(_AiProfileResponse) _then) = __$AiProfileResponseCopyWithImpl;
 @override @useResult
 $Res call({
- String aiProfileId, String type, String? label, List<String>? referenceImages, String? status, DateTime createdAt, DateTime updatedAt
+ String aiProfileId, String type, String? label, List<String>? referenceImages, String? status,@JsonKey(includeIfNull: false) num? heightCm,@JsonKey(includeIfNull: false) num? weightKg,@JsonKey(includeIfNull: false) num? bustCm,@JsonKey(includeIfNull: false) num? hipsCm,@JsonKey(includeIfNull: false) String? clothingSize,@JsonKey(includeIfNull: false) int? ageYears,@JsonKey(includeIfNull: false) String? bodyType,@JsonKey(includeIfNull: false) String? gender, DateTime createdAt, DateTime updatedAt
 });
 
 
@@ -276,13 +292,21 @@ class __$AiProfileResponseCopyWithImpl<$Res>
 
 /// Create a copy of AiProfileResponse
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? aiProfileId = null,Object? type = null,Object? label = freezed,Object? referenceImages = freezed,Object? status = freezed,Object? createdAt = null,Object? updatedAt = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? aiProfileId = null,Object? type = null,Object? label = freezed,Object? referenceImages = freezed,Object? status = freezed,Object? heightCm = freezed,Object? weightKg = freezed,Object? bustCm = freezed,Object? hipsCm = freezed,Object? clothingSize = freezed,Object? ageYears = freezed,Object? bodyType = freezed,Object? gender = freezed,Object? createdAt = null,Object? updatedAt = null,}) {
   return _then(_AiProfileResponse(
 aiProfileId: null == aiProfileId ? _self.aiProfileId : aiProfileId // ignore: cast_nullable_to_non_nullable
 as String,type: null == type ? _self.type : type // ignore: cast_nullable_to_non_nullable
 as String,label: freezed == label ? _self.label : label // ignore: cast_nullable_to_non_nullable
 as String?,referenceImages: freezed == referenceImages ? _self.referenceImages : referenceImages // ignore: cast_nullable_to_non_nullable
 as List<String>?,status: freezed == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
+as String?,heightCm: freezed == heightCm ? _self.heightCm : heightCm // ignore: cast_nullable_to_non_nullable
+as num?,weightKg: freezed == weightKg ? _self.weightKg : weightKg // ignore: cast_nullable_to_non_nullable
+as num?,bustCm: freezed == bustCm ? _self.bustCm : bustCm // ignore: cast_nullable_to_non_nullable
+as num?,hipsCm: freezed == hipsCm ? _self.hipsCm : hipsCm // ignore: cast_nullable_to_non_nullable
+as num?,clothingSize: freezed == clothingSize ? _self.clothingSize : clothingSize // ignore: cast_nullable_to_non_nullable
+as String?,ageYears: freezed == ageYears ? _self.ageYears : ageYears // ignore: cast_nullable_to_non_nullable
+as int?,bodyType: freezed == bodyType ? _self.bodyType : bodyType // ignore: cast_nullable_to_non_nullable
+as String?,gender: freezed == gender ? _self.gender : gender // ignore: cast_nullable_to_non_nullable
 as String?,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime,updatedAt: null == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
 as DateTime,
@@ -559,7 +583,7 @@ as List<AiProfileResponse>,
 /// @nodoc
 mixin _$CreateAiProfileRequest {
 
- String get type;
+ String get type;@JsonKey(includeIfNull: false) num? get heightCm;@JsonKey(includeIfNull: false) num? get weightKg;@JsonKey(includeIfNull: false) num? get bustCm;@JsonKey(includeIfNull: false) num? get hipsCm;@JsonKey(includeIfNull: false) String? get clothingSize;@JsonKey(includeIfNull: false) int? get ageYears;@JsonKey(includeIfNull: false) String? get bodyType;@JsonKey(includeIfNull: false) String? get gender;
 /// Create a copy of CreateAiProfileRequest
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -572,16 +596,16 @@ $CreateAiProfileRequestCopyWith<CreateAiProfileRequest> get copyWith => _$Create
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is CreateAiProfileRequest&&(identical(other.type, type) || other.type == type));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is CreateAiProfileRequest&&(identical(other.type, type) || other.type == type)&&(identical(other.heightCm, heightCm) || other.heightCm == heightCm)&&(identical(other.weightKg, weightKg) || other.weightKg == weightKg)&&(identical(other.bustCm, bustCm) || other.bustCm == bustCm)&&(identical(other.hipsCm, hipsCm) || other.hipsCm == hipsCm)&&(identical(other.clothingSize, clothingSize) || other.clothingSize == clothingSize)&&(identical(other.ageYears, ageYears) || other.ageYears == ageYears)&&(identical(other.bodyType, bodyType) || other.bodyType == bodyType)&&(identical(other.gender, gender) || other.gender == gender));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,type);
+int get hashCode => Object.hash(runtimeType,type,heightCm,weightKg,bustCm,hipsCm,clothingSize,ageYears,bodyType,gender);
 
 @override
 String toString() {
-  return 'CreateAiProfileRequest(type: $type)';
+  return 'CreateAiProfileRequest(type: $type, heightCm: $heightCm, weightKg: $weightKg, bustCm: $bustCm, hipsCm: $hipsCm, clothingSize: $clothingSize, ageYears: $ageYears, bodyType: $bodyType, gender: $gender)';
 }
 
 
@@ -592,7 +616,7 @@ abstract mixin class $CreateAiProfileRequestCopyWith<$Res>  {
   factory $CreateAiProfileRequestCopyWith(CreateAiProfileRequest value, $Res Function(CreateAiProfileRequest) _then) = _$CreateAiProfileRequestCopyWithImpl;
 @useResult
 $Res call({
- String type
+ String type,@JsonKey(includeIfNull: false) num? heightCm,@JsonKey(includeIfNull: false) num? weightKg,@JsonKey(includeIfNull: false) num? bustCm,@JsonKey(includeIfNull: false) num? hipsCm,@JsonKey(includeIfNull: false) String? clothingSize,@JsonKey(includeIfNull: false) int? ageYears,@JsonKey(includeIfNull: false) String? bodyType,@JsonKey(includeIfNull: false) String? gender
 });
 
 
@@ -609,10 +633,18 @@ class _$CreateAiProfileRequestCopyWithImpl<$Res>
 
 /// Create a copy of CreateAiProfileRequest
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? type = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? type = null,Object? heightCm = freezed,Object? weightKg = freezed,Object? bustCm = freezed,Object? hipsCm = freezed,Object? clothingSize = freezed,Object? ageYears = freezed,Object? bodyType = freezed,Object? gender = freezed,}) {
   return _then(_self.copyWith(
 type: null == type ? _self.type : type // ignore: cast_nullable_to_non_nullable
-as String,
+as String,heightCm: freezed == heightCm ? _self.heightCm : heightCm // ignore: cast_nullable_to_non_nullable
+as num?,weightKg: freezed == weightKg ? _self.weightKg : weightKg // ignore: cast_nullable_to_non_nullable
+as num?,bustCm: freezed == bustCm ? _self.bustCm : bustCm // ignore: cast_nullable_to_non_nullable
+as num?,hipsCm: freezed == hipsCm ? _self.hipsCm : hipsCm // ignore: cast_nullable_to_non_nullable
+as num?,clothingSize: freezed == clothingSize ? _self.clothingSize : clothingSize // ignore: cast_nullable_to_non_nullable
+as String?,ageYears: freezed == ageYears ? _self.ageYears : ageYears // ignore: cast_nullable_to_non_nullable
+as int?,bodyType: freezed == bodyType ? _self.bodyType : bodyType // ignore: cast_nullable_to_non_nullable
+as String?,gender: freezed == gender ? _self.gender : gender // ignore: cast_nullable_to_non_nullable
+as String?,
   ));
 }
 
@@ -697,10 +729,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String type)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String type, @JsonKey(includeIfNull: false)  num? heightCm, @JsonKey(includeIfNull: false)  num? weightKg, @JsonKey(includeIfNull: false)  num? bustCm, @JsonKey(includeIfNull: false)  num? hipsCm, @JsonKey(includeIfNull: false)  String? clothingSize, @JsonKey(includeIfNull: false)  int? ageYears, @JsonKey(includeIfNull: false)  String? bodyType, @JsonKey(includeIfNull: false)  String? gender)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _CreateAiProfileRequest() when $default != null:
-return $default(_that.type);case _:
+return $default(_that.type,_that.heightCm,_that.weightKg,_that.bustCm,_that.hipsCm,_that.clothingSize,_that.ageYears,_that.bodyType,_that.gender);case _:
   return orElse();
 
 }
@@ -718,10 +750,10 @@ return $default(_that.type);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String type)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String type, @JsonKey(includeIfNull: false)  num? heightCm, @JsonKey(includeIfNull: false)  num? weightKg, @JsonKey(includeIfNull: false)  num? bustCm, @JsonKey(includeIfNull: false)  num? hipsCm, @JsonKey(includeIfNull: false)  String? clothingSize, @JsonKey(includeIfNull: false)  int? ageYears, @JsonKey(includeIfNull: false)  String? bodyType, @JsonKey(includeIfNull: false)  String? gender)  $default,) {final _that = this;
 switch (_that) {
 case _CreateAiProfileRequest():
-return $default(_that.type);case _:
+return $default(_that.type,_that.heightCm,_that.weightKg,_that.bustCm,_that.hipsCm,_that.clothingSize,_that.ageYears,_that.bodyType,_that.gender);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -738,10 +770,10 @@ return $default(_that.type);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String type)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String type, @JsonKey(includeIfNull: false)  num? heightCm, @JsonKey(includeIfNull: false)  num? weightKg, @JsonKey(includeIfNull: false)  num? bustCm, @JsonKey(includeIfNull: false)  num? hipsCm, @JsonKey(includeIfNull: false)  String? clothingSize, @JsonKey(includeIfNull: false)  int? ageYears, @JsonKey(includeIfNull: false)  String? bodyType, @JsonKey(includeIfNull: false)  String? gender)?  $default,) {final _that = this;
 switch (_that) {
 case _CreateAiProfileRequest() when $default != null:
-return $default(_that.type);case _:
+return $default(_that.type,_that.heightCm,_that.weightKg,_that.bustCm,_that.hipsCm,_that.clothingSize,_that.ageYears,_that.bodyType,_that.gender);case _:
   return null;
 
 }
@@ -753,10 +785,18 @@ return $default(_that.type);case _:
 @JsonSerializable()
 
 class _CreateAiProfileRequest implements CreateAiProfileRequest {
-  const _CreateAiProfileRequest({this.type = 'PERSONAL'});
+  const _CreateAiProfileRequest({this.type = 'PERSONAL', @JsonKey(includeIfNull: false) this.heightCm, @JsonKey(includeIfNull: false) this.weightKg, @JsonKey(includeIfNull: false) this.bustCm, @JsonKey(includeIfNull: false) this.hipsCm, @JsonKey(includeIfNull: false) this.clothingSize, @JsonKey(includeIfNull: false) this.ageYears, @JsonKey(includeIfNull: false) this.bodyType, @JsonKey(includeIfNull: false) this.gender});
   factory _CreateAiProfileRequest.fromJson(Map<String, dynamic> json) => _$CreateAiProfileRequestFromJson(json);
 
 @override@JsonKey() final  String type;
+@override@JsonKey(includeIfNull: false) final  num? heightCm;
+@override@JsonKey(includeIfNull: false) final  num? weightKg;
+@override@JsonKey(includeIfNull: false) final  num? bustCm;
+@override@JsonKey(includeIfNull: false) final  num? hipsCm;
+@override@JsonKey(includeIfNull: false) final  String? clothingSize;
+@override@JsonKey(includeIfNull: false) final  int? ageYears;
+@override@JsonKey(includeIfNull: false) final  String? bodyType;
+@override@JsonKey(includeIfNull: false) final  String? gender;
 
 /// Create a copy of CreateAiProfileRequest
 /// with the given fields replaced by the non-null parameter values.
@@ -771,16 +811,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _CreateAiProfileRequest&&(identical(other.type, type) || other.type == type));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _CreateAiProfileRequest&&(identical(other.type, type) || other.type == type)&&(identical(other.heightCm, heightCm) || other.heightCm == heightCm)&&(identical(other.weightKg, weightKg) || other.weightKg == weightKg)&&(identical(other.bustCm, bustCm) || other.bustCm == bustCm)&&(identical(other.hipsCm, hipsCm) || other.hipsCm == hipsCm)&&(identical(other.clothingSize, clothingSize) || other.clothingSize == clothingSize)&&(identical(other.ageYears, ageYears) || other.ageYears == ageYears)&&(identical(other.bodyType, bodyType) || other.bodyType == bodyType)&&(identical(other.gender, gender) || other.gender == gender));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,type);
+int get hashCode => Object.hash(runtimeType,type,heightCm,weightKg,bustCm,hipsCm,clothingSize,ageYears,bodyType,gender);
 
 @override
 String toString() {
-  return 'CreateAiProfileRequest(type: $type)';
+  return 'CreateAiProfileRequest(type: $type, heightCm: $heightCm, weightKg: $weightKg, bustCm: $bustCm, hipsCm: $hipsCm, clothingSize: $clothingSize, ageYears: $ageYears, bodyType: $bodyType, gender: $gender)';
 }
 
 
@@ -791,7 +831,7 @@ abstract mixin class _$CreateAiProfileRequestCopyWith<$Res> implements $CreateAi
   factory _$CreateAiProfileRequestCopyWith(_CreateAiProfileRequest value, $Res Function(_CreateAiProfileRequest) _then) = __$CreateAiProfileRequestCopyWithImpl;
 @override @useResult
 $Res call({
- String type
+ String type,@JsonKey(includeIfNull: false) num? heightCm,@JsonKey(includeIfNull: false) num? weightKg,@JsonKey(includeIfNull: false) num? bustCm,@JsonKey(includeIfNull: false) num? hipsCm,@JsonKey(includeIfNull: false) String? clothingSize,@JsonKey(includeIfNull: false) int? ageYears,@JsonKey(includeIfNull: false) String? bodyType,@JsonKey(includeIfNull: false) String? gender
 });
 
 
@@ -808,10 +848,302 @@ class __$CreateAiProfileRequestCopyWithImpl<$Res>
 
 /// Create a copy of CreateAiProfileRequest
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? type = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? type = null,Object? heightCm = freezed,Object? weightKg = freezed,Object? bustCm = freezed,Object? hipsCm = freezed,Object? clothingSize = freezed,Object? ageYears = freezed,Object? bodyType = freezed,Object? gender = freezed,}) {
   return _then(_CreateAiProfileRequest(
 type: null == type ? _self.type : type // ignore: cast_nullable_to_non_nullable
-as String,
+as String,heightCm: freezed == heightCm ? _self.heightCm : heightCm // ignore: cast_nullable_to_non_nullable
+as num?,weightKg: freezed == weightKg ? _self.weightKg : weightKg // ignore: cast_nullable_to_non_nullable
+as num?,bustCm: freezed == bustCm ? _self.bustCm : bustCm // ignore: cast_nullable_to_non_nullable
+as num?,hipsCm: freezed == hipsCm ? _self.hipsCm : hipsCm // ignore: cast_nullable_to_non_nullable
+as num?,clothingSize: freezed == clothingSize ? _self.clothingSize : clothingSize // ignore: cast_nullable_to_non_nullable
+as String?,ageYears: freezed == ageYears ? _self.ageYears : ageYears // ignore: cast_nullable_to_non_nullable
+as int?,bodyType: freezed == bodyType ? _self.bodyType : bodyType // ignore: cast_nullable_to_non_nullable
+as String?,gender: freezed == gender ? _self.gender : gender // ignore: cast_nullable_to_non_nullable
+as String?,
+  ));
+}
+
+
+}
+
+
+/// @nodoc
+mixin _$UpdateAiProfileRequest {
+
+@JsonKey(includeIfNull: true) num? get heightCm;@JsonKey(includeIfNull: true) num? get weightKg;@JsonKey(includeIfNull: true) num? get bustCm;@JsonKey(includeIfNull: true) num? get hipsCm;@JsonKey(includeIfNull: true) String? get clothingSize;@JsonKey(includeIfNull: true) int? get ageYears;@JsonKey(includeIfNull: true) String? get bodyType;@JsonKey(includeIfNull: true) String? get gender;
+/// Create a copy of UpdateAiProfileRequest
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$UpdateAiProfileRequestCopyWith<UpdateAiProfileRequest> get copyWith => _$UpdateAiProfileRequestCopyWithImpl<UpdateAiProfileRequest>(this as UpdateAiProfileRequest, _$identity);
+
+  /// Serializes this UpdateAiProfileRequest to a JSON map.
+  Map<String, dynamic> toJson();
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is UpdateAiProfileRequest&&(identical(other.heightCm, heightCm) || other.heightCm == heightCm)&&(identical(other.weightKg, weightKg) || other.weightKg == weightKg)&&(identical(other.bustCm, bustCm) || other.bustCm == bustCm)&&(identical(other.hipsCm, hipsCm) || other.hipsCm == hipsCm)&&(identical(other.clothingSize, clothingSize) || other.clothingSize == clothingSize)&&(identical(other.ageYears, ageYears) || other.ageYears == ageYears)&&(identical(other.bodyType, bodyType) || other.bodyType == bodyType)&&(identical(other.gender, gender) || other.gender == gender));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,heightCm,weightKg,bustCm,hipsCm,clothingSize,ageYears,bodyType,gender);
+
+@override
+String toString() {
+  return 'UpdateAiProfileRequest(heightCm: $heightCm, weightKg: $weightKg, bustCm: $bustCm, hipsCm: $hipsCm, clothingSize: $clothingSize, ageYears: $ageYears, bodyType: $bodyType, gender: $gender)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $UpdateAiProfileRequestCopyWith<$Res>  {
+  factory $UpdateAiProfileRequestCopyWith(UpdateAiProfileRequest value, $Res Function(UpdateAiProfileRequest) _then) = _$UpdateAiProfileRequestCopyWithImpl;
+@useResult
+$Res call({
+@JsonKey(includeIfNull: true) num? heightCm,@JsonKey(includeIfNull: true) num? weightKg,@JsonKey(includeIfNull: true) num? bustCm,@JsonKey(includeIfNull: true) num? hipsCm,@JsonKey(includeIfNull: true) String? clothingSize,@JsonKey(includeIfNull: true) int? ageYears,@JsonKey(includeIfNull: true) String? bodyType,@JsonKey(includeIfNull: true) String? gender
+});
+
+
+
+
+}
+/// @nodoc
+class _$UpdateAiProfileRequestCopyWithImpl<$Res>
+    implements $UpdateAiProfileRequestCopyWith<$Res> {
+  _$UpdateAiProfileRequestCopyWithImpl(this._self, this._then);
+
+  final UpdateAiProfileRequest _self;
+  final $Res Function(UpdateAiProfileRequest) _then;
+
+/// Create a copy of UpdateAiProfileRequest
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? heightCm = freezed,Object? weightKg = freezed,Object? bustCm = freezed,Object? hipsCm = freezed,Object? clothingSize = freezed,Object? ageYears = freezed,Object? bodyType = freezed,Object? gender = freezed,}) {
+  return _then(_self.copyWith(
+heightCm: freezed == heightCm ? _self.heightCm : heightCm // ignore: cast_nullable_to_non_nullable
+as num?,weightKg: freezed == weightKg ? _self.weightKg : weightKg // ignore: cast_nullable_to_non_nullable
+as num?,bustCm: freezed == bustCm ? _self.bustCm : bustCm // ignore: cast_nullable_to_non_nullable
+as num?,hipsCm: freezed == hipsCm ? _self.hipsCm : hipsCm // ignore: cast_nullable_to_non_nullable
+as num?,clothingSize: freezed == clothingSize ? _self.clothingSize : clothingSize // ignore: cast_nullable_to_non_nullable
+as String?,ageYears: freezed == ageYears ? _self.ageYears : ageYears // ignore: cast_nullable_to_non_nullable
+as int?,bodyType: freezed == bodyType ? _self.bodyType : bodyType // ignore: cast_nullable_to_non_nullable
+as String?,gender: freezed == gender ? _self.gender : gender // ignore: cast_nullable_to_non_nullable
+as String?,
+  ));
+}
+
+}
+
+
+/// Adds pattern-matching-related methods to [UpdateAiProfileRequest].
+extension UpdateAiProfileRequestPatterns on UpdateAiProfileRequest {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _UpdateAiProfileRequest value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _UpdateAiProfileRequest() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _UpdateAiProfileRequest value)  $default,){
+final _that = this;
+switch (_that) {
+case _UpdateAiProfileRequest():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _UpdateAiProfileRequest value)?  $default,){
+final _that = this;
+switch (_that) {
+case _UpdateAiProfileRequest() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@JsonKey(includeIfNull: true)  num? heightCm, @JsonKey(includeIfNull: true)  num? weightKg, @JsonKey(includeIfNull: true)  num? bustCm, @JsonKey(includeIfNull: true)  num? hipsCm, @JsonKey(includeIfNull: true)  String? clothingSize, @JsonKey(includeIfNull: true)  int? ageYears, @JsonKey(includeIfNull: true)  String? bodyType, @JsonKey(includeIfNull: true)  String? gender)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _UpdateAiProfileRequest() when $default != null:
+return $default(_that.heightCm,_that.weightKg,_that.bustCm,_that.hipsCm,_that.clothingSize,_that.ageYears,_that.bodyType,_that.gender);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@JsonKey(includeIfNull: true)  num? heightCm, @JsonKey(includeIfNull: true)  num? weightKg, @JsonKey(includeIfNull: true)  num? bustCm, @JsonKey(includeIfNull: true)  num? hipsCm, @JsonKey(includeIfNull: true)  String? clothingSize, @JsonKey(includeIfNull: true)  int? ageYears, @JsonKey(includeIfNull: true)  String? bodyType, @JsonKey(includeIfNull: true)  String? gender)  $default,) {final _that = this;
+switch (_that) {
+case _UpdateAiProfileRequest():
+return $default(_that.heightCm,_that.weightKg,_that.bustCm,_that.hipsCm,_that.clothingSize,_that.ageYears,_that.bodyType,_that.gender);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@JsonKey(includeIfNull: true)  num? heightCm, @JsonKey(includeIfNull: true)  num? weightKg, @JsonKey(includeIfNull: true)  num? bustCm, @JsonKey(includeIfNull: true)  num? hipsCm, @JsonKey(includeIfNull: true)  String? clothingSize, @JsonKey(includeIfNull: true)  int? ageYears, @JsonKey(includeIfNull: true)  String? bodyType, @JsonKey(includeIfNull: true)  String? gender)?  $default,) {final _that = this;
+switch (_that) {
+case _UpdateAiProfileRequest() when $default != null:
+return $default(_that.heightCm,_that.weightKg,_that.bustCm,_that.hipsCm,_that.clothingSize,_that.ageYears,_that.bodyType,_that.gender);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+@JsonSerializable()
+
+class _UpdateAiProfileRequest implements UpdateAiProfileRequest {
+  const _UpdateAiProfileRequest({@JsonKey(includeIfNull: true) this.heightCm, @JsonKey(includeIfNull: true) this.weightKg, @JsonKey(includeIfNull: true) this.bustCm, @JsonKey(includeIfNull: true) this.hipsCm, @JsonKey(includeIfNull: true) this.clothingSize, @JsonKey(includeIfNull: true) this.ageYears, @JsonKey(includeIfNull: true) this.bodyType, @JsonKey(includeIfNull: true) this.gender});
+  factory _UpdateAiProfileRequest.fromJson(Map<String, dynamic> json) => _$UpdateAiProfileRequestFromJson(json);
+
+@override@JsonKey(includeIfNull: true) final  num? heightCm;
+@override@JsonKey(includeIfNull: true) final  num? weightKg;
+@override@JsonKey(includeIfNull: true) final  num? bustCm;
+@override@JsonKey(includeIfNull: true) final  num? hipsCm;
+@override@JsonKey(includeIfNull: true) final  String? clothingSize;
+@override@JsonKey(includeIfNull: true) final  int? ageYears;
+@override@JsonKey(includeIfNull: true) final  String? bodyType;
+@override@JsonKey(includeIfNull: true) final  String? gender;
+
+/// Create a copy of UpdateAiProfileRequest
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$UpdateAiProfileRequestCopyWith<_UpdateAiProfileRequest> get copyWith => __$UpdateAiProfileRequestCopyWithImpl<_UpdateAiProfileRequest>(this, _$identity);
+
+@override
+Map<String, dynamic> toJson() {
+  return _$UpdateAiProfileRequestToJson(this, );
+}
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _UpdateAiProfileRequest&&(identical(other.heightCm, heightCm) || other.heightCm == heightCm)&&(identical(other.weightKg, weightKg) || other.weightKg == weightKg)&&(identical(other.bustCm, bustCm) || other.bustCm == bustCm)&&(identical(other.hipsCm, hipsCm) || other.hipsCm == hipsCm)&&(identical(other.clothingSize, clothingSize) || other.clothingSize == clothingSize)&&(identical(other.ageYears, ageYears) || other.ageYears == ageYears)&&(identical(other.bodyType, bodyType) || other.bodyType == bodyType)&&(identical(other.gender, gender) || other.gender == gender));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,heightCm,weightKg,bustCm,hipsCm,clothingSize,ageYears,bodyType,gender);
+
+@override
+String toString() {
+  return 'UpdateAiProfileRequest(heightCm: $heightCm, weightKg: $weightKg, bustCm: $bustCm, hipsCm: $hipsCm, clothingSize: $clothingSize, ageYears: $ageYears, bodyType: $bodyType, gender: $gender)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$UpdateAiProfileRequestCopyWith<$Res> implements $UpdateAiProfileRequestCopyWith<$Res> {
+  factory _$UpdateAiProfileRequestCopyWith(_UpdateAiProfileRequest value, $Res Function(_UpdateAiProfileRequest) _then) = __$UpdateAiProfileRequestCopyWithImpl;
+@override @useResult
+$Res call({
+@JsonKey(includeIfNull: true) num? heightCm,@JsonKey(includeIfNull: true) num? weightKg,@JsonKey(includeIfNull: true) num? bustCm,@JsonKey(includeIfNull: true) num? hipsCm,@JsonKey(includeIfNull: true) String? clothingSize,@JsonKey(includeIfNull: true) int? ageYears,@JsonKey(includeIfNull: true) String? bodyType,@JsonKey(includeIfNull: true) String? gender
+});
+
+
+
+
+}
+/// @nodoc
+class __$UpdateAiProfileRequestCopyWithImpl<$Res>
+    implements _$UpdateAiProfileRequestCopyWith<$Res> {
+  __$UpdateAiProfileRequestCopyWithImpl(this._self, this._then);
+
+  final _UpdateAiProfileRequest _self;
+  final $Res Function(_UpdateAiProfileRequest) _then;
+
+/// Create a copy of UpdateAiProfileRequest
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? heightCm = freezed,Object? weightKg = freezed,Object? bustCm = freezed,Object? hipsCm = freezed,Object? clothingSize = freezed,Object? ageYears = freezed,Object? bodyType = freezed,Object? gender = freezed,}) {
+  return _then(_UpdateAiProfileRequest(
+heightCm: freezed == heightCm ? _self.heightCm : heightCm // ignore: cast_nullable_to_non_nullable
+as num?,weightKg: freezed == weightKg ? _self.weightKg : weightKg // ignore: cast_nullable_to_non_nullable
+as num?,bustCm: freezed == bustCm ? _self.bustCm : bustCm // ignore: cast_nullable_to_non_nullable
+as num?,hipsCm: freezed == hipsCm ? _self.hipsCm : hipsCm // ignore: cast_nullable_to_non_nullable
+as num?,clothingSize: freezed == clothingSize ? _self.clothingSize : clothingSize // ignore: cast_nullable_to_non_nullable
+as String?,ageYears: freezed == ageYears ? _self.ageYears : ageYears // ignore: cast_nullable_to_non_nullable
+as int?,bodyType: freezed == bodyType ? _self.bodyType : bodyType // ignore: cast_nullable_to_non_nullable
+as String?,gender: freezed == gender ? _self.gender : gender // ignore: cast_nullable_to_non_nullable
+as String?,
   ));
 }
 

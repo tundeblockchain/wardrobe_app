@@ -11,6 +11,7 @@ class PersonalAiProfilesState {
     this.isCreating = false,
     this.uploadingProfileId,
     this.deletingProfileId,
+    this.updatingProfileId,
     this.phase = AiProfileUploadPhase.idle,
     this.errorMessage,
   });
@@ -20,6 +21,7 @@ class PersonalAiProfilesState {
   final bool isCreating;
   final String? uploadingProfileId;
   final String? deletingProfileId;
+  final String? updatingProfileId;
   final AiProfileUploadPhase phase;
   final String? errorMessage;
 
@@ -29,7 +31,8 @@ class PersonalAiProfilesState {
       isLoading ||
       isCreating ||
       uploadingProfileId != null ||
-      deletingProfileId != null;
+      deletingProfileId != null ||
+      updatingProfileId != null;
 
   String? get progressLabel {
     return switch (phase) {
@@ -47,6 +50,8 @@ class PersonalAiProfilesState {
     bool clearUploading = false,
     String? deletingProfileId,
     bool clearDeleting = false,
+    String? updatingProfileId,
+    bool clearUpdating = false,
     AiProfileUploadPhase? phase,
     String? errorMessage,
     bool clearError = false,
@@ -61,6 +66,9 @@ class PersonalAiProfilesState {
       deletingProfileId: clearDeleting
           ? null
           : (deletingProfileId ?? this.deletingProfileId),
+      updatingProfileId: clearUpdating
+          ? null
+          : (updatingProfileId ?? this.updatingProfileId),
       phase: phase ?? this.phase,
       errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
     );
@@ -74,6 +82,7 @@ class PersonalAiProfilesState {
             isCreating == other.isCreating &&
             uploadingProfileId == other.uploadingProfileId &&
             deletingProfileId == other.deletingProfileId &&
+            updatingProfileId == other.updatingProfileId &&
             phase == other.phase &&
             errorMessage == other.errorMessage &&
             _listEquals(profiles, other.profiles);
@@ -86,6 +95,7 @@ class PersonalAiProfilesState {
     isCreating,
     uploadingProfileId,
     deletingProfileId,
+    updatingProfileId,
     phase,
     errorMessage,
   );

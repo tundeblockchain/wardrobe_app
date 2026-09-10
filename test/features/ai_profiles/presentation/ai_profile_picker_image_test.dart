@@ -101,6 +101,7 @@ void main() {
                 onCamera: () {},
                 onGallery: () {},
                 onDelete: () {},
+                onEditBody: () {},
               ),
             ],
           ),

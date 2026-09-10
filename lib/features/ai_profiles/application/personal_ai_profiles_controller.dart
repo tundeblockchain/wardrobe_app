@@ -7,6 +7,7 @@ import '../../items/domain/item_image_picker.dart';
 import '../../items/domain/picked_image.dart';
 import '../data/dio_ai_profile_repository.dart';
 import '../domain/ai_profile.dart';
+import '../domain/ai_profile_body_context.dart';
 import '../domain/ai_profile_repository.dart';
 import 'personal_ai_profiles_state.dart';
 import 'selected_ai_profile.dart';
@@ -50,10 +51,12 @@ class PersonalAiProfilesController extends Notifier<PersonalAiProfilesState> {
     }
   }
 
-  Future<AiProfile?> createPersonal() async {
+  Future<AiProfile?> createPersonal({
+    AiProfileBodyContext body = AiProfileBodyContext.empty,
+  }) async {
     state = state.copyWith(isCreating: true, clearError: true);
     try {
-      final profile = await _repository.createPersonal();
+      final profile = await _repository.createPersonal(body: body);
       if (!ref.mounted) {
         return profile;
       }
@@ -139,6 +142,36 @@ class PersonalAiProfilesController extends Notifier<PersonalAiProfilesState> {
     }
   }
 
+  /// Persists optional WARDROBE-80 fields via `PATCH /ai-profiles/{id}`.
+  ///
+  /// Empty [bodyContext] clears stored values and does not block try-on.
+  Future<bool> updateBodyContext(
+    String aiProfileId,
+    AiProfileBodyContext bodyContext,
+  ) async {
+    final current = _find(aiProfileId);
+    if (current == null || !current.isPersonal) {
+      return false;
+    }
+    state = state.copyWith(updatingProfileId: aiProfileId, clearError: true);
+    try {
+      final updated = await _repository.updatePersonal(
+        aiProfileId: aiProfileId,
+        body: bodyContext,
+      );
+      if (!ref.mounted) {
+        return true;
+      }
+      _upsert(updated);
+      state = state.copyWith(clearUpdating: true);
+      return true;
+    } on ApiException catch (error) {
+      return _failUpdate(error.message);
+    } catch (_) {
+      return _failUpdate('Something went wrong. Please try again.');
+    }
+  }
+
   Future<bool> deletePersonal(String aiProfileId) async {
     state = state.copyWith(deletingProfileId: aiProfileId, clearError: true);
     try {
@@ -172,6 +205,7 @@ class PersonalAiProfilesController extends Notifier<PersonalAiProfilesState> {
       clearError: true,
       clearUploading: true,
       clearDeleting: true,
+      clearUpdating: true,
       phase: AiProfileUploadPhase.idle,
     );
   }
@@ -185,6 +219,14 @@ class PersonalAiProfilesController extends Notifier<PersonalAiProfilesState> {
       next.add(profile);
     }
     state = state.copyWith(profiles: next, clearError: true);
+    _syncSelected(profile);
+  }
+
+  void _syncSelected(AiProfile profile) {
+    final selected = ref.read(selectedAiProfileProvider);
+    if (selected?.id == profile.id) {
+      ref.read(selectedAiProfileProvider.notifier).select(profile);
+    }
   }
 
   AiProfile? _find(String aiProfileId) {
@@ -213,6 +255,14 @@ class PersonalAiProfilesController extends Notifier<PersonalAiProfilesState> {
       phase: AiProfileUploadPhase.idle,
       errorMessage: message,
     );
+  }
+
+  bool _failUpdate(String message) {
+    if (!ref.mounted) {
+      return false;
+    }
+    state = state.copyWith(clearUpdating: true, errorMessage: message);
+    return false;
   }
 
   bool _failDelete(String message) {

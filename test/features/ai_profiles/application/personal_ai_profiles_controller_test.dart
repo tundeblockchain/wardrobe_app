@@ -5,6 +5,7 @@ import 'package:wardrobe_app/features/ai_profiles/application/personal_ai_profil
 import 'package:wardrobe_app/features/ai_profiles/application/selected_ai_profile.dart';
 import 'package:wardrobe_app/features/ai_profiles/data/dio_ai_profile_repository.dart';
 import 'package:wardrobe_app/features/ai_profiles/domain/ai_profile.dart';
+import 'package:wardrobe_app/features/ai_profiles/domain/ai_profile_body_context.dart';
 import 'package:wardrobe_app/features/items/data/image_picker_item_image_picker.dart';
 
 import '../../../helpers/fake_ai_profile_repository.dart';
@@ -155,6 +156,113 @@ void main() {
     expect(
       container.read(personalAiProfilesControllerProvider).profiles,
       isEmpty,
+    );
+  });
+
+  test('updateBodyContext PATCHes WARDROBE-80 fields and upserts', () async {
+    final profile = testPersonalProfile();
+    repository.personal.add(profile);
+    container.read(personalAiProfilesControllerProvider);
+    await settle();
+    container.read(selectedAiProfileProvider.notifier).select(profile);
+
+    const body = AiProfileBodyContext(heightCm: 170, clothingSize: 'M');
+    final saved = await container
+        .read(personalAiProfilesControllerProvider.notifier)
+        .updateBodyContext(profile.id, body);
+
+    expect(saved, isTrue);
+    expect(repository.updateCalls, 1);
+    expect(repository.lastUpdateBody, body);
+    expect(
+      container
+          .read(personalAiProfilesControllerProvider)
+          .profiles
+          .single
+          .bodyContext,
+      body,
+    );
+    expect(container.read(selectedAiProfileProvider)?.bodyContext, body);
+    expect(
+      container.read(personalAiProfilesControllerProvider).updatingProfileId,
+      isNull,
+    );
+  });
+
+  test('updateBodyContext records ApiException and does not upsert', () async {
+    repository.personal.add(testPersonalProfile());
+    container.read(personalAiProfilesControllerProvider);
+    await settle();
+    repository.nextFailure = const ApiException(
+      message: 'GENERIC_MODEL profiles cannot be updated.',
+      code: 'VALIDATION_ERROR',
+    );
+
+    final saved = await container
+        .read(personalAiProfilesControllerProvider.notifier)
+        .updateBodyContext(
+          'profile_personal_1',
+          const AiProfileBodyContext(heightCm: 170),
+        );
+
+    expect(saved, isFalse);
+    expect(
+      container.read(personalAiProfilesControllerProvider).errorMessage,
+      contains('cannot be updated'),
+    );
+    expect(
+      container
+          .read(personalAiProfilesControllerProvider)
+          .profiles
+          .single
+          .bodyContext,
+      AiProfileBodyContext.empty,
+    );
+  });
+
+  test('refresh uses server body fields instead of session merge', () async {
+    repository.personal.add(
+      testPersonalProfile(
+        bodyContext: const AiProfileBodyContext(heightCm: 168),
+      ),
+    );
+    container.read(personalAiProfilesControllerProvider);
+    await settle();
+
+    repository.personal[0] = testPersonalProfile();
+    await container
+        .read(personalAiProfilesControllerProvider.notifier)
+        .refresh();
+
+    expect(
+      container
+          .read(personalAiProfilesControllerProvider)
+          .profiles
+          .single
+          .bodyContext,
+      AiProfileBodyContext.empty,
+    );
+    expect(repository.listPersonalCalls, 2);
+  });
+
+  test('createPersonal can send optional body fields', () async {
+    container.read(personalAiProfilesControllerProvider);
+    await settle();
+
+    const body = AiProfileBodyContext(heightCm: 170, gender: 'FEMALE');
+    final created = await container
+        .read(personalAiProfilesControllerProvider.notifier)
+        .createPersonal(body: body);
+
+    expect(created?.bodyContext, body);
+    expect(repository.lastCreateBody, body);
+    expect(
+      container
+          .read(personalAiProfilesControllerProvider)
+          .profiles
+          .single
+          .bodyContext,
+      body,
     );
   });
 }

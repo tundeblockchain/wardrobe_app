@@ -1,5 +1,6 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
+import 'ai_profile_body_context.dart';
 import 'ai_profile_preview.dart';
 
 part 'ai_profile.freezed.dart';
@@ -68,6 +69,7 @@ abstract class AiProfile with _$AiProfile {
     @Default([]) List<String> referenceImages,
     @Default(AiProfileStatus.ready) AiProfileStatus status,
     String? previewImageUrl,
+    @Default(AiProfileBodyContext.empty) AiProfileBodyContext bodyContext,
     required DateTime createdAt,
     required DateTime updatedAt,
   }) = _AiProfile;
@@ -99,6 +101,7 @@ abstract class AiProfile with _$AiProfile {
 
   /// Backend WARDROBE-47: profile must be READY PERSONAL or GENERIC_MODEL.
   /// PERSONAL also needs at least one reference photo.
+  /// Empty [bodyContext] never blocks try-on (WARDROBE-81).
   bool get canUseForTryOn {
     if (status != AiProfileStatus.ready) {
       return false;

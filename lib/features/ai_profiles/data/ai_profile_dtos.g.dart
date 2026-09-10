@@ -15,6 +15,14 @@ _AiProfileResponse _$AiProfileResponseFromJson(Map<String, dynamic> json) =>
           ?.map((e) => e as String)
           .toList(),
       status: json['status'] as String?,
+      heightCm: json['heightCm'] as num?,
+      weightKg: json['weightKg'] as num?,
+      bustCm: json['bustCm'] as num?,
+      hipsCm: json['hipsCm'] as num?,
+      clothingSize: json['clothingSize'] as String?,
+      ageYears: (json['ageYears'] as num?)?.toInt(),
+      bodyType: json['bodyType'] as String?,
+      gender: json['gender'] as String?,
       createdAt: DateTime.parse(json['createdAt'] as String),
       updatedAt: DateTime.parse(json['updatedAt'] as String),
     );
@@ -26,6 +34,14 @@ Map<String, dynamic> _$AiProfileResponseToJson(_AiProfileResponse instance) =>
       'label': instance.label,
       'referenceImages': instance.referenceImages,
       'status': instance.status,
+      'heightCm': ?instance.heightCm,
+      'weightKg': ?instance.weightKg,
+      'bustCm': ?instance.bustCm,
+      'hipsCm': ?instance.hipsCm,
+      'clothingSize': ?instance.clothingSize,
+      'ageYears': ?instance.ageYears,
+      'bodyType': ?instance.bodyType,
+      'gender': ?instance.gender,
       'createdAt': instance.createdAt.toIso8601String(),
       'updatedAt': instance.updatedAt.toIso8601String(),
     };
@@ -44,11 +60,57 @@ Map<String, dynamic> _$AiProfileListResponseToJson(
 
 _CreateAiProfileRequest _$CreateAiProfileRequestFromJson(
   Map<String, dynamic> json,
-) => _CreateAiProfileRequest(type: json['type'] as String? ?? 'PERSONAL');
+) => _CreateAiProfileRequest(
+  type: json['type'] as String? ?? 'PERSONAL',
+  heightCm: json['heightCm'] as num?,
+  weightKg: json['weightKg'] as num?,
+  bustCm: json['bustCm'] as num?,
+  hipsCm: json['hipsCm'] as num?,
+  clothingSize: json['clothingSize'] as String?,
+  ageYears: (json['ageYears'] as num?)?.toInt(),
+  bodyType: json['bodyType'] as String?,
+  gender: json['gender'] as String?,
+);
 
 Map<String, dynamic> _$CreateAiProfileRequestToJson(
   _CreateAiProfileRequest instance,
-) => <String, dynamic>{'type': instance.type};
+) => <String, dynamic>{
+  'type': instance.type,
+  'heightCm': ?instance.heightCm,
+  'weightKg': ?instance.weightKg,
+  'bustCm': ?instance.bustCm,
+  'hipsCm': ?instance.hipsCm,
+  'clothingSize': ?instance.clothingSize,
+  'ageYears': ?instance.ageYears,
+  'bodyType': ?instance.bodyType,
+  'gender': ?instance.gender,
+};
+
+_UpdateAiProfileRequest _$UpdateAiProfileRequestFromJson(
+  Map<String, dynamic> json,
+) => _UpdateAiProfileRequest(
+  heightCm: json['heightCm'] as num?,
+  weightKg: json['weightKg'] as num?,
+  bustCm: json['bustCm'] as num?,
+  hipsCm: json['hipsCm'] as num?,
+  clothingSize: json['clothingSize'] as String?,
+  ageYears: (json['ageYears'] as num?)?.toInt(),
+  bodyType: json['bodyType'] as String?,
+  gender: json['gender'] as String?,
+);
+
+Map<String, dynamic> _$UpdateAiProfileRequestToJson(
+  _UpdateAiProfileRequest instance,
+) => <String, dynamic>{
+  'heightCm': instance.heightCm,
+  'weightKg': instance.weightKg,
+  'bustCm': instance.bustCm,
+  'hipsCm': instance.hipsCm,
+  'clothingSize': instance.clothingSize,
+  'ageYears': instance.ageYears,
+  'bodyType': instance.bodyType,
+  'gender': instance.gender,
+};
 
 _CreateAiProfileUploadRequest _$CreateAiProfileUploadRequestFromJson(
   Map<String, dynamic> json,

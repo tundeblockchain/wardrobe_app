@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:wardrobe_app/core/network/api_exception.dart';
 import 'package:wardrobe_app/features/ai_profiles/data/ai_profile_dtos.dart';
 import 'package:wardrobe_app/features/ai_profiles/domain/ai_profile.dart';
+import 'package:wardrobe_app/features/ai_profiles/domain/ai_profile_body_context.dart';
 
 void main() {
   final personalJson = {
@@ -94,6 +95,34 @@ void main() {
       );
     });
 
+    test('maps optional WARDROBE-80 body fields when present', () {
+      final domain = AiProfileResponse.fromJson({
+        ...personalJson,
+        'heightCm': 170,
+        'weightKg': 65,
+        'bustCm': 90,
+        'hipsCm': 100,
+        'clothingSize': 'M',
+        'ageYears': 28,
+        'bodyType': 'AVERAGE',
+        'gender': 'FEMALE',
+      }).toDomain();
+
+      expect(
+        domain.bodyContext,
+        const AiProfileBodyContext(
+          heightCm: 170,
+          weightKg: 65,
+          bustCm: 90,
+          hipsCm: 100,
+          clothingSize: 'M',
+          ageYears: 28,
+          bodyType: 'AVERAGE',
+          gender: 'FEMALE',
+        ),
+      );
+    });
+
     test('rejects an unknown type', () {
       expect(
         () =>
@@ -125,6 +154,61 @@ void main() {
   group('write request DTOs', () {
     test('create sends PERSONAL', () {
       expect(const CreateAiProfileRequest().toJson(), {'type': 'PERSONAL'});
+    });
+
+    test('create soft-omits empty WARDROBE-80 fields', () {
+      expect(
+        CreateAiProfileRequest.fromBody(AiProfileBodyContext.empty).toJson(),
+        {'type': 'PERSONAL'},
+      );
+    });
+
+    test('create includes filled WARDROBE-80 fields', () {
+      expect(
+        CreateAiProfileRequest.fromBody(
+          const AiProfileBodyContext(
+            heightCm: 170,
+            weightKg: 65,
+            clothingSize: 'M',
+            gender: 'FEMALE',
+          ),
+        ).toJson(),
+        {
+          'type': 'PERSONAL',
+          'heightCm': 170,
+          'weightKg': 65,
+          'clothingSize': 'M',
+          'gender': 'FEMALE',
+        },
+      );
+    });
+
+    test('PATCH includes every WARDROBE-80 key, null to clear', () {
+      expect(const UpdateAiProfileRequest().toJson(), {
+        'heightCm': null,
+        'weightKg': null,
+        'bustCm': null,
+        'hipsCm': null,
+        'clothingSize': null,
+        'ageYears': null,
+        'bodyType': null,
+        'gender': null,
+      });
+      expect(
+        UpdateAiProfileRequest.fromBody(
+          const AiProfileBodyContext(heightCm: 170, gender: 'FEMALE'),
+        ).toJson(),
+        {
+          'heightCm': 170,
+          'weightKg': null,
+          'bustCm': null,
+          'hipsCm': null,
+          'clothingSize': null,
+          'ageYears': null,
+          'bodyType': null,
+          'gender': 'FEMALE',
+        },
+      );
     });
 
     test('upload includes purpose and optional contentLength', () {

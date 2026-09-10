@@ -7,7 +7,9 @@ import '../../../core/network/api_exception.dart';
 import '../../../core/network/dio_client.dart';
 import '../../items/domain/upload_ticket.dart';
 import '../domain/ai_profile.dart';
+import '../domain/ai_profile_body_context.dart';
 import '../domain/ai_profile_repository.dart';
+import 'ai_profile_body_mapping.dart';
 import 'ai_profile_dtos.dart';
 import 'ai_profile_image_urls.dart';
 
@@ -54,11 +56,27 @@ class DioAiProfileRepository implements AiProfileRepository {
   }
 
   @override
-  Future<AiProfile> createPersonal() {
+  Future<AiProfile> createPersonal({
+    AiProfileBodyContext body = AiProfileBodyContext.empty,
+  }) {
     return _guard(() async {
       final response = await api.post<dynamic>(
         _collection,
-        data: const CreateAiProfileRequest().toJson(),
+        data: CreateAiProfileRequest.fromBody(body).toJson(),
+      );
+      return parseAiProfile(response.data);
+    });
+  }
+
+  @override
+  Future<AiProfile> updatePersonal({
+    required String aiProfileId,
+    required AiProfileBodyContext body,
+  }) {
+    return _guard(() async {
+      final response = await api.patch<dynamic>(
+        _profilePath(aiProfileId),
+        data: aiProfileBodyContextToPatchJson(body),
       );
       return parseAiProfile(response.data);
     });
@@ -174,7 +192,10 @@ AiProfile mapAiProfileJson(Map<dynamic, dynamic> data) {
     json['referenceImages'],
   );
   final domain = AiProfileResponse.fromJson(normalized).toDomain();
-  return domain.copyWith(previewImageUrl: extractAiProfileImageUrl(json));
+  return domain.copyWith(
+    previewImageUrl: extractAiProfileImageUrl(json),
+    bodyContext: parseAiProfileBodyContext(json),
+  );
 }
 
 UploadTicket parseAiProfileUpload(dynamic data) {
