@@ -1,18 +1,19 @@
 import '../domain/ai_profile_body_context.dart';
 
-/// WARDROBE-80 body/context keys on AI-profile create/get/list/PATCH JSON.
+/// WARDROBE-80 + WARDROBE-82 body/context keys on create/get/list/PATCH JSON.
 const aiProfileBodyContextWireKeys = <String>[
   'heightCm',
   'weightKg',
   'bustCm',
   'hipsCm',
   'clothingSize',
+  'braSize',
   'ageYears',
   'bodyType',
   'gender',
 ];
 
-/// Reads optional WARDROBE-80 body keys from get/list JSON when present.
+/// Reads optional WARDROBE-80 / WARDROBE-82 body keys from get/list JSON.
 ///
 /// Missing / null / blank values are soft-omitted. Empty context does not
 /// block try-on. Unknown extra JSON is ignored.
@@ -23,13 +24,14 @@ AiProfileBodyContext parseAiProfileBodyContext(Map<String, dynamic> json) {
     bustCm: _readNum(json['bustCm']),
     hipsCm: _readNum(json['hipsCm']),
     clothingSize: _readString(json['clothingSize']),
+    braSize: _readString(json['braSize']),
     ageYears: _readInt(json['ageYears']),
     bodyType: _readString(json['bodyType']),
     gender: _readString(json['gender']),
   );
 }
 
-/// Create / POST body: filled WARDROBE-80 fields only (soft-omit empties).
+/// Create / POST body: filled WARDROBE-80 / WARDROBE-82 fields only (soft-omit).
 Map<String, dynamic> aiProfileBodyContextToJson(AiProfileBodyContext context) {
   return <String, dynamic>{
     if (context.heightCm != null) 'heightCm': _jsonNum(context.heightCm!),
@@ -38,6 +40,8 @@ Map<String, dynamic> aiProfileBodyContextToJson(AiProfileBodyContext context) {
     if (context.hipsCm != null) 'hipsCm': _jsonNum(context.hipsCm!),
     if (context.clothingSize != null && context.clothingSize!.trim().isNotEmpty)
       'clothingSize': context.clothingSize!.trim(),
+    if (context.braSize != null && context.braSize!.trim().isNotEmpty)
+      'braSize': context.braSize!.trim(),
     if (context.ageYears != null) 'ageYears': context.ageYears,
     if (context.bodyType != null && context.bodyType!.trim().isNotEmpty)
       'bodyType': context.bodyType!.trim(),
@@ -46,7 +50,7 @@ Map<String, dynamic> aiProfileBodyContextToJson(AiProfileBodyContext context) {
   };
 }
 
-/// PATCH body: every WARDROBE-80 key, with `null` to clear a stored field.
+/// PATCH body: every WARDROBE-80 / WARDROBE-82 key, with `null` to clear.
 Map<String, dynamic> aiProfileBodyContextToPatchJson(
   AiProfileBodyContext context,
 ) {
@@ -56,6 +60,7 @@ Map<String, dynamic> aiProfileBodyContextToPatchJson(
     'bustCm': context.bustCm == null ? null : _jsonNum(context.bustCm!),
     'hipsCm': context.hipsCm == null ? null : _jsonNum(context.hipsCm!),
     'clothingSize': _patchString(context.clothingSize),
+    'braSize': _patchString(context.braSize),
     'ageYears': context.ageYears,
     'bodyType': _patchString(context.bodyType),
     'gender': _patchString(context.gender),

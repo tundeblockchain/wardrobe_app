@@ -122,9 +122,7 @@ class _SelectedBanner extends ConsumerWidget {
         minLeadingWidth: 56,
         title: Text('Selected: ${profile.displayName}'),
         subtitle: Text(
-          profile.isGenericModel
-              ? 'Generic model · ${profile.id}'
-              : 'Personal profile · ${profile.id}',
+          profile.isGenericModel ? 'Generic model' : 'Personal profile',
         ),
         trailing: IconButton(
           tooltip: 'Clear selection',

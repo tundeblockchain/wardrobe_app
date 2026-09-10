@@ -1,8 +1,9 @@
-/// Optional body/context measurements for Gemini try-on (WARDROBE-81).
+/// Optional body/context measurements for Gemini try-on (WARDROBE-81/83).
 ///
-/// Wire names match Backend WARDROBE-80:
-/// `heightCm`, `weightKg`, `bustCm`, `hipsCm`, `clothingSize`, `ageYears`,
-/// `bodyType`, `gender`. Missing or empty values must never block try-on.
+/// Wire names match Backend WARDROBE-80 plus WARDROBE-82 `braSize`:
+/// `heightCm`, `weightKg`, `bustCm`, `hipsCm`, `clothingSize`, `braSize`,
+/// `ageYears`, `bodyType`, `gender`. Missing or empty values must never
+/// block try-on.
 class AiProfileBodyContext {
   const AiProfileBodyContext({
     this.heightCm,
@@ -10,6 +11,7 @@ class AiProfileBodyContext {
     this.bustCm,
     this.hipsCm,
     this.clothingSize,
+    this.braSize,
     this.ageYears,
     this.bodyType,
     this.gender,
@@ -32,6 +34,9 @@ class AiProfileBodyContext {
   /// Clothing size label. Wire key `clothingSize`.
   final String? clothingSize;
 
+  /// Bra size label (e.g. `34B`). Wire key `braSize` (WARDROBE-82).
+  final String? braSize;
+
   /// Age in years. Wire key `ageYears`.
   final int? ageYears;
 
@@ -47,6 +52,7 @@ class AiProfileBodyContext {
         bustCm == null &&
         hipsCm == null &&
         (clothingSize == null || clothingSize!.trim().isEmpty) &&
+        (braSize == null || braSize!.trim().isEmpty) &&
         ageYears == null &&
         (bodyType == null || bodyType!.trim().isEmpty) &&
         (gender == null || gender!.trim().isEmpty);
@@ -64,6 +70,8 @@ class AiProfileBodyContext {
       if (hipsCm != null) 'hips ${formatBodyNumber(hipsCm!)} cm',
       if (clothingSize != null && clothingSize!.trim().isNotEmpty)
         'size ${clothingSize!.trim()}',
+      if (braSize != null && braSize!.trim().isNotEmpty)
+        'bra ${braSize!.trim()}',
       if (bodyType != null && bodyType!.trim().isNotEmpty)
         aiProfileTokenLabel(bodyType!),
       if (gender != null && gender!.trim().isNotEmpty)
@@ -84,6 +92,7 @@ class AiProfileBodyContext {
             other.bustCm == bustCm &&
             other.hipsCm == hipsCm &&
             other.clothingSize == clothingSize &&
+            other.braSize == braSize &&
             other.ageYears == ageYears &&
             other.bodyType == bodyType &&
             other.gender == gender;
@@ -96,6 +105,7 @@ class AiProfileBodyContext {
     bustCm,
     hipsCm,
     clothingSize,
+    braSize,
     ageYears,
     bodyType,
     gender,
@@ -105,7 +115,8 @@ class AiProfileBodyContext {
   String toString() {
     return 'AiProfileBodyContext(heightCm: $heightCm, weightKg: $weightKg, '
         'bustCm: $bustCm, hipsCm: $hipsCm, clothingSize: $clothingSize, '
-        'ageYears: $ageYears, bodyType: $bodyType, gender: $gender)';
+        'braSize: $braSize, ageYears: $ageYears, bodyType: $bodyType, '
+        'gender: $gender)';
   }
 }
 

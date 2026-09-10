@@ -23,6 +23,7 @@ void main() {
     bustCm: 90,
     hipsCm: 100.5,
     clothingSize: 'M',
+    braSize: '34B',
     ageYears: 28,
     bodyType: 'AVERAGE',
     gender: 'FEMALE',
@@ -31,6 +32,10 @@ void main() {
   test('missing WARDROBE-80 keys map to an empty body context', () {
     expect(parseAiProfileBodyContext(personalJson), AiProfileBodyContext.empty);
     expect(aiProfileBodyContextToJson(AiProfileBodyContext.empty), isEmpty);
+    expect(
+      aiProfileBodyContextWireKeys,
+      containsAll(['heightCm', 'braSize', 'gender']),
+    );
   });
 
   test('reads the WARDROBE-80 contract keys when present', () {
@@ -41,6 +46,7 @@ void main() {
       'bustCm': 90,
       'hipsCm': 100.5,
       'clothingSize': 'M',
+      'braSize': '34B',
       'ageYears': 28,
       'bodyType': 'AVERAGE',
       'gender': 'FEMALE',
@@ -61,6 +67,14 @@ void main() {
       ),
       {'heightCm': 170, 'clothingSize': 'M', 'weightKg': 65.5},
     );
+    expect(
+      aiProfileBodyContextToJson(const AiProfileBodyContext(braSize: '34B')),
+      {'braSize': '34B'},
+    );
+    expect(
+      aiProfileBodyContextToJson(const AiProfileBodyContext(braSize: '  ')),
+      isEmpty,
+    );
   });
 
   test('PATCH JSON always includes every contract key, null to clear', () {
@@ -70,6 +84,7 @@ void main() {
       'bustCm': null,
       'hipsCm': null,
       'clothingSize': null,
+      'braSize': null,
       'ageYears': null,
       'bodyType': null,
       'gender': null,
@@ -83,6 +98,7 @@ void main() {
       'ageYears': 28,
       'bodyType': 'AVERAGE',
       'gender': 'FEMALE',
+      'braSize': '34B',
     });
   });
 
@@ -100,6 +116,10 @@ void main() {
       expect(domain.bodyContext.heightCm, 170);
       expect(domain.bodyContext.ageYears, 28);
       expect(domain.bodyContext.clothingSize, '10');
+      expect(
+        parseAiProfileBodyContext({...personalJson, 'braSize': '34B'}).braSize,
+        '34B',
+      );
       expect(domain.canUseForTryOn, isTrue);
       expect(const CreateAiProfileRequest().toJson(), {'type': 'PERSONAL'});
     },
@@ -130,6 +150,7 @@ void main() {
       'heightCm': 'tall',
       'ageYears': 'twenty',
       'clothingSize': '  ',
+      'braSize': '  ',
     });
     expect(context, AiProfileBodyContext.empty);
   });

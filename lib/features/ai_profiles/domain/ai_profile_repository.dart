@@ -17,7 +17,7 @@ abstract interface class AiProfileRepository {
     AiProfileBodyContext body = AiProfileBodyContext.empty,
   });
 
-  /// `PATCH /ai-profiles/{aiProfileId}` for PERSONAL WARDROBE-80 updates.
+  /// `PATCH /ai-profiles/{aiProfileId}` for PERSONAL body/context updates.
   Future<AiProfile> updatePersonal({
     required String aiProfileId,
     required AiProfileBodyContext body,

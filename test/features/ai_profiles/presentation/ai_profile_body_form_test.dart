@@ -10,7 +10,7 @@ void main() {
     AiProfileBodyContext initial = AiProfileBodyContext.empty,
     required ValueChanged<AiProfileBodyContext> onSubmit,
   }) async {
-    tester.view.physicalSize = const Size(800, 2200);
+    tester.view.physicalSize = const Size(800, 2600);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
@@ -38,11 +38,13 @@ void main() {
     await pumpForm(tester, onSubmit: (value) => submitted = value);
 
     expect(find.byKey(AiProfileBodyForm.optionalBannerKey), findsOneWidget);
-    expect(find.textContaining('never block try-on'), findsOneWidget);
+    expect(find.text(AiProfileBodyForm.helperCopy), findsOneWidget);
     expect(find.text('Height (cm)'), findsOneWidget);
     expect(find.text('Weight (kg)'), findsOneWidget);
+    expect(find.text('Bra size'), findsOneWidget);
     expect(find.text('Age (years)'), findsOneWidget);
     expect(find.textContaining('cannot store'), findsNothing);
+    expect(find.textContaining('profile_'), findsNothing);
 
     await tapSubmit(tester);
 
@@ -69,6 +71,10 @@ void main() {
     await tester.enterText(find.byKey(AiProfileBodyForm.bustFieldKey), '90');
     await tester.enterText(find.byKey(AiProfileBodyForm.hipsFieldKey), '100');
     await tester.enterText(find.byKey(AiProfileBodyForm.sizeFieldKey), 'M');
+    await tester.enterText(
+      find.byKey(AiProfileBodyForm.braSizeFieldKey),
+      '34B',
+    );
     await tester.enterText(find.byKey(AiProfileBodyForm.ageFieldKey), '28');
     await tester.ensureVisible(find.byKey(AiProfileBodyForm.bodyTypeFieldKey));
     await tester.tap(find.byKey(AiProfileBodyForm.bodyTypeFieldKey));
@@ -90,6 +96,7 @@ void main() {
         bustCm: 90,
         hipsCm: 100,
         clothingSize: 'M',
+        braSize: '34B',
         ageYears: 28,
         bodyType: 'AVERAGE',
         gender: 'FEMALE',
@@ -103,6 +110,7 @@ void main() {
       initial: const AiProfileBodyContext(
         heightCm: 168,
         clothingSize: '10',
+        braSize: '34B',
         gender: 'FEMALE',
       ),
       onSubmit: (_) {},
@@ -110,6 +118,19 @@ void main() {
 
     expect(find.text('168'), findsOneWidget);
     expect(find.text('10'), findsOneWidget);
+    expect(find.text('34B'), findsOneWidget);
     expect(find.text('Female'), findsOneWidget);
+  });
+
+  testWidgets('does not display a raw profile id', (tester) async {
+    await pumpForm(
+      tester,
+      initial: const AiProfileBodyContext(braSize: '34B'),
+      onSubmit: (_) {},
+    );
+
+    expect(find.text(AiProfileBodyForm.helperCopy), findsOneWidget);
+    expect(find.textContaining('profile_'), findsNothing);
+    expect(find.textContaining('aiProfileId'), findsNothing);
   });
 }

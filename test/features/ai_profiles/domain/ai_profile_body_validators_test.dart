@@ -13,6 +13,8 @@ void main() {
       expect(AiProfileBodyValidators.hipsCm(null), isNull);
       expect(AiProfileBodyValidators.clothingSize(null), isNull);
       expect(AiProfileBodyValidators.clothingSize(''), isNull);
+      expect(AiProfileBodyValidators.braSize(null), isNull);
+      expect(AiProfileBodyValidators.braSize(''), isNull);
       expect(AiProfileBodyValidators.ageYears(null), isNull);
       expect(AiProfileBodyValidators.ageYears(''), isNull);
       expect(AiProfileBodyValidators.bodyType(null), isNull);
@@ -27,6 +29,7 @@ void main() {
           bustCm: '',
           hipsCm: '',
           clothingSize: '  ',
+          braSize: '  ',
           ageYears: '',
           bodyType: '',
           gender: '  ',
@@ -67,6 +70,13 @@ void main() {
       expect(AiProfileBodyValidators.clothingSize('x' * 33), isNotNull);
     });
 
+    test('braSize is optional with a 32-character max', () {
+      expect(AiProfileBodyValidators.braSize('34B'), isNull);
+      expect(AiProfileBodyValidators.braSize(''), isNull);
+      expect(AiProfileBodyValidators.braSize('x' * 32), isNull);
+      expect(AiProfileBodyValidators.braSize('x' * 33), isNotNull);
+    });
+
     test('ageYears requires a whole number in range', () {
       expect(AiProfileBodyValidators.ageYears('28'), isNull);
       expect(AiProfileBodyValidators.ageYears('0'), isNotNull);
@@ -82,6 +92,7 @@ void main() {
       bustCm: '90.5',
       hipsCm: '100',
       clothingSize: ' M ',
+      braSize: ' 34B ',
       ageYears: '28',
       bodyType: 'AVERAGE',
       gender: 'FEMALE',
@@ -92,6 +103,7 @@ void main() {
     expect(parsed.bustCm, 90.5);
     expect(parsed.hipsCm, 100);
     expect(parsed.clothingSize, 'M');
+    expect(parsed.braSize, '34B');
     expect(parsed.ageYears, 28);
     expect(parsed.bodyType, 'AVERAGE');
     expect(parsed.gender, 'FEMALE');
@@ -101,8 +113,12 @@ void main() {
   test('summary lists filled fields only', () {
     expect(AiProfileBodyContext.empty.summary, isNull);
     expect(
-      const AiProfileBodyContext(heightCm: 170, clothingSize: 'M').summary,
-      '170 cm · size M',
+      const AiProfileBodyContext(
+        heightCm: 170,
+        clothingSize: 'M',
+        braSize: '34B',
+      ).summary,
+      '170 cm · size M · bra 34B',
     );
   });
 }
