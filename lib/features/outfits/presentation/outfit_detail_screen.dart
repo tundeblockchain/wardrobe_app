@@ -11,7 +11,8 @@ import '../../items/domain/item.dart';
 import '../application/outfit_detail_controller.dart';
 import '../application/outfit_detail_state.dart';
 import '../application/outfit_scope.dart';
-import '../domain/outfit.dart';
+import 'widgets/outfit_hero_card.dart';
+import 'widgets/outfit_item_slider.dart';
 
 /// Outfit detail with edit and delete.
 class OutfitDetailScreen extends ConsumerWidget {
@@ -106,11 +107,15 @@ class OutfitDetailScreen extends ConsumerWidget {
     }
 
     final outfit = state.outfit!;
-    final itemsById = {for (final item in wardrobeItems) item.id: item};
     return ListView(
       children: [
         Text(outfit.name, style: Theme.of(context).textTheme.headlineSmall),
-        const SizedBox(height: 24),
+        const SizedBox(height: 16),
+        OutfitHeroCard(
+          outfit: outfit,
+          onTryOn: () => context.push(AppRoutes.tryOn(wardrobeId, outfitId)),
+        ),
+        const SizedBox(height: 16),
         FilledButton.icon(
           key: tryOnButtonKey,
           onPressed: () => context.push(AppRoutes.tryOn(wardrobeId, outfitId)),
@@ -118,23 +123,14 @@ class OutfitDetailScreen extends ConsumerWidget {
           label: const Text('Try on'),
         ),
         const SizedBox(height: 24),
-        Text('Slots', style: Theme.of(context).textTheme.titleMedium),
+        Text('Items', style: Theme.of(context).textTheme.titleMedium),
         const SizedBox(height: 12),
-        for (final OutfitItem assignment in outfit.items)
-          Card(
-            child: ListTile(
-              key: Key('outfit_detail_slot_${assignment.slot.wireValue}'),
-              leading: CircleAvatar(child: Text(assignment.slot.label[0])),
-              title: Text(assignment.slot.label),
-              subtitle: Text(
-                itemsById[assignment.itemId]?.name ?? 'Item in this wardrobe',
-              ),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: () => context.push(
-                AppRoutes.itemDetail(wardrobeId, assignment.itemId),
-              ),
-            ),
-          ),
+        OutfitItemSlider(
+          assignments: outfit.items,
+          wardrobeItems: wardrobeItems,
+          onItemTap: (itemId) =>
+              context.push(AppRoutes.itemDetail(wardrobeId, itemId)),
+        ),
         if (state.errorMessage != null) ...[
           const SizedBox(height: 16),
           Text(

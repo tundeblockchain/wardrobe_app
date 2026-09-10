@@ -7,7 +7,7 @@ import 'package:wardrobe_app/features/try_on/presentation/widgets/try_on_persona
 import '../../../helpers/fake_ai_profile_repository.dart';
 
 void main() {
-  testWidgets('shows a large uncropped frontal photo and selects on tap', (
+  testWidgets('shows a large cover-cropped frontal photo and selects on tap', (
     tester,
   ) async {
     tester.view.physicalSize = const Size(400, 800);
@@ -41,7 +41,7 @@ void main() {
     expect(find.text('Alex'), findsOneWidget);
     expect(find.byType(FilterChip), findsNothing);
     expect(find.byType(ClipOval), findsNothing);
-    expect(tester.widget<Image>(find.byType(Image)).fit, BoxFit.contain);
+    expect(tester.widget<Image>(find.byType(Image)).fit, BoxFit.cover);
 
     await tester.tap(find.byKey(TryOnPersonaCard.cardKey(profile.id)));
     expect(selected, isTrue);

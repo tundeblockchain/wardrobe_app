@@ -7,7 +7,7 @@ import 'ai_profile_status_chip.dart';
 
 /// GENERIC_MODEL catalog card. Tap selects it for WARDROBE-51 try-on prep.
 ///
-/// Large uncropped frontal photo so the user can see which model they pick.
+/// Large cover-cropped frontal photo so the user can see which model they pick.
 class GenericModelCard extends StatelessWidget {
   const GenericModelCard({
     super.key,

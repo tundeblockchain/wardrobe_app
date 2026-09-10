@@ -172,9 +172,7 @@ void main() {
     expect(find.byKey(ItemSwipeDeck.swipeLayerKey), findsOneWidget);
   });
 
-  testWidgets('swipe left does not advance or dismiss the card', (
-    tester,
-  ) async {
+  testWidgets('swipe left advances to the next item', (tester) async {
     await pumpDeck(tester, items: [shirt, jeans]);
 
     await tester.fling(
@@ -184,10 +182,8 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('Black Nike T-Shirt'), findsOneWidget);
-    expect(find.text('1 of 2'), findsOneWidget);
-    expect(find.byKey(ItemSwipeCard.cardKey(shirt.id)), findsOneWidget);
-    expect(find.byKey(ItemSwipeDeck.endKey), findsNothing);
+    expect(find.text('Blue jeans'), findsOneWidget);
+    expect(find.text('2 of 2'), findsOneWidget);
   });
 
   testWidgets('swipe right advances to the next item', (tester) async {

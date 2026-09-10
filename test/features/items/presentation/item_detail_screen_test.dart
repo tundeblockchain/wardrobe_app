@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:wardrobe_app/features/items/data/dio_item_repository.dart';
 import 'package:wardrobe_app/features/items/domain/item.dart';
 import 'package:wardrobe_app/features/items/domain/item_detail_meta.dart';
+import 'package:wardrobe_app/core/widgets/enlarged_image_popup.dart';
 import 'package:wardrobe_app/features/items/presentation/item_detail_screen.dart';
 import 'package:wardrobe_app/features/items/presentation/widgets/item_browse_image.dart';
 import 'package:wardrobe_app/features/items/presentation/widgets/item_detail_meta_block.dart';
@@ -144,5 +145,22 @@ void main() {
     expect(find.byKey(ItemDetailMetaBlock.brandRowKey), findsOneWidget);
     expect(find.text(ItemDetailMeta.emptyPlaceholder), findsNWidgets(4));
     expect(find.text('Summer Clothes'), findsOneWidget);
+  });
+
+  testWidgets('tapping the item image card opens an enlarged popup', (
+    tester,
+  ) async {
+    await pumpDetail(tester);
+
+    await tester.tap(find.byKey(ItemDetailScreen.imageTapKey));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(EnlargedImagePopup.dialogKey), findsOneWidget);
+    expect(find.byKey(EnlargedImagePopup.closeKey), findsOneWidget);
+    expect(find.byKey(ItemBrowseImage.imageKey('item_xyz123')), findsWidgets);
+
+    await tester.tap(find.byKey(EnlargedImagePopup.closeKey));
+    await tester.pumpAndSettle();
+    expect(find.byKey(EnlargedImagePopup.dialogKey), findsNothing);
   });
 }

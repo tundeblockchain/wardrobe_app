@@ -3,12 +3,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wardrobe_app/core/network/api_exception.dart';
 import 'package:wardrobe_app/core/widgets/destructive_confirm_dialog.dart';
+import 'package:wardrobe_app/features/items/data/dio_item_repository.dart';
 import 'package:wardrobe_app/features/outfits/data/dio_outfit_repository.dart';
 import 'package:wardrobe_app/features/outfits/presentation/outfits_screen.dart';
+import 'package:wardrobe_app/features/outfits/presentation/widgets/outfit_carousel.dart';
 import 'package:wardrobe_app/features/outfits/presentation/widgets/outfit_list_preview.dart';
 import 'package:wardrobe_app/features/outfits/presentation/widgets/outfit_list_tile.dart';
 
 import '../../../helpers/date_stamp_matchers.dart';
+import '../../../helpers/fake_item_repository.dart';
 import '../../../helpers/fake_outfit_repository.dart';
 
 void main() {
@@ -19,6 +22,7 @@ void main() {
           outfitRepositoryProvider.overrideWithValue(
             FakeOutfitRepository(seed: [testOutfit()]),
           ),
+          itemRepositoryProvider.overrideWithValue(FakeItemRepository()),
         ],
         child: const MaterialApp(home: OutfitsScreen(wardrobeId: 'wd_abc123')),
       ),
@@ -36,6 +40,7 @@ void main() {
     expect(find.text('3 items'), findsOneWidget);
     expect(find.byKey(OutfitsScreen.createButtonKey), findsOneWidget);
     expect(find.byKey(OutfitListTile.deleteKey('outfit_123')), findsOneWidget);
+    expect(find.byKey(OutfitCarousel.carouselKey), findsOneWidget);
     expect(
       find.byKey(OutfitListPreview.hangerKey('outfit_123')),
       findsOneWidget,
@@ -51,7 +56,10 @@ void main() {
     final repository = FakeOutfitRepository(seed: [testOutfit()]);
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [outfitRepositoryProvider.overrideWithValue(repository)],
+        overrides: [
+          outfitRepositoryProvider.overrideWithValue(repository),
+          itemRepositoryProvider.overrideWithValue(FakeItemRepository()),
+        ],
         child: const MaterialApp(
           home: ScaffoldMessenger(
             child: OutfitsScreen(wardrobeId: 'wd_abc123'),
@@ -77,7 +85,10 @@ void main() {
     final repository = FakeOutfitRepository(seed: [testOutfit()]);
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [outfitRepositoryProvider.overrideWithValue(repository)],
+        overrides: [
+          outfitRepositoryProvider.overrideWithValue(repository),
+          itemRepositoryProvider.overrideWithValue(FakeItemRepository()),
+        ],
         child: const MaterialApp(home: OutfitsScreen(wardrobeId: 'wd_abc123')),
       ),
     );
@@ -98,7 +109,10 @@ void main() {
     final repository = FakeOutfitRepository(seed: [testOutfit()]);
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [outfitRepositoryProvider.overrideWithValue(repository)],
+        overrides: [
+          outfitRepositoryProvider.overrideWithValue(repository),
+          itemRepositoryProvider.overrideWithValue(FakeItemRepository()),
+        ],
         child: const MaterialApp(
           home: ScaffoldMessenger(
             child: OutfitsScreen(wardrobeId: 'wd_abc123'),
@@ -133,6 +147,7 @@ void main() {
               seed: [testOutfit(render: testOutfitRender())],
             ),
           ),
+          itemRepositoryProvider.overrideWithValue(FakeItemRepository()),
         ],
         child: const MaterialApp(home: OutfitsScreen(wardrobeId: 'wd_abc123')),
       ),
@@ -144,7 +159,7 @@ void main() {
       findsOneWidget,
     );
     expect(find.byKey(OutfitListPreview.hangerKey('outfit_123')), findsNothing);
-    expect(tester.widget<Image>(find.byType(Image)).fit, BoxFit.contain);
+    expect(tester.widget<Image>(find.byType(Image)).fit, BoxFit.cover);
     expect(find.text('Processing'), findsNothing);
   });
 }

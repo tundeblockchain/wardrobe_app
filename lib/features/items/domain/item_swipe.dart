@@ -12,9 +12,8 @@ const itemSwipeFlingVelocity = 800.0;
 
 /// Resolves a pan into a stack-advance swipe, or `null` to snap back.
 ///
-/// Only swipe right advances. Swipe left is ignored (no previous / dismiss).
-/// Vertical-dominant movement is ignored so a scroll cannot flip or advance
-/// the card.
+/// Swipe left or right advances to the next item. Vertical-dominant movement
+/// is ignored so a scroll cannot flip or advance the card.
 ItemSwipeDirection? resolveItemSwipe({
   required double dx,
   required double dy,
@@ -31,10 +30,11 @@ ItemSwipeDirection? resolveItemSwipe({
     return null;
   }
 
-  final crossedRight = dx >= cardWidth * itemSwipeDistanceFraction;
-  final flungRight = vx >= itemSwipeFlingVelocity;
-  if (dx > 0 && (crossedRight || flungRight)) {
-    return ItemSwipeDirection.right;
+  final crossedHorizontal = absDx >= cardWidth * itemSwipeDistanceFraction;
+  final flungHorizontal = vx.abs() >= itemSwipeFlingVelocity;
+  if (crossedHorizontal || flungHorizontal) {
+    final goingLeft = dx < 0 || (dx == 0 && vx < 0);
+    return goingLeft ? ItemSwipeDirection.left : ItemSwipeDirection.right;
   }
   return null;
 }

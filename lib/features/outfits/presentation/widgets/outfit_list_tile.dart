@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/router/app_routes.dart';
 import '../../../../core/widgets/entity_delete.dart';
+import '../../../items/domain/item.dart';
 import '../../domain/outfit.dart';
 import 'outfit_list_preview.dart';
 
@@ -12,12 +13,14 @@ class OutfitListTile extends StatelessWidget {
     super.key,
     required this.wardrobeId,
     required this.outfit,
+    this.wardrobeItems = const [],
     this.tileKey,
     this.onDelete,
   });
 
   final String wardrobeId;
   final Outfit outfit;
+  final List<Item> wardrobeItems;
   final Key? tileKey;
   final VoidCallback? onDelete;
 
@@ -31,7 +34,10 @@ class OutfitListTile extends StatelessWidget {
     return Card(
       child: ListTile(
         key: tileKey ?? defaultTileKey(outfit.id),
-        leading: OutfitListPreview(outfit: outfit),
+        leading: OutfitListPreview(
+          outfit: outfit,
+          wardrobeItems: wardrobeItems,
+        ),
         minLeadingWidth: 56,
         title: Text(outfit.name),
         subtitle: Text(slotCount == 1 ? '1 item' : '$slotCount items'),

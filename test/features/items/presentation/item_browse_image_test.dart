@@ -44,7 +44,7 @@ void main() {
     expect(find.byKey(ItemBrowseImage.imageKey(item.id)), findsOneWidget);
     expect(find.byKey(ItemBrowseImage.localSourceKey(item.id)), findsOneWidget);
     expect(find.byType(Image), findsOneWidget);
-    expect(tester.widget<Image>(find.byType(Image)).fit, BoxFit.contain);
+    expect(tester.widget<Image>(find.byType(Image)).fit, BoxFit.cover);
     expect(find.byIcon(Icons.checkroom_outlined), findsNothing);
     expect(find.text('Processing'), findsNothing);
     expect(find.text('Processed'), findsNothing);
@@ -101,7 +101,7 @@ void main() {
     expect(
       tester
           .widgetList<Image>(find.byType(Image))
-          .every((image) => image.fit == BoxFit.contain),
+          .every((image) => image.fit == BoxFit.cover),
       isTrue,
     );
     expect(find.byKey(ItemBrowseImage.localSourceKey(item.id)), findsNothing);

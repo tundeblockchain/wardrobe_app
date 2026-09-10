@@ -6,8 +6,10 @@ import '../../../core/router/app_routes.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/app_empty_state.dart';
 import '../../../core/widgets/entity_delete.dart';
+import '../../items/application/items_controller.dart';
 import '../application/outfits_controller.dart';
 import '../domain/outfit.dart';
+import 'widgets/outfit_carousel.dart';
 import 'widgets/outfit_list_tile.dart';
 
 /// Saved outfits for one wardrobe.
@@ -25,6 +27,7 @@ class OutfitsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(outfitsControllerProvider(wardrobeId));
+    final wardrobeItems = ref.watch(itemsControllerProvider(wardrobeId)).items;
 
     return Scaffold(
       appBar: AppBar(
@@ -92,12 +95,14 @@ class OutfitsScreen extends ConsumerWidget {
                     ),
                   ),
                 ),
-              for (final outfit in state.outfits)
-                OutfitListTile(
-                  wardrobeId: wardrobeId,
-                  outfit: outfit,
-                  onDelete: () => _deleteOutfit(context, ref, outfit),
-                ),
+              OutfitCarousel(
+                wardrobeId: wardrobeId,
+                outfits: state.outfits,
+                wardrobeItems: wardrobeItems,
+                onDelete: (outfit) => _deleteOutfit(context, ref, outfit),
+                cardKeyFor: (outfit) =>
+                    OutfitListTile.defaultTileKey(outfit.id),
+              ),
             ],
           ],
         ),

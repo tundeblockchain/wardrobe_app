@@ -6,6 +6,7 @@ import '../../../core/router/app_router.dart';
 import '../../../core/router/app_routes.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/app_empty_state.dart';
+import '../../../core/widgets/enlarged_image_popup.dart';
 import '../../../core/widgets/entity_delete.dart';
 import '../../outfits/application/outfits_controller.dart';
 import '../../wardrobes/application/wardrobes_controller.dart';
@@ -31,6 +32,7 @@ class ItemDetailScreen extends ConsumerStatefulWidget {
   static const editButtonKey = Key('item_detail_edit');
   static const deleteButtonKey = Key('item_detail_delete');
   static const retryButtonKey = Key('item_detail_retry');
+  static const imageTapKey = Key('item_detail_image_tap');
 
   @override
   ConsumerState<ItemDetailScreen> createState() => _ItemDetailScreenState();
@@ -154,12 +156,29 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        ClipRRect(
-          borderRadius: AppRadii.card,
-          child: SizedBox(
-            height: 220,
-            width: double.infinity,
-            child: ItemBrowseImage(item: item, localPreviewBytes: localPreview),
+        Material(
+          color: Colors.transparent,
+          child: InkWell(
+            key: ItemDetailScreen.imageTapKey,
+            onTap: () => EnlargedImagePopup.show(
+              context,
+              image: ItemBrowseImage(
+                item: item,
+                localPreviewBytes: localPreview,
+                fit: BoxFit.contain,
+              ),
+            ),
+            child: ClipRRect(
+              borderRadius: AppRadii.card,
+              child: SizedBox(
+                height: 220,
+                width: double.infinity,
+                child: ItemBrowseImage(
+                  item: item,
+                  localPreviewBytes: localPreview,
+                ),
+              ),
+            ),
           ),
         ),
         const SizedBox(height: 16),

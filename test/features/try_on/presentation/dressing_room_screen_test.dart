@@ -4,11 +4,13 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:wardrobe_app/core/router/app_routes.dart';
 import 'package:wardrobe_app/features/ai_profiles/application/selected_ai_profile.dart';
+import 'package:wardrobe_app/features/items/data/dio_item_repository.dart';
 import 'package:wardrobe_app/features/outfits/data/dio_outfit_repository.dart';
 import 'package:wardrobe_app/features/try_on/presentation/dressing_room_screen.dart';
 
 import '../../../helpers/date_stamp_matchers.dart';
 import '../../../helpers/fake_ai_profile_repository.dart';
+import '../../../helpers/fake_item_repository.dart';
 import '../../../helpers/fake_outfit_repository.dart';
 
 void main() {
@@ -47,7 +49,10 @@ void main() {
       ],
     );
     final container = ProviderContainer(
-      overrides: [outfitRepositoryProvider.overrideWithValue(outfits)],
+      overrides: [
+        outfitRepositoryProvider.overrideWithValue(outfits),
+        itemRepositoryProvider.overrideWithValue(FakeItemRepository()),
+      ],
     );
     addTearDown(container.dispose);
 

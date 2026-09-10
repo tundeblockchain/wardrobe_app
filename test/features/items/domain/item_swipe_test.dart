@@ -32,7 +32,7 @@ void main() {
       );
     });
 
-    test('ignores a left swipe so it cannot dismiss or go previous', () {
+    test('advances on a left swipe past the distance threshold', () {
       expect(
         resolveItemSwipe(
           dx: -width * 0.4,
@@ -42,7 +42,7 @@ void main() {
           width: width,
           height: height,
         ),
-        isNull,
+        ItemSwipeDirection.left,
       );
     });
 
@@ -116,7 +116,7 @@ void main() {
       );
     });
 
-    test('ignores a fast leftward fling', () {
+    test('accepts a fast leftward fling below the distance threshold', () {
       expect(
         resolveItemSwipe(
           dx: -30,
@@ -126,7 +126,7 @@ void main() {
           width: width,
           height: height,
         ),
-        isNull,
+        ItemSwipeDirection.left,
       );
     });
 
@@ -146,6 +146,19 @@ void main() {
   });
 
   group('itemSwipeExitOffset', () {
+    test('sends the card off-screen to the left for an accepted swipe', () {
+      expect(
+        itemSwipeExitOffset(
+          direction: ItemSwipeDirection.left,
+          width: width,
+          height: height,
+          currentDx: -40,
+          currentDy: 12,
+        ).dx,
+        -width * 1.4,
+      );
+    });
+
     test('sends the card off-screen to the right for an accepted swipe', () {
       expect(
         itemSwipeExitOffset(

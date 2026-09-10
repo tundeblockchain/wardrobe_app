@@ -5,6 +5,7 @@ import '../../../ai_profiles/domain/ai_profile.dart';
 import '../../../ai_profiles/presentation/widgets/ai_profile_picker_image.dart';
 
 /// Large try-on / Test Outfit picker card so the user can see the persona.
+/// Photo slot size is unchanged from WARDROBE-74; the image now cover-crops.
 class TryOnPersonaCard extends StatelessWidget {
   const TryOnPersonaCard({
     super.key,
