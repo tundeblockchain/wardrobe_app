@@ -6,7 +6,6 @@ import '../../../core/network/dio_client.dart';
 import '../domain/outfit.dart';
 import '../domain/outfit_render.dart';
 import '../domain/outfit_repository.dart';
-import '../domain/try_on_history.dart';
 import 'outfit_dtos.dart';
 
 /// Dio implementation of [OutfitRepository] against `/wardrobes/{id}/outfits`.
@@ -22,9 +21,6 @@ class DioOutfitRepository implements OutfitRepository {
 
   String _renderPath(String wardrobeId, String outfitId) =>
       '${_outfitPath(wardrobeId, outfitId)}/render';
-
-  String _rendersPath(String wardrobeId, String outfitId) =>
-      '${_outfitPath(wardrobeId, outfitId)}/renders';
 
   @override
   Future<List<Outfit>> listOutfits(String wardrobeId) {
@@ -129,27 +125,6 @@ class DioOutfitRepository implements OutfitRepository {
     });
   }
 
-  @override
-  Future<List<TryOnHistoryEntry>> listTryOnHistory({
-    required String wardrobeId,
-    required String outfitId,
-  }) {
-    return _guard(() async {
-      try {
-        final response = await _dio.get<dynamic>(
-          _rendersPath(wardrobeId, outfitId),
-        );
-        return parseTryOnHistory(response.data);
-      } on DioException catch (error) {
-        final exception = ApiException.fromDio(error);
-        if (isTryOnHistoryGap(exception)) {
-          return const [];
-        }
-        throw exception;
-      }
-    });
-  }
-
   Future<T> _guard<T>(Future<T> Function() action) async {
     try {
       return await action();
@@ -165,8 +140,15 @@ List<Outfit> parseOutfitList(dynamic data) {
     return data.whereType<Map>().map((item) => parseOutfit(item)).toList();
   }
   if (data is Map) {
-    return OutfitListResponse.fromJson(Map<String, dynamic>.from(data))
-        .toDomain();
+    final map = Map<String, dynamic>.from(data);
+    final nested = map['outfits'];
+    if (nested is List) {
+      return [
+        for (final item in nested)
+          if (item is Map) parseOutfit(item),
+      ];
+    }
+    return OutfitListResponse.fromJson(map).toDomain();
   }
   throw const ApiException(
     message: 'Unexpected outfits response.',
@@ -176,7 +158,12 @@ List<Outfit> parseOutfitList(dynamic data) {
 
 Outfit parseOutfit(dynamic data) {
   if (data is Map) {
-    return OutfitResponse.fromJson(Map<String, dynamic>.from(data)).toDomain();
+    final map = Map<String, dynamic>.from(data);
+    final outfit = OutfitResponse.fromJson(map).toDomain();
+    return outfit.copyWith(
+      renderHistory: parseRenderHistory(map['renderHistory']),
+      renderImageUrls: parseRenderImageUrls(map['renderImageUrls']),
+    );
   }
   throw const ApiException(
     message: 'Unexpected outfit response.',

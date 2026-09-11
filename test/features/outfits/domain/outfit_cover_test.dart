@@ -70,6 +70,16 @@ void main() {
       expect(cover.hasPhoto, isFalse);
     });
 
+    test('uses renderImageUrls[0] when render.imageUrl is omitted', () {
+      const latest = 'https://cdn.example.com/try-on/latest.png';
+      final cover = resolveOutfitCover(
+        testOutfit(renderImageUrls: const [latest]),
+      );
+
+      expect(cover.kind, OutfitCoverKind.render);
+      expect(cover.networkUrl, latest);
+    });
+
     test('prefers an explicit try-on URL over render and item photos', () {
       const hero = 'https://cdn.example.com/try-on/picked.png';
       final cover = resolveOutfitCover(testOutfit(render: testOutfitRender()), [
@@ -85,33 +95,16 @@ void main() {
   });
 
   group('latestOutfitTryOnUrl', () {
-    test('uses history then render, and honors a selected URL', () {
-      final older = testTryOnHistoryEntry(
-        render: testOutfitRender(
-          imageUrl: 'https://cdn.example.com/try-on/older.png',
-        ),
-        createdAt: DateTime.utc(2026, 9, 1),
+    test('uses renderImageUrls[0] and honors a selected URL', () {
+      const latest = 'https://cdn.example.com/try-on/latest.png';
+      const older = 'https://cdn.example.com/try-on/older.png';
+      final outfit = testOutfit(
+        render: testOutfitRender(imageUrl: latest),
+        renderImageUrls: const [latest, older],
       );
-      final latest = testTryOnHistoryEntry(
-        render: testOutfitRender(
-          imageUrl: 'https://cdn.example.com/try-on/latest.png',
-        ),
-        createdAt: DateTime.utc(2026, 9, 10),
-      );
-      final outfit = testOutfit(render: testOutfitRender());
 
-      expect(
-        latestOutfitTryOnUrl(outfit, history: [latest, older]),
-        'https://cdn.example.com/try-on/latest.png',
-      );
-      expect(
-        latestOutfitTryOnUrl(
-          outfit,
-          history: [latest, older],
-          selectedUrl: older.imageUrl,
-        ),
-        older.imageUrl,
-      );
+      expect(latestOutfitTryOnUrl(outfit), latest);
+      expect(latestOutfitTryOnUrl(outfit, selectedUrl: older), older);
     });
   });
 }

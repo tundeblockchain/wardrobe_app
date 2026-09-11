@@ -181,51 +181,59 @@ abstract class RequestOutfitRenderRequest with _$RequestOutfitRenderRequest {
       _$RequestOutfitRenderRequestFromJson(json);
 }
 
-/// Expected WARDROBE-85 payload: `{ "renders": [...] }`, `{ "history": [...] }`,
-/// or a bare array of [OutfitRenderResponse] objects. Extra keys such as
-/// `renderId` / `createdAt` are read when present and never written onto Outfit.
-List<TryOnHistoryEntry> parseTryOnHistory(dynamic data) {
+/// Backend `renderHistory[]` (WARDROBE-85 / wardrobe-backend #43). Newest first.
+/// Invalid rows and missing URLs are skipped; S3 keys are never turned into URLs.
+List<TryOnHistoryEntry> parseRenderHistory(dynamic data) {
   if (data == null) {
     return const [];
   }
-  if (data is List) {
-    return _entriesFromList(data);
+  if (data is! List) {
+    return const [];
   }
-  if (data is Map) {
-    final map = Map<String, dynamic>.from(data);
-    final nested = map['renders'] ?? map['history'] ?? map['tryOns'];
-    if (nested is List) {
-      return _entriesFromList(nested);
-    }
-    if (nested == null) {
-      return const [];
-    }
-  }
-  throw const ApiException(
-    message: 'Unexpected try-on history response.',
-    code: 'INVALID_RESPONSE',
-  );
-}
-
-List<TryOnHistoryEntry> _entriesFromList(List<dynamic> raw) {
   final entries = <TryOnHistoryEntry>[];
-  for (final item in raw) {
+  for (final item in data) {
     if (item is! Map) {
       continue;
     }
     final json = Map<String, dynamic>.from(item);
-    final render = OutfitRenderResponse.fromJson(json).toDomain();
-    final id = _optionalString(json['renderId'] ?? json['id']);
-    final createdAt = _optionalDate(json['createdAt'] ?? json['updatedAt']);
+    final imageKey = _optionalString(json['imageKey']);
+    final aiProfileId = _optionalString(json['aiProfileId']);
+    final createdAt = _optionalDate(json['createdAt']);
+    if (imageKey == null || aiProfileId == null || createdAt == null) {
+      continue;
+    }
     entries.add(
-      TryOnHistoryEntry(render: render, id: id, createdAt: createdAt),
+      TryOnHistoryEntry(
+        imageKey: imageKey,
+        createdAt: createdAt,
+        aiProfileId: aiProfileId,
+        imageUrl: presignedTryOnUrl(_optionalString(json['imageUrl'])),
+      ),
     );
   }
-  final dated = entries.where((entry) => entry.createdAt != null).toList();
-  if (dated.length == entries.length && entries.length > 1) {
-    entries.sort((a, b) => b.createdAt!.compareTo(a.createdAt!));
-  }
   return entries;
+}
+
+/// Backend `renderImageUrls[]` — newest-first presigned GETs. Soft-omit junk.
+List<String> parseRenderImageUrls(dynamic data) {
+  if (data == null) {
+    return const [];
+  }
+  if (data is! List) {
+    return const [];
+  }
+  final urls = <String>[];
+  for (final item in data) {
+    if (item is! String) {
+      continue;
+    }
+    final url = presignedTryOnUrl(item);
+    if (url == null || urls.contains(url)) {
+      continue;
+    }
+    urls.add(url);
+  }
+  return urls;
 }
 
 String? _optionalString(dynamic value) {

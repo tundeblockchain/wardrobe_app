@@ -12,8 +12,6 @@ import '../application/outfit_detail_controller.dart';
 import '../application/outfit_detail_state.dart';
 import '../application/outfit_hero_selection.dart';
 import '../application/outfit_scope.dart';
-import '../application/try_on_history_controller.dart';
-import '../domain/try_on_history.dart';
 import 'widgets/outfit_hero_card.dart';
 import 'widgets/outfit_item_slider.dart';
 
@@ -41,7 +39,6 @@ class OutfitDetailScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(outfitDetailControllerProvider(_scope));
     final itemsState = ref.watch(itemsControllerProvider(wardrobeId));
-    final history = ref.watch(tryOnHistoryControllerProvider(_scope));
     final selectedHeroUrl = ref.watch(outfitHeroSelectionProvider(_scope));
     final outfit = state.outfit;
 
@@ -92,7 +89,6 @@ class OutfitDetailScreen extends ConsumerWidget {
             ref,
             state,
             itemsState.items,
-            history.entries,
             selectedHeroUrl,
           ),
         ),
@@ -105,7 +101,6 @@ class OutfitDetailScreen extends ConsumerWidget {
     WidgetRef ref,
     OutfitDetailState state,
     List<Item> wardrobeItems,
-    List<TryOnHistoryEntry> history,
     String? selectedHeroUrl,
   ) {
     if (state.isLoading && state.outfit == null) {
@@ -127,7 +122,6 @@ class OutfitDetailScreen extends ConsumerWidget {
         const SizedBox(height: 16),
         OutfitHeroCard(
           outfit: outfit,
-          history: history,
           selectedHeroUrl: selectedHeroUrl,
           onSelectHero: (url) => ref
               .read(outfitHeroSelectionProvider(_scope).notifier)

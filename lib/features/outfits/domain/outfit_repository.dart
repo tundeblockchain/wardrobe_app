@@ -1,6 +1,5 @@
 import 'outfit.dart';
 import 'outfit_render.dart';
-import 'try_on_history.dart';
 
 /// Outfit CRUD nested under a wardrobe.
 abstract interface class OutfitRepository {
@@ -40,15 +39,6 @@ abstract interface class OutfitRepository {
 
   /// `GET /wardrobes/{wardrobeId}/outfits/{outfitId}/render` for polling.
   Future<OutfitRender> getRender({
-    required String wardrobeId,
-    required String outfitId,
-  });
-
-  /// Expected WARDROBE-85 collection of generated try-ons for [outfitId].
-  ///
-  /// `GET /wardrobes/{wardrobeId}/outfits/{outfitId}/renders`. Missing routes
-  /// and empty history resolve to an empty list — never a local store.
-  Future<List<TryOnHistoryEntry>> listTryOnHistory({
     required String wardrobeId,
     required String outfitId,
   });

@@ -18,9 +18,6 @@ class FakeOutfitRepository implements OutfitRepository {
   int deleteCalls = 0;
   int requestRenderCalls = 0;
   int getRenderCalls = 0;
-  int listTryOnHistoryCalls = 0;
-  List<TryOnHistoryEntry> tryOnHistory = [];
-  ApiException? nextHistoryFailure;
   List<OutfitItem>? lastItems;
   List<String>? lastItemIds;
   String? lastAiProfileId;
@@ -174,21 +171,6 @@ class FakeOutfitRepository implements OutfitRepository {
     return render;
   }
 
-  @override
-  Future<List<TryOnHistoryEntry>> listTryOnHistory({
-    required String wardrobeId,
-    required String outfitId,
-  }) async {
-    listTryOnHistoryCalls++;
-    final failure = nextHistoryFailure;
-    if (failure != null) {
-      nextHistoryFailure = null;
-      throw failure;
-    }
-    _maybeFail();
-    return [...tryOnHistory];
-  }
-
   int _indexOf(String wardrobeId, String outfitId) {
     final index = outfits.indexWhere(
       (outfit) => outfit.wardrobeId == wardrobeId && outfit.id == outfitId,
@@ -217,6 +199,8 @@ Outfit testOutfit({
   String wardrobeId = 'wd_abc123',
   String name = 'Friday Night',
   OutfitRender? render,
+  List<TryOnHistoryEntry> renderHistory = const [],
+  List<String> renderImageUrls = const [],
 }) {
   return Outfit(
     id: id,
@@ -228,6 +212,8 @@ Outfit testOutfit({
       OutfitItem(itemId: 'item_shoes789', slot: ItemCategory.shoes),
     ],
     render: render,
+    renderHistory: renderHistory,
+    renderImageUrls: renderImageUrls,
     createdAt: DateTime.utc(2026, 9, 4, 18),
     updatedAt: DateTime.utc(2026, 9, 4, 18),
   );
@@ -250,13 +236,15 @@ OutfitRender testOutfitRender({
 }
 
 TryOnHistoryEntry testTryOnHistoryEntry({
-  OutfitRender? render,
-  String? id,
+  String imageKey = 'users/uid/outfits/outfit_123/renders/rend_1.png',
   DateTime? createdAt,
+  String aiProfileId = 'profile_generic_01',
+  String? imageUrl = 'https://cdn.example.com/try-on/outfit_123.png',
 }) {
   return TryOnHistoryEntry(
-    render: render ?? testOutfitRender(),
-    id: id,
-    createdAt: createdAt,
+    imageKey: imageKey,
+    createdAt: createdAt ?? DateTime.utc(2026, 9, 10, 8),
+    aiProfileId: aiProfileId,
+    imageUrl: imageUrl,
   );
 }

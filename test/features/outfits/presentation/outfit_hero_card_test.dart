@@ -66,19 +66,15 @@ void main() {
     await pumpCard(
       tester,
       child: OutfitHeroCard(
-        outfit: testOutfit(render: testOutfitRender()),
-        history: [
-          testTryOnHistoryEntry(
-            render: testOutfitRender(
-              imageUrl: 'https://cdn.example.com/try-on/latest.png',
-            ),
+        outfit: testOutfit(
+          render: testOutfitRender(
+            imageUrl: 'https://cdn.example.com/try-on/latest.png',
           ),
-          testTryOnHistoryEntry(
-            render: testOutfitRender(
-              imageUrl: 'https://cdn.example.com/try-on/older.png',
-            ),
-          ),
-        ],
+          renderImageUrls: const [
+            'https://cdn.example.com/try-on/latest.png',
+            'https://cdn.example.com/try-on/older.png',
+          ],
+        ),
         onTryOn: () {},
       ),
     );

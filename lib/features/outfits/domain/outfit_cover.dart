@@ -26,22 +26,15 @@ class OutfitCover {
 
 /// Existing Backend try-on `imageUrl` when present. Never built from `imageKey`.
 String? outfitPreviewImageUrl(Outfit outfit) {
-  final url = outfit.render?.imageUrl?.trim();
-  if (url == null || url.isEmpty) {
-    return null;
-  }
-  return url;
+  return presignedTryOnUrl(outfit.render?.imageUrl);
 }
 
-/// Latest try-on for cards: session pick, WARDROBE-85 history, then `render`.
-String? latestOutfitTryOnUrl(
-  Outfit outfit, {
-  Iterable<TryOnHistoryEntry> history = const [],
-  String? selectedUrl,
-}) {
+/// Latest try-on for cards: session pick, `renderImageUrls[0]`, then `render`.
+String? latestOutfitTryOnUrl(Outfit outfit, {String? selectedUrl}) {
   return outfitHeroImageUrl(
     latestRender: outfit.render,
-    history: history,
+    renderImageUrls: outfit.renderImageUrls,
+    history: outfit.renderHistory,
     selectedUrl: selectedUrl,
   );
 }
@@ -52,7 +45,8 @@ String? latestOutfitTryOnUrl(
 /// Inspected Backend fields:
 /// - Outfit get/list: optional `render.imageUrl` (presigned GET). `render.imageKey`
 ///   is storage-only and is never turned into a URL.
-/// - WARDROBE-85 history (when live): `GET .../renders` items with `imageUrl`.
+/// - WARDROBE-85: optional `renderImageUrls` (newest-first presigned GETs) and
+///   `renderHistory[].imageUrl`. `imageKey` is storage-only.
 /// - Item get/list: `originalImageUrl` / `processedImageUrl` (WARDROBE-54),
 ///   mapped onto [Item.originalImageKey] / [Item.processedImageKey]. S3 keys
 ///   alone cannot be displayed.
@@ -62,9 +56,8 @@ OutfitCover resolveOutfitCover(
   List<Item> wardrobeItems = const [],
   String? preferredTryOnUrl,
 ]) {
-  final renderUrl = preferredTryOnUrl?.trim().isNotEmpty == true
-      ? preferredTryOnUrl!.trim()
-      : outfitPreviewImageUrl(outfit);
+  final renderUrl =
+      presignedTryOnUrl(preferredTryOnUrl) ?? latestOutfitTryOnUrl(outfit);
   if (renderUrl != null) {
     return OutfitCover(networkUrl: renderUrl, kind: OutfitCoverKind.render);
   }

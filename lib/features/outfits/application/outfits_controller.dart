@@ -60,7 +60,8 @@ class OutfitsController extends Notifier<OutfitsState> {
   }
 
   Future<Outfit> _hydrateOne(Outfit outfit) async {
-    if (outfitPreviewImageUrl(outfit) != null) {
+    if (outfitPreviewImageUrl(outfit) != null ||
+        outfit.renderImageUrls.isNotEmpty) {
       return outfit;
     }
     final render = outfit.render;

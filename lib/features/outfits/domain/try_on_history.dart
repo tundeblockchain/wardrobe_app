@@ -1,58 +1,61 @@
-import '../../../core/network/api_exception.dart';
 import 'outfit_render.dart';
 
-/// Status / codes that mean WARDROBE-85 is missing or this outfit has no rows.
-bool isTryOnHistoryGap(ApiException error) {
-  final status = error.statusCode;
-  if (status == 404 || status == 405 || status == 501) {
-    return true;
-  }
-  const codes = {
-    'NOT_FOUND',
-    'RENDER_NOT_FOUND',
-    'RENDER_HISTORY_NOT_FOUND',
-    'NOT_IMPLEMENTED',
-  };
-  return codes.contains(error.code);
-}
-
-/// One persisted try-on from the expected WARDROBE-85 history collection.
+/// One successful try-on from Backend `renderHistory[]` (WARDROBE-85).
 ///
-/// Reuses [OutfitRender] fields (`status`, `aiProfileId`, `imageKey`,
-/// `imageUrl`, `error`). Optional [id] / [createdAt] are read when Backend
-/// sends them; they are not written onto [Outfit] or [OutfitRender].
+/// [imageKey] is storage-only. Display uses [imageUrl] when Backend presigned
+/// it. A missing URL is omitted from the gallery — never built from the key.
 class TryOnHistoryEntry {
-  const TryOnHistoryEntry({required this.render, this.id, this.createdAt});
+  const TryOnHistoryEntry({
+    required this.imageKey,
+    required this.createdAt,
+    required this.aiProfileId,
+    this.imageUrl,
+  });
 
-  final OutfitRender render;
-  final String? id;
-  final DateTime? createdAt;
+  final String imageKey;
+  final DateTime createdAt;
+  final String aiProfileId;
+  final String? imageUrl;
 
-  bool get hasDisplayImage => render.hasDisplayImage;
-
-  String? get imageUrl {
-    if (!hasDisplayImage) {
-      return null;
-    }
-    return render.imageUrl?.trim();
+  bool get hasDisplayImage {
+    return presignedTryOnUrl(imageUrl) != null;
   }
 }
 
-/// Newest-first http(s) try-on URLs: history first, then the outfit's latest
-/// `render.imageUrl` when it is not already in that list.
+/// Short-lived http(s) GET only. S3 keys and other non-URLs are dropped.
+String? presignedTryOnUrl(String? value) {
+  final trimmed = value?.trim();
+  if (trimmed == null || trimmed.isEmpty) {
+    return null;
+  }
+  final uri = Uri.tryParse(trimmed);
+  if (uri == null || (uri.scheme != 'http' && uri.scheme != 'https')) {
+    return null;
+  }
+  if (uri.host.isEmpty) {
+    return null;
+  }
+  return trimmed;
+}
+
+/// Newest-first gallery URLs: `renderImageUrls`, then history, then `render`.
 List<String> tryOnDisplayUrls({
   OutfitRender? latestRender,
+  Iterable<String> renderImageUrls = const [],
   Iterable<TryOnHistoryEntry> history = const [],
 }) {
   final urls = <String>[];
   void add(String? url) {
-    final trimmed = url?.trim();
-    if (trimmed == null || trimmed.isEmpty || urls.contains(trimmed)) {
+    final signed = presignedTryOnUrl(url);
+    if (signed == null || urls.contains(signed)) {
       return;
     }
-    urls.add(trimmed);
+    urls.add(signed);
   }
 
+  for (final url in renderImageUrls) {
+    add(url);
+  }
   for (final entry in history) {
     add(entry.imageUrl);
   }
@@ -62,15 +65,20 @@ List<String> tryOnDisplayUrls({
   return urls;
 }
 
-/// Hero photo: session pick, else first history/latest URL, else null.
+/// Hero photo: session pick, else `renderImageUrls[0]` / latest render URL.
 String? outfitHeroImageUrl({
   OutfitRender? latestRender,
+  Iterable<String> renderImageUrls = const [],
   Iterable<TryOnHistoryEntry> history = const [],
   String? selectedUrl,
 }) {
-  final urls = tryOnDisplayUrls(latestRender: latestRender, history: history);
-  final selected = selectedUrl?.trim();
-  if (selected != null && selected.isNotEmpty && urls.contains(selected)) {
+  final urls = tryOnDisplayUrls(
+    latestRender: latestRender,
+    renderImageUrls: renderImageUrls,
+    history: history,
+  );
+  final selected = presignedTryOnUrl(selectedUrl);
+  if (selected != null && urls.contains(selected)) {
     return selected;
   }
   if (urls.isNotEmpty) {

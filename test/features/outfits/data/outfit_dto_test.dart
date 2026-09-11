@@ -164,62 +164,51 @@ void main() {
     });
   });
 
-  group('parseTryOnHistory', () {
-    test('reads renders newest first when createdAt is present', () {
-      final entries = parseTryOnHistory({
-        'renders': [
-          {
-            'status': 'READY',
-            'aiProfileId': 'profile_generic_01',
-            'imageUrl': 'https://cdn.example.com/try-on/older.png',
-            'createdAt': '2026-09-01T00:00:00Z',
-          },
-          {
-            'status': 'READY',
-            'aiProfileId': 'profile_generic_02',
-            'imageUrl': 'https://cdn.example.com/try-on/newer.png',
-            'createdAt': '2026-09-10T00:00:00Z',
-            'renderId': 'render_newer',
-          },
-        ],
-      });
+  group('WARDROBE-85 render history mapping', () {
+    test('keeps newest-first URLs and omits a bad or missing URL only', () {
+      final entries = parseRenderHistory([
+        {
+          'imageKey': 'users/uid/outfits/outfit_123/renders/rend_new.png',
+          'imageUrl': 'https://cdn.example.com/try-on/newer.png',
+          'createdAt': '2026-09-10T00:00:00Z',
+          'aiProfileId': 'profile_generic_02',
+        },
+        {
+          'imageKey': 'users/uid/outfits/outfit_123/render.png',
+          'createdAt': '2026-09-01T00:00:00Z',
+          'aiProfileId': 'profile_generic_01',
+        },
+        {
+          'imageKey': 'users/uid/outfits/outfit_123/renders/bad.png',
+          'imageUrl': 'users/uid/outfits/outfit_123/renders/bad.png',
+          'createdAt': '2026-08-01T00:00:00Z',
+          'aiProfileId': 'profile_generic_01',
+        },
+      ]);
 
-      expect(entries, hasLength(2));
+      expect(entries, hasLength(3));
       expect(
         entries.first.imageUrl,
         'https://cdn.example.com/try-on/newer.png',
       );
-      expect(entries.first.id, 'render_newer');
+      expect(entries[1].imageUrl, isNull);
+      expect(entries[2].imageUrl, isNull);
     });
 
-    test('accepts a history alias or a bare array', () {
+    test('parseRenderImageUrls drops keys and empty strings', () {
       expect(
-        parseTryOnHistory({
-          'history': [
-            {
-              'status': 'READY',
-              'aiProfileId': 'profile_generic_01',
-              'imageUrl': 'https://cdn.example.com/try-on/a.png',
-            },
-          ],
-        }).single.imageUrl,
-        'https://cdn.example.com/try-on/a.png',
+        parseRenderImageUrls([
+          'https://cdn.example.com/try-on/newer.png',
+          'users/uid/outfits/outfit_123/renders/rend_old.png',
+          '',
+          'https://cdn.example.com/try-on/older.png',
+        ]),
+        [
+          'https://cdn.example.com/try-on/newer.png',
+          'https://cdn.example.com/try-on/older.png',
+        ],
       );
-      expect(
-        parseTryOnHistory([
-          {
-            'status': 'READY',
-            'aiProfileId': 'profile_generic_01',
-            'imageUrl': 'https://cdn.example.com/try-on/b.png',
-          },
-        ]).single.imageUrl,
-        'https://cdn.example.com/try-on/b.png',
-      );
-    });
-
-    test('empty envelopes stay empty without inventing rows', () {
-      expect(parseTryOnHistory({'renders': []}), isEmpty);
-      expect(parseTryOnHistory(<String, dynamic>{}), isEmpty);
+      expect(parseRenderImageUrls(null), isEmpty);
     });
   });
 }

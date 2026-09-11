@@ -2,6 +2,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 
 import '../../items/domain/item.dart';
 import 'outfit_render.dart';
+import 'try_on_history.dart';
 
 part 'outfit.freezed.dart';
 
@@ -27,6 +28,8 @@ abstract class Outfit with _$Outfit {
     required String name,
     @Default([]) List<OutfitItem> items,
     OutfitRender? render,
+    @Default([]) List<TryOnHistoryEntry> renderHistory,
+    @Default([]) List<String> renderImageUrls,
     required DateTime createdAt,
     required DateTime updatedAt,
   }) = _Outfit;

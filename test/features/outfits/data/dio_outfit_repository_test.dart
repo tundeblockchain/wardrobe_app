@@ -204,52 +204,47 @@ void main() {
     );
   });
 
-  test('listTryOnHistory GETs /renders and maps the collection', () async {
+  test('getOutfit maps renderHistory and renderImageUrls', () async {
     repository = buildRepository([
-      const HttpScript(
+      HttpScript(
         statusCode: 200,
         body: {
-          'renders': [
+          ...payload,
+          'render': {
+            'status': 'READY',
+            'aiProfileId': 'profile_generic_01',
+            'imageKey': 'users/uid/outfits/outfit_123/renders/rend_new.png',
+            'imageUrl': 'https://cdn.example.com/try-on/newer.png',
+          },
+          'renderHistory': [
             {
-              'status': 'READY',
+              'imageKey': 'users/uid/outfits/outfit_123/renders/rend_new.png',
+              'imageUrl': 'https://cdn.example.com/try-on/newer.png',
+              'createdAt': '2026-09-10T00:00:00Z',
               'aiProfileId': 'profile_generic_01',
-              'imageUrl': 'https://cdn.example.com/try-on/latest.png',
+            },
+            {
+              'imageKey': 'users/uid/outfits/outfit_123/render.png',
+              'createdAt': '2026-09-01T00:00:00Z',
+              'aiProfileId': 'profile_generic_01',
             },
           ],
+          'renderImageUrls': ['https://cdn.example.com/try-on/newer.png'],
         },
       ),
     ]);
 
-    final result = await repository.listTryOnHistory(
+    final result = await repository.getOutfit(
       wardrobeId: 'wd_abc123',
       outfitId: 'outfit_123',
     );
 
-    expect(result, hasLength(1));
-    expect(result.single.imageUrl, 'https://cdn.example.com/try-on/latest.png');
-    expect(adapter.requests.single.method, 'GET');
-    expect(
-      adapter.requests.single.path,
-      '/wardrobes/wd_abc123/outfits/outfit_123/renders',
-    );
-  });
-
-  test('listTryOnHistory treats a missing route as an empty gallery', () async {
-    repository = buildRepository([
-      const HttpScript(
-        statusCode: 404,
-        body: {
-          'error': {'code': 'NOT_FOUND', 'message': 'Missing.'},
-        },
-      ),
+    expect(result.renderImageUrls, [
+      'https://cdn.example.com/try-on/newer.png',
     ]);
-
-    final result = await repository.listTryOnHistory(
-      wardrobeId: 'wd_abc123',
-      outfitId: 'outfit_123',
-    );
-
-    expect(result, isEmpty);
+    expect(result.renderHistory, hasLength(2));
+    expect(result.renderHistory.first.imageUrl, contains('newer.png'));
+    expect(result.renderHistory[1].imageUrl, isNull);
   });
 
   test('getRender maps RENDER_NOT_FOUND', () async {

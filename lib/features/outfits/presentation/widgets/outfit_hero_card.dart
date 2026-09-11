@@ -12,14 +12,12 @@ class OutfitHeroCard extends StatelessWidget {
     super.key,
     required this.outfit,
     required this.onTryOn,
-    this.history = const [],
     this.selectedHeroUrl,
     this.onSelectHero,
   });
 
   final Outfit outfit;
   final VoidCallback onTryOn;
-  final List<TryOnHistoryEntry> history;
   final String? selectedHeroUrl;
   final ValueChanged<String>? onSelectHero;
 
@@ -34,7 +32,8 @@ class OutfitHeroCard extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     final urls = tryOnDisplayUrls(
       latestRender: outfit.render,
-      history: history,
+      renderImageUrls: outfit.renderImageUrls,
+      history: outfit.renderHistory,
     );
 
     return Card(
@@ -125,7 +124,8 @@ class OutfitHeroCard extends StatelessWidget {
               selectedUrl:
                   outfitHeroImageUrl(
                     latestRender: outfit.render,
-                    history: history,
+                    renderImageUrls: outfit.renderImageUrls,
+                    history: outfit.renderHistory,
                     selectedUrl: selectedHeroUrl,
                   ) ??
                   urls.first,
