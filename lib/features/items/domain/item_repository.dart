@@ -1,5 +1,6 @@
 import 'item.dart';
 import 'item_list_filters.dart';
+import 'item_subcategory_patch.dart';
 
 /// Clothing-item CRUD nested under a wardrobe.
 abstract interface class ItemRepository {
@@ -25,7 +26,7 @@ abstract interface class ItemRepository {
     required String itemId,
     String? name,
     ItemCategory? category,
-    String? subcategory,
+    ItemSubcategoryPatch subcategory = const ItemSubcategoryPatch.omit(),
     List<String>? colours,
     String? brand,
     String? imageKey,

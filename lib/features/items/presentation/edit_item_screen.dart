@@ -9,7 +9,10 @@ import '../application/edit_item_controller.dart';
 import '../application/item_detail_controller.dart';
 import '../application/item_scope.dart';
 import '../domain/item.dart';
+import '../domain/item_subcategory_patch.dart';
+import '../domain/item_taxonomy.dart';
 import '../domain/item_validators.dart';
+import 'widgets/item_subcategory_field.dart';
 
 /// Edit clothing metadata and optionally replace the photo.
 class EditItemScreen extends ConsumerStatefulWidget {
@@ -24,6 +27,7 @@ class EditItemScreen extends ConsumerStatefulWidget {
 
   static const nameFieldKey = Key('edit_item_name');
   static const submitButtonKey = Key('edit_item_submit');
+  static const subcategoryFieldKey = ItemSubcategoryField.fieldKey;
 
   @override
   ConsumerState<EditItemScreen> createState() => _EditItemScreenState();
@@ -32,10 +36,11 @@ class EditItemScreen extends ConsumerStatefulWidget {
 class _EditItemScreenState extends ConsumerState<EditItemScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
-  final _subcategoryController = TextEditingController();
   final _coloursController = TextEditingController();
   final _brandController = TextEditingController();
   ItemCategory? _category;
+  String? _subcategory;
+  String? _originalSubcategory;
   var _didPrefill = false;
 
   ItemScope get _scope =>
@@ -44,7 +49,6 @@ class _EditItemScreenState extends ConsumerState<EditItemScreen> {
   @override
   void dispose() {
     _nameController.dispose();
-    _subcategoryController.dispose();
     _coloursController.dispose();
     _brandController.dispose();
     super.dispose();
@@ -56,10 +60,26 @@ class _EditItemScreenState extends ConsumerState<EditItemScreen> {
     }
     _didPrefill = true;
     _nameController.text = item.name;
-    _subcategoryController.text = item.subcategory ?? '';
+    _subcategory = ItemSubcategoryPatch.normalize(item.subcategory);
+    _originalSubcategory = _subcategory;
     _coloursController.text = item.colours.join(', ');
     _brandController.text = item.brand ?? '';
     _category = item.category;
+  }
+
+  void _onCategoryChanged(ItemCategory? value) {
+    setState(() {
+      _category = value;
+      final allowed = value == null
+          ? const <String>{}
+          : {
+              for (final option in ItemSubcategory.forCategory(value))
+                option.wireValue,
+            };
+      if (_subcategory != null && !allowed.contains(_subcategory)) {
+        _subcategory = null;
+      }
+    });
   }
 
   Future<void> _submit() async {
@@ -71,7 +91,10 @@ class _EditItemScreenState extends ConsumerState<EditItemScreen> {
         .submit(
           name: _nameController.text,
           category: _category!,
-          subcategory: _subcategoryController.text,
+          subcategory: ItemSubcategoryPatch.fromEdit(
+            original: _originalSubcategory,
+            edited: _subcategory,
+          ),
           colours: ItemValidators.parseColours(_coloursController.text),
           brand: _brandController.text,
         );
@@ -176,20 +199,16 @@ class _EditItemScreenState extends ConsumerState<EditItemScreen> {
                                   child: Text(category.label),
                                 ),
                             ],
-                            onChanged: busy
-                                ? null
-                                : (value) => setState(() => _category = value),
+                            onChanged: busy ? null : _onCategoryChanged,
                             validator: ItemValidators.category,
                           ),
                           const SizedBox(height: 16),
-                          TextFormField(
-                            controller: _subcategoryController,
-                            maxLength: ItemValidators.maxSubcategoryLength,
-                            decoration: const InputDecoration(
-                              labelText: 'Subcategory (optional)',
-                            ),
-                            validator: ItemValidators.subcategory,
+                          ItemSubcategoryField(
+                            category: _category,
+                            value: _subcategory,
                             enabled: !busy,
+                            onChanged: (value) =>
+                                setState(() => _subcategory = value),
                           ),
                           const SizedBox(height: 16),
                           TextFormField(

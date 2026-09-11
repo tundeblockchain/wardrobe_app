@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wardrobe_app/features/items/presentation/add_item_screen.dart';
 import 'package:wardrobe_app/features/wardrobes/presentation/wardrobe_detail_screen.dart';
@@ -14,7 +13,7 @@ void main() {
 
     await tester.pumpWidget(harness.app());
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const Key('wardrobe_tile_wd_abc123')));
+    await tapHomeWardrobeCard(tester);
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(WardrobeDetailScreen.addItemButtonKey));
     await tester.pumpAndSettle();

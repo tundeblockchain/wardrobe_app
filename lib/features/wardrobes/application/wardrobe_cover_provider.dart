@@ -6,7 +6,7 @@ import '../domain/wardrobe_cover.dart';
 
 /// Loads a wardrobe list-card cover from the existing items API.
 ///
-/// Cover image is the first listed item's photo (client-side). Failures stay
+/// Cover image is the first clothing item's photo (client-side). Failures stay
 /// on the card as an empty placeholder so the wardrobe list still renders.
 final wardrobeCoverProvider = FutureProvider.family<WardrobeCover, String>((
   ref,

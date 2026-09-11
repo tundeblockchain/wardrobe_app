@@ -96,6 +96,19 @@ void main() {
     expect(detail.item?.originalImageKey, 'users/uid/uploads/uuid.jpg');
   });
 
+  test('submit omits empty subcategory on create', () async {
+    await container
+        .read(addItemControllerProvider('wd_abc123').notifier)
+        .pickFromGallery();
+
+    final created = await container
+        .read(addItemControllerProvider('wd_abc123').notifier)
+        .submit(name: 'Tee', category: ItemCategory.top, subcategory: '   ');
+
+    expect(created?.subcategory, isNull);
+    expect(items.lastSubcategoryArg, isNull);
+  });
+
   test('submit without a photo records a validation message', () async {
     final created = await container
         .read(addItemControllerProvider('wd_abc123').notifier)

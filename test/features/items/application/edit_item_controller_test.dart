@@ -9,6 +9,7 @@ import 'package:wardrobe_app/features/items/data/dio_item_repository.dart';
 import 'package:wardrobe_app/features/items/data/dio_upload_repository.dart';
 import 'package:wardrobe_app/features/items/data/image_picker_item_image_picker.dart';
 import 'package:wardrobe_app/features/items/domain/item.dart';
+import 'package:wardrobe_app/features/items/domain/item_subcategory_patch.dart';
 
 import '../../../helpers/fake_item_image_picker.dart';
 import '../../../helpers/fake_item_repository.dart';
@@ -55,6 +56,68 @@ void main() {
       container.read(itemsControllerProvider('wd_abc123')).items.single.name,
       'Navy Tee',
     );
+    expect(items.lastSubcategoryPatch, const ItemSubcategoryPatch.omit());
+  });
+
+  test('submit omits subcategory when the form value is unchanged', () async {
+    container.read(itemsControllerProvider('wd_abc123'));
+    container.read(itemDetailControllerProvider(scope));
+    await settle();
+
+    await container
+        .read(editItemControllerProvider(scope).notifier)
+        .submit(
+          name: 'Navy Tee',
+          category: ItemCategory.top,
+          subcategory: ItemSubcategoryPatch.fromEdit(
+            original: 'TSHIRT',
+            edited: 'TSHIRT',
+          ),
+        );
+
+    expect(items.lastSubcategoryPatch.isOmit, isTrue);
+    expect(items.items.single.subcategory, 'TSHIRT');
+  });
+
+  test('submit PATCHes JSON-null clear when subcategory is emptied', () async {
+    container.read(itemsControllerProvider('wd_abc123'));
+    container.read(itemDetailControllerProvider(scope));
+    await settle();
+
+    final updated = await container
+        .read(editItemControllerProvider(scope).notifier)
+        .submit(
+          name: 'Navy Tee',
+          category: ItemCategory.top,
+          subcategory: ItemSubcategoryPatch.fromEdit(
+            original: 'TSHIRT',
+            edited: null,
+          ),
+        );
+
+    expect(items.lastSubcategoryPatch, const ItemSubcategoryPatch.clear());
+    expect(items.lastSubcategoryPatch.toJson(), {'subcategory': null});
+    expect(updated?.subcategory, isNull);
+  });
+
+  test('submit PATCHes a trimmed subcategory token', () async {
+    container.read(itemsControllerProvider('wd_abc123'));
+    container.read(itemDetailControllerProvider(scope));
+    await settle();
+
+    final updated = await container
+        .read(editItemControllerProvider(scope).notifier)
+        .submit(
+          name: 'Navy Tee',
+          category: ItemCategory.top,
+          subcategory: ItemSubcategoryPatch.fromEdit(
+            original: 'TSHIRT',
+            edited: ' SHIRT ',
+          ),
+        );
+
+    expect(items.lastSubcategoryPatch, const ItemSubcategoryPatch.set('SHIRT'));
+    expect(updated?.subcategory, 'SHIRT');
   });
 
   test('submit uploads a replacement photo when one is picked', () async {

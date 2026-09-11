@@ -8,6 +8,7 @@ import '../data/image_picker_item_image_picker.dart';
 import '../domain/item.dart';
 import '../domain/item_image_picker.dart';
 import '../domain/item_repository.dart';
+import '../domain/item_subcategory_patch.dart';
 import '../domain/picked_image.dart';
 import '../domain/upload_repository.dart';
 import 'add_item_state.dart';
@@ -83,7 +84,7 @@ class AddItemController extends Notifier<AddItemState> {
         wardrobeId: wardrobeId,
         name: name.trim(),
         category: category,
-        subcategory: subcategory,
+        subcategory: ItemSubcategoryPatch.normalize(subcategory),
         colours: colours,
         brand: brand,
         imageKey: ticket.objectKey,

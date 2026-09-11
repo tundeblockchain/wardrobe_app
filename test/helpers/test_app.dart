@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:wardrobe_app/app.dart';
 import 'package:wardrobe_app/core/session/session_local_store.dart';
 import 'package:wardrobe_app/features/account/data/dio_account_repository.dart';
@@ -14,6 +15,7 @@ import 'package:wardrobe_app/features/profile/data/dio_support_repository.dart';
 import 'package:wardrobe_app/features/profile/data/in_app_reviewer.dart';
 import 'package:wardrobe_app/features/profile/data/package_info_device_context.dart';
 import 'package:wardrobe_app/features/recommendations/data/dio_recommendation_repository.dart';
+import 'package:wardrobe_app/features/wardrobes/application/wardrobe_items_provider.dart';
 import 'package:wardrobe_app/features/wardrobes/data/dio_wardrobe_repository.dart';
 
 import 'fake_account_repository.dart';
@@ -82,6 +84,7 @@ class TestAppHarness {
         deviceContextProvider.overrideWithValue(const FakeDeviceContext()),
         sessionLocalStoreProvider.overrideWithValue(sessionStore),
         sessionImageCacheProvider.overrideWithValue(sessionImages),
+        homeClothingCarouselAutoScrollProvider.overrideWithValue(false),
         ...itemProcessingPollTestOverrides(),
       ],
       child: const WardrobeApp(),
@@ -91,4 +94,14 @@ class TestAppHarness {
   void dispose() {
     auth.dispose();
   }
+}
+
+Future<void> tapHomeWardrobeCard(
+  WidgetTester tester, {
+  String wardrobeId = 'wd_abc123',
+}) async {
+  final finder = find.byKey(Key('wardrobe_tile_$wardrobeId'));
+  await tester.ensureVisible(finder);
+  await tester.pumpAndSettle();
+  await tester.tap(finder);
 }

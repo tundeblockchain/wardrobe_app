@@ -8,6 +8,7 @@ import 'package:wardrobe_app/core/network/id_token_source.dart';
 import 'package:wardrobe_app/features/items/data/dio_item_repository.dart';
 import 'package:wardrobe_app/features/items/domain/item.dart';
 import 'package:wardrobe_app/features/items/domain/item_list_filters.dart';
+import 'package:wardrobe_app/features/items/domain/item_subcategory_patch.dart';
 import 'package:wardrobe_app/features/items/domain/item_taxonomy.dart';
 
 import '../../../helpers/scripted_http_adapter.dart';
@@ -237,6 +238,68 @@ void main() {
     expect(result.name, 'Navy Tee');
     expect(adapter.requests.single.method, 'PATCH');
     expect(_requestBody(adapter.requests.single), {'name': 'Navy Tee'});
+    expect(
+      _requestBody(adapter.requests.single).containsKey('subcategory'),
+      isFalse,
+    );
+  });
+
+  test('updateItem omits subcategory when the patch is omit', () async {
+    repository = buildRepository([HttpScript(statusCode: 200, body: payload)]);
+
+    await repository.updateItem(
+      wardrobeId: 'wd_abc123',
+      itemId: 'item_xyz123',
+      name: 'Navy Tee',
+      subcategory: const ItemSubcategoryPatch.omit(),
+    );
+
+    expect(_requestBody(adapter.requests.single), {'name': 'Navy Tee'});
+  });
+
+  test('updateItem PATCHes JSON null to clear subcategory', () async {
+    repository = buildRepository([HttpScript(statusCode: 200, body: payload)]);
+
+    await repository.updateItem(
+      wardrobeId: 'wd_abc123',
+      itemId: 'item_xyz123',
+      subcategory: const ItemSubcategoryPatch.clear(),
+    );
+
+    expect(_requestBody(adapter.requests.single), {'subcategory': null});
+  });
+
+  test('updateItem PATCHes a trimmed subcategory token', () async {
+    repository = buildRepository([
+      HttpScript(statusCode: 200, body: {...payload, 'subcategory': 'SHIRT'}),
+    ]);
+
+    await repository.updateItem(
+      wardrobeId: 'wd_abc123',
+      itemId: 'item_xyz123',
+      subcategory: const ItemSubcategoryPatch.set('SHIRT'),
+    );
+
+    expect(_requestBody(adapter.requests.single), {'subcategory': 'SHIRT'});
+  });
+
+  test('createItem still omits empty subcategory', () async {
+    repository = buildRepository([
+      const HttpScript(statusCode: 201, body: payload),
+    ]);
+
+    await repository.createItem(
+      wardrobeId: 'wd_abc123',
+      name: 'Black Nike T-Shirt',
+      category: ItemCategory.top,
+      subcategory: '  ',
+      imageKey: 'users/uid/uploads/uuid.jpg',
+    );
+
+    expect(
+      _requestBody(adapter.requests.single).containsKey('subcategory'),
+      isFalse,
+    );
   });
 
   test('deleteItem accepts 204 with an empty body', () async {

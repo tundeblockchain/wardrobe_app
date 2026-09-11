@@ -6,6 +6,7 @@ import '../../../core/network/dio_client.dart';
 import '../domain/item.dart';
 import '../domain/item_list_filters.dart';
 import '../domain/item_repository.dart';
+import '../domain/item_subcategory_patch.dart';
 import 'item_dtos.dart';
 import 'item_image_urls.dart';
 
@@ -74,7 +75,7 @@ class DioItemRepository implements ItemRepository {
     required String itemId,
     String? name,
     ItemCategory? category,
-    String? subcategory,
+    ItemSubcategoryPatch subcategory = const ItemSubcategoryPatch.omit(),
     List<String>? colours,
     String? brand,
     String? imageKey,
@@ -82,14 +83,16 @@ class DioItemRepository implements ItemRepository {
     return _guard(() async {
       final response = await _dio.patch<dynamic>(
         _itemPath(wardrobeId, itemId),
-        data: UpdateItemRequest(
-          name: name,
-          category: category?.wireValue,
-          subcategory: subcategory,
-          colours: colours,
-          brand: brand,
-          imageKey: imageKey,
-        ).toJson(),
+        data: {
+          ...UpdateItemRequest(
+            name: name,
+            category: category?.wireValue,
+            colours: colours,
+            brand: brand,
+            imageKey: imageKey,
+          ).toJson(),
+          ...subcategory.toJson(),
+        },
       );
       return parseItem(response.data);
     });

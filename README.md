@@ -55,7 +55,9 @@ Authenticated routes:
 - `/profile/ai-try-on` — PERSONAL AI profile + GENERIC_MODEL catalog
 - `/profile/contact` — in-app form → `POST /support/contact`
 - `/profile/report-bug` — in-app form → `POST /support/bug` (optional `replyTo` + `meta`)
-- `/wardrobes` — list + empty state (account icon → `/profile`)
+- `/wardrobes` — home: clothing carousel from every wardrobe (continuous
+  auto-scroll, pause on drag) plus wardrobe cards; clear **Wardrobes** title
+  (account icon → `/profile`)
 - `/wardrobes/create` — name form
 - `/wardrobes/:wardrobeId` — detail, rename, delete, item list, outfits entry, suggestions entry
 
@@ -73,7 +75,12 @@ Authenticated routes nested under a wardrobe:
 
 - `/wardrobes/:wardrobeId/items/create` — camera/gallery + metadata
 - `/wardrobes/:wardrobeId/items/:itemId` — item detail, delete
-- `/wardrobes/:wardrobeId/items/:itemId/edit` — edit metadata (optional new photo)
+- `/wardrobes/:wardrobeId/items/:itemId/edit` — edit metadata (optional new photo).
+  Subcategory is optional. Empty / none is saveable. PATCH follows Backend
+  [WARDROBE-87](https://tundetunde000.atlassian.net/browse/WARDROBE-87)
+  (`2cb2285913aec9d66d6e34b447d289b5eb28b6f1`): omit the field when unchanged;
+  send JSON `null` (not a dummy token) to clear; send a trimmed string to set.
+  Create still soft-omits empty subcategory.
 
 Upload flow:
 
