@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:wardrobe_app/core/theme/app_theme.dart';
 import 'package:wardrobe_app/core/widgets/enlarged_image_popup.dart';
 import 'package:wardrobe_app/features/outfits/presentation/widgets/outfit_hero_card.dart';
+import 'package:wardrobe_app/features/outfits/presentation/widgets/outfit_try_on_gallery.dart';
 
 import '../../../helpers/fake_outfit_repository.dart';
 
@@ -59,5 +60,30 @@ void main() {
 
     expect(tryOn, 0);
     expect(find.byKey(EnlargedImagePopup.dialogKey), findsOneWidget);
+  });
+
+  testWidgets('multiple history photos become a swipe gallery', (tester) async {
+    await pumpCard(
+      tester,
+      child: OutfitHeroCard(
+        outfit: testOutfit(render: testOutfitRender()),
+        history: [
+          testTryOnHistoryEntry(
+            render: testOutfitRender(
+              imageUrl: 'https://cdn.example.com/try-on/latest.png',
+            ),
+          ),
+          testTryOnHistoryEntry(
+            render: testOutfitRender(
+              imageUrl: 'https://cdn.example.com/try-on/older.png',
+            ),
+          ),
+        ],
+        onTryOn: () {},
+      ),
+    );
+
+    expect(find.byKey(OutfitTryOnGallery.galleryKey), findsOneWidget);
+    expect(find.byKey(OutfitHeroCard.tryOnHintKey), findsNothing);
   });
 }

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:wardrobe_app/core/router/app_routes.dart';
 import 'package:wardrobe_app/core/theme/app_theme.dart';
+import 'package:wardrobe_app/features/outfits/data/dio_outfit_repository.dart';
 import 'package:wardrobe_app/features/outfits/presentation/widgets/outfit_carousel.dart';
 import 'package:wardrobe_app/features/outfits/presentation/widgets/outfit_list_preview.dart';
 import 'package:wardrobe_app/features/outfits/presentation/widgets/outfit_list_tile.dart';
@@ -54,7 +56,15 @@ void main() {
     );
 
     await tester.pumpWidget(
-      MaterialApp.router(theme: AppTheme.light(), routerConfig: router),
+      ProviderScope(
+        overrides: [
+          outfitRepositoryProvider.overrideWithValue(FakeOutfitRepository()),
+        ],
+        child: MaterialApp.router(
+          theme: AppTheme.light(),
+          routerConfig: router,
+        ),
+      ),
     );
     await tester.pump();
 
@@ -93,13 +103,18 @@ void main() {
 
     var deleted = 0;
     await tester.pumpWidget(
-      MaterialApp(
-        theme: AppTheme.light(),
-        home: Scaffold(
-          body: OutfitCarousel(
-            wardrobeId: 'wd_abc123',
-            outfits: [testOutfit()],
-            onDelete: (_) => deleted++,
+      ProviderScope(
+        overrides: [
+          outfitRepositoryProvider.overrideWithValue(FakeOutfitRepository()),
+        ],
+        child: MaterialApp(
+          theme: AppTheme.light(),
+          home: Scaffold(
+            body: OutfitCarousel(
+              wardrobeId: 'wd_abc123',
+              outfits: [testOutfit()],
+              onDelete: (_) => deleted++,
+            ),
           ),
         ),
       ),

@@ -1,6 +1,7 @@
 import '../../items/domain/item.dart';
 import '../../items/domain/item_image_source.dart';
 import 'outfit.dart';
+import 'try_on_history.dart';
 
 /// Where an outfit card photo came from.
 enum OutfitCoverKind { render, item, none }
@@ -32,12 +33,26 @@ String? outfitPreviewImageUrl(Outfit outfit) {
   return url;
 }
 
-/// Outfit photo: try-on `render.imageUrl`, else first assigned item http(s)
-/// photo, else none (hanger).
+/// Latest try-on for cards: session pick, WARDROBE-85 history, then `render`.
+String? latestOutfitTryOnUrl(
+  Outfit outfit, {
+  Iterable<TryOnHistoryEntry> history = const [],
+  String? selectedUrl,
+}) {
+  return outfitHeroImageUrl(
+    latestRender: outfit.render,
+    history: history,
+    selectedUrl: selectedUrl,
+  );
+}
+
+/// Outfit photo: latest try-on URL, else first assigned item http(s) photo,
+/// else none (hanger).
 ///
 /// Inspected Backend fields:
 /// - Outfit get/list: optional `render.imageUrl` (presigned GET). `render.imageKey`
 ///   is storage-only and is never turned into a URL.
+/// - WARDROBE-85 history (when live): `GET .../renders` items with `imageUrl`.
 /// - Item get/list: `originalImageUrl` / `processedImageUrl` (WARDROBE-54),
 ///   mapped onto [Item.originalImageKey] / [Item.processedImageKey]. S3 keys
 ///   alone cannot be displayed.
@@ -45,8 +60,11 @@ String? outfitPreviewImageUrl(Outfit outfit) {
 OutfitCover resolveOutfitCover(
   Outfit outfit, [
   List<Item> wardrobeItems = const [],
+  String? preferredTryOnUrl,
 ]) {
-  final renderUrl = outfitPreviewImageUrl(outfit);
+  final renderUrl = preferredTryOnUrl?.trim().isNotEmpty == true
+      ? preferredTryOnUrl!.trim()
+      : outfitPreviewImageUrl(outfit);
   if (renderUrl != null) {
     return OutfitCover(networkUrl: renderUrl, kind: OutfitCoverKind.render);
   }

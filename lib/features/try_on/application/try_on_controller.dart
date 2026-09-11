@@ -4,8 +4,13 @@ import '../../../core/network/api_exception.dart';
 import '../../../core/session/session_gate.dart';
 import '../../ai_profiles/application/selected_ai_profile.dart';
 import '../../ai_profiles/domain/ai_profile.dart';
+import '../../outfits/application/outfit_detail_controller.dart';
+import '../../outfits/application/outfit_hero_selection.dart';
 import '../../outfits/application/outfit_scope.dart';
+import '../../outfits/application/outfits_controller.dart';
+import '../../outfits/application/try_on_history_controller.dart';
 import '../../outfits/data/dio_outfit_repository.dart';
+import '../../outfits/domain/outfit.dart';
 import '../../outfits/domain/outfit_render.dart';
 import '../../outfits/domain/outfit_repository.dart';
 import 'try_on_poll.dart';
@@ -71,6 +76,7 @@ class TryOnController extends Notifier<TryOnState> {
         render: outfit.render,
         clearRender: outfit.render == null,
       );
+      _publishTryOn(outfit);
     } on ApiException catch (error) {
       if (!ref.mounted) {
         return;
@@ -110,6 +116,7 @@ class TryOnController extends Notifier<TryOnState> {
         render: outfit.render,
         clearRender: outfit.render == null,
       );
+      _publishTryOn(outfit);
     } on ApiException catch (error) {
       if (!ref.mounted) {
         return false;
@@ -167,15 +174,18 @@ class TryOnController extends Notifier<TryOnState> {
           if (!ref.mounted) {
             return;
           }
-          final outfit = state.outfit;
+          final outfit = state.outfit?.copyWith(render: next);
           state = state.copyWith(
             render: next,
-            outfit: outfit?.copyWith(render: next),
+            outfit: outfit,
             errorMessage: next.status == OutfitRenderStatus.failed
                 ? (next.error ?? 'Try-on failed. Please try again.')
                 : null,
             clearError: next.status != OutfitRenderStatus.failed,
           );
+          if (outfit != null) {
+            _publishTryOn(outfit);
+          }
         } on ApiException catch (error) {
           if (!ref.mounted) {
             return;
@@ -198,6 +208,20 @@ class TryOnController extends Notifier<TryOnState> {
         state = state.copyWith(isPolling: false);
       }
     }
+  }
+
+  /// Push a READY try-on onto list/detail heroes and refresh history.
+  void _publishTryOn(Outfit outfit) {
+    final url = outfit.render?.imageUrl?.trim();
+    if (outfit.render?.hasDisplayImage != true || url == null) {
+      return;
+    }
+    ref
+        .read(outfitsControllerProvider(scope.wardrobeId).notifier)
+        .upsert(outfit);
+    ref.read(outfitDetailControllerProvider(scope).notifier).replace(outfit);
+    ref.read(outfitHeroSelectionProvider(scope).notifier).select(url);
+    ref.read(tryOnHistoryControllerProvider(scope).notifier).refresh();
   }
 }
 

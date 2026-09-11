@@ -3,6 +3,7 @@ import 'package:wardrobe_app/features/items/domain/item.dart';
 import 'package:wardrobe_app/features/outfits/domain/outfit.dart';
 import 'package:wardrobe_app/features/outfits/domain/outfit_render.dart';
 import 'package:wardrobe_app/features/outfits/domain/outfit_repository.dart';
+import 'package:wardrobe_app/features/outfits/domain/try_on_history.dart';
 
 /// In-memory [OutfitRepository] for unit tests.
 class FakeOutfitRepository implements OutfitRepository {
@@ -17,6 +18,9 @@ class FakeOutfitRepository implements OutfitRepository {
   int deleteCalls = 0;
   int requestRenderCalls = 0;
   int getRenderCalls = 0;
+  int listTryOnHistoryCalls = 0;
+  List<TryOnHistoryEntry> tryOnHistory = [];
+  ApiException? nextHistoryFailure;
   List<OutfitItem>? lastItems;
   List<String>? lastItemIds;
   String? lastAiProfileId;
@@ -170,6 +174,21 @@ class FakeOutfitRepository implements OutfitRepository {
     return render;
   }
 
+  @override
+  Future<List<TryOnHistoryEntry>> listTryOnHistory({
+    required String wardrobeId,
+    required String outfitId,
+  }) async {
+    listTryOnHistoryCalls++;
+    final failure = nextHistoryFailure;
+    if (failure != null) {
+      nextHistoryFailure = null;
+      throw failure;
+    }
+    _maybeFail();
+    return [...tryOnHistory];
+  }
+
   int _indexOf(String wardrobeId, String outfitId) {
     final index = outfits.indexWhere(
       (outfit) => outfit.wardrobeId == wardrobeId && outfit.id == outfitId,
@@ -227,5 +246,17 @@ OutfitRender testOutfitRender({
     imageKey: status == OutfitRenderStatus.ready ? imageKey : null,
     imageUrl: status == OutfitRenderStatus.ready ? imageUrl : null,
     error: error,
+  );
+}
+
+TryOnHistoryEntry testTryOnHistoryEntry({
+  OutfitRender? render,
+  String? id,
+  DateTime? createdAt,
+}) {
+  return TryOnHistoryEntry(
+    render: render ?? testOutfitRender(),
+    id: id,
+    createdAt: createdAt,
   );
 }

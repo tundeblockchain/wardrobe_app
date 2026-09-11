@@ -4,6 +4,7 @@ import '../../../core/network/api_exception.dart';
 import '../../items/domain/item.dart';
 import '../domain/outfit.dart';
 import '../domain/outfit_render.dart';
+import '../domain/try_on_history.dart';
 
 part 'outfit_dtos.freezed.dart';
 part 'outfit_dtos.g.dart';
@@ -178,4 +179,66 @@ abstract class RequestOutfitRenderRequest with _$RequestOutfitRenderRequest {
 
   factory RequestOutfitRenderRequest.fromJson(Map<String, dynamic> json) =>
       _$RequestOutfitRenderRequestFromJson(json);
+}
+
+/// Expected WARDROBE-85 payload: `{ "renders": [...] }`, `{ "history": [...] }`,
+/// or a bare array of [OutfitRenderResponse] objects. Extra keys such as
+/// `renderId` / `createdAt` are read when present and never written onto Outfit.
+List<TryOnHistoryEntry> parseTryOnHistory(dynamic data) {
+  if (data == null) {
+    return const [];
+  }
+  if (data is List) {
+    return _entriesFromList(data);
+  }
+  if (data is Map) {
+    final map = Map<String, dynamic>.from(data);
+    final nested = map['renders'] ?? map['history'] ?? map['tryOns'];
+    if (nested is List) {
+      return _entriesFromList(nested);
+    }
+    if (nested == null) {
+      return const [];
+    }
+  }
+  throw const ApiException(
+    message: 'Unexpected try-on history response.',
+    code: 'INVALID_RESPONSE',
+  );
+}
+
+List<TryOnHistoryEntry> _entriesFromList(List<dynamic> raw) {
+  final entries = <TryOnHistoryEntry>[];
+  for (final item in raw) {
+    if (item is! Map) {
+      continue;
+    }
+    final json = Map<String, dynamic>.from(item);
+    final render = OutfitRenderResponse.fromJson(json).toDomain();
+    final id = _optionalString(json['renderId'] ?? json['id']);
+    final createdAt = _optionalDate(json['createdAt'] ?? json['updatedAt']);
+    entries.add(
+      TryOnHistoryEntry(render: render, id: id, createdAt: createdAt),
+    );
+  }
+  final dated = entries.where((entry) => entry.createdAt != null).toList();
+  if (dated.length == entries.length && entries.length > 1) {
+    entries.sort((a, b) => b.createdAt!.compareTo(a.createdAt!));
+  }
+  return entries;
+}
+
+String? _optionalString(dynamic value) {
+  if (value is! String) {
+    return null;
+  }
+  final trimmed = value.trim();
+  return trimmed.isEmpty ? null : trimmed;
+}
+
+DateTime? _optionalDate(dynamic value) {
+  if (value is! String) {
+    return null;
+  }
+  return DateTime.tryParse(value.trim());
 }

@@ -6,6 +6,7 @@ import '../../../core/network/dio_client.dart';
 import '../domain/outfit.dart';
 import '../domain/outfit_render.dart';
 import '../domain/outfit_repository.dart';
+import '../domain/try_on_history.dart';
 import 'outfit_dtos.dart';
 
 /// Dio implementation of [OutfitRepository] against `/wardrobes/{id}/outfits`.
@@ -21,6 +22,9 @@ class DioOutfitRepository implements OutfitRepository {
 
   String _renderPath(String wardrobeId, String outfitId) =>
       '${_outfitPath(wardrobeId, outfitId)}/render';
+
+  String _rendersPath(String wardrobeId, String outfitId) =>
+      '${_outfitPath(wardrobeId, outfitId)}/renders';
 
   @override
   Future<List<Outfit>> listOutfits(String wardrobeId) {
@@ -122,6 +126,27 @@ class DioOutfitRepository implements OutfitRepository {
         _renderPath(wardrobeId, outfitId),
       );
       return parseOutfitRender(response.data);
+    });
+  }
+
+  @override
+  Future<List<TryOnHistoryEntry>> listTryOnHistory({
+    required String wardrobeId,
+    required String outfitId,
+  }) {
+    return _guard(() async {
+      try {
+        final response = await _dio.get<dynamic>(
+          _rendersPath(wardrobeId, outfitId),
+        );
+        return parseTryOnHistory(response.data);
+      } on DioException catch (error) {
+        final exception = ApiException.fromDio(error);
+        if (isTryOnHistoryGap(exception)) {
+          return const [];
+        }
+        throw exception;
+      }
     });
   }
 

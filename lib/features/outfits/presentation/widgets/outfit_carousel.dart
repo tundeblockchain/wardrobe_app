@@ -6,7 +6,7 @@ import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/widgets/entity_delete.dart';
 import '../../../items/domain/item.dart';
 import '../../domain/outfit.dart';
-import 'outfit_list_preview.dart';
+import 'outfit_cover_preview.dart';
 import 'outfit_list_tile.dart';
 
 /// Horizontal slider of outfit cards: try-on photo, else an item photo, else hanger.
@@ -93,7 +93,7 @@ class _OutfitSlide extends StatelessWidget {
                   SizedBox(
                     height: OutfitCarousel.photoHeight,
                     width: double.infinity,
-                    child: OutfitListPreview(
+                    child: OutfitCoverPreview(
                       outfit: outfit,
                       wardrobeItems: wardrobeItems,
                       width: double.infinity,

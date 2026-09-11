@@ -3,19 +3,25 @@ import 'package:flutter/material.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/widgets/enlarged_image_popup.dart';
 import '../../domain/outfit.dart';
-import '../../domain/outfit_cover.dart';
+import '../../domain/try_on_history.dart';
+import 'outfit_try_on_gallery.dart';
 
-/// Outfit detail hero: try-on photo when Backend returned `render.imageUrl`,
-/// otherwise a burgundy card that opens Try On.
+/// Outfit detail hero: swipeable try-ons when any exist, otherwise hanger.
 class OutfitHeroCard extends StatelessWidget {
   const OutfitHeroCard({
     super.key,
     required this.outfit,
     required this.onTryOn,
+    this.history = const [],
+    this.selectedHeroUrl,
+    this.onSelectHero,
   });
 
   final Outfit outfit;
   final VoidCallback onTryOn;
+  final List<TryOnHistoryEntry> history;
+  final String? selectedHeroUrl;
+  final ValueChanged<String>? onSelectHero;
 
   static const cardKey = Key('outfit_hero_card');
   static const tryOnHintKey = Key('outfit_hero_try_on');
@@ -26,19 +32,20 @@ class OutfitHeroCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final url = outfitPreviewImageUrl(outfit);
+    final urls = tryOnDisplayUrls(
+      latestRender: outfit.render,
+      history: history,
+    );
 
     return Card(
       key: cardKey,
       clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: url == null
-            ? onTryOn
-            : () => EnlargedImagePopup.showNetwork(context, url: url),
-        child: AspectRatio(
-          aspectRatio: 3 / 4,
-          child: url == null
-              ? ColoredBox(
+      child: urls.isEmpty
+          ? InkWell(
+              onTap: onTryOn,
+              child: AspectRatio(
+                aspectRatio: 3 / 4,
+                child: ColoredBox(
                   key: tryOnHintKey,
                   color: scheme.primaryContainer,
                   child: Center(
@@ -70,13 +77,21 @@ class OutfitHeroCard extends StatelessWidget {
                       ),
                     ),
                   ),
-                )
-              : ColoredBox(
+                ),
+              ),
+            )
+          : urls.length == 1
+          ? InkWell(
+              onTap: () =>
+                  EnlargedImagePopup.showNetwork(context, url: urls.single),
+              child: AspectRatio(
+                aspectRatio: 3 / 4,
+                child: ColoredBox(
                   key: imageKey,
                   color: scheme.primaryContainer,
                   child: Image.network(
-                    url,
-                    key: urlKey(url),
+                    urls.single,
+                    key: urlKey(urls.single),
                     fit: BoxFit.cover,
                     alignment: Alignment.center,
                     width: double.infinity,
@@ -103,8 +118,19 @@ class OutfitHeroCard extends StatelessWidget {
                     },
                   ),
                 ),
-        ),
-      ),
+              ),
+            )
+          : OutfitTryOnGallery(
+              imageUrls: urls,
+              selectedUrl:
+                  outfitHeroImageUrl(
+                    latestRender: outfit.render,
+                    history: history,
+                    selectedUrl: selectedHeroUrl,
+                  ) ??
+                  urls.first,
+              onSelect: onSelectHero,
+            ),
     );
   }
 }

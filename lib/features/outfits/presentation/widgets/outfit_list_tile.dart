@@ -5,7 +5,7 @@ import '../../../../core/router/app_routes.dart';
 import '../../../../core/widgets/entity_delete.dart';
 import '../../../items/domain/item.dart';
 import '../../domain/outfit.dart';
-import 'outfit_list_preview.dart';
+import 'outfit_cover_preview.dart';
 
 /// Saved-outfit row with an optional delete control on the trailing edge.
 class OutfitListTile extends StatelessWidget {
@@ -34,7 +34,7 @@ class OutfitListTile extends StatelessWidget {
     return Card(
       child: ListTile(
         key: tileKey ?? defaultTileKey(outfit.id),
-        leading: OutfitListPreview(
+        leading: OutfitCoverPreview(
           outfit: outfit,
           wardrobeItems: wardrobeItems,
         ),

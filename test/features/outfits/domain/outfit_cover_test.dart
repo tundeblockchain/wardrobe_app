@@ -69,5 +69,49 @@ void main() {
       expect(cover.kind, OutfitCoverKind.none);
       expect(cover.hasPhoto, isFalse);
     });
+
+    test('prefers an explicit try-on URL over render and item photos', () {
+      const hero = 'https://cdn.example.com/try-on/picked.png';
+      final cover = resolveOutfitCover(testOutfit(render: testOutfitRender()), [
+        testItem(
+          id: 'item_top123',
+          originalImageUrl: 'https://cdn.example.com/top.jpg',
+        ),
+      ], hero);
+
+      expect(cover.kind, OutfitCoverKind.render);
+      expect(cover.networkUrl, hero);
+    });
+  });
+
+  group('latestOutfitTryOnUrl', () {
+    test('uses history then render, and honors a selected URL', () {
+      final older = testTryOnHistoryEntry(
+        render: testOutfitRender(
+          imageUrl: 'https://cdn.example.com/try-on/older.png',
+        ),
+        createdAt: DateTime.utc(2026, 9, 1),
+      );
+      final latest = testTryOnHistoryEntry(
+        render: testOutfitRender(
+          imageUrl: 'https://cdn.example.com/try-on/latest.png',
+        ),
+        createdAt: DateTime.utc(2026, 9, 10),
+      );
+      final outfit = testOutfit(render: testOutfitRender());
+
+      expect(
+        latestOutfitTryOnUrl(outfit, history: [latest, older]),
+        'https://cdn.example.com/try-on/latest.png',
+      );
+      expect(
+        latestOutfitTryOnUrl(
+          outfit,
+          history: [latest, older],
+          selectedUrl: older.imageUrl,
+        ),
+        older.imageUrl,
+      );
+    });
   });
 }

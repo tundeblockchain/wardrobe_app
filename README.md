@@ -172,9 +172,11 @@ The catalog (`GET /ai-profiles/models`) is expected to include seeded models Ale
 
 Picker tiles ([WARDROBE-71](https://tundetunde000.atlassian.net/browse/WARDROBE-71) / [WARDROBE-74](https://tundetunde000.atlassian.net/browse/WARDROBE-74)) show a large frontal photo when get/list returns an http(s) URL (`referenceImages` entry such as `front.png`, or aliases like `frontImageUrl` / `referenceImageUrls` / `imageUrl`). Current Backend get/list (WARDROBE-43/45) only returns S3 keys in `referenceImages` — no PERSONAL URL field — so those options use a burgundy/plum placeholder until WARDROBE-72 (or a follow-up) returns GET URLs. S3 keys are never turned into fabricated URLs. WARDROBE-74 card sizes stay; WARDROBE-76 cover-crops the photo.
 
-Card photos (wardrobe, item, outfit, persona, try-on result) use `BoxFit.cover` so the picture fills the card ([WARDROBE-76](https://tundetunde000.atlassian.net/browse/WARDROBE-76)). Tap the item-detail photo or a generated try-on result for a full-image popup (`BoxFit.contain`). Outfit and suggestion detail show a horizontal slider of selected-item cards. Outfit detail’s hero uses `render.imageUrl` when present; if none, tapping that card goes to Try On.
+Card photos (wardrobe, item, outfit, persona, try-on result) use `BoxFit.cover` so the picture fills the card ([WARDROBE-76](https://tundetunde000.atlassian.net/browse/WARDROBE-76)). Tap the item-detail photo or a generated try-on result for a full-image popup (`BoxFit.contain`). Outfit and suggestion detail show a horizontal slider of selected-item cards.
 
-The wardrobe outfits list is a horizontal carousel: try-on `render.imageUrl` when Backend returned one, otherwise the first assigned item http(s) photo (`originalImageUrl` / `processedImageUrl`), otherwise the hanger.
+Outfit list cards and outfit detail use the **latest generated try-on** as the main/hero once a photo exists ([WARDROBE-84](https://tundetunde000.atlassian.net/browse/WARDROBE-84) / [WARDROBE-76](https://tundetunde000.atlassian.net/browse/WARDROBE-76)). After a render finishes, that `imageUrl` is written into the in-memory list and detail caches. List payloads that omit `render.imageUrl` are hydrated from `GET /render`. If none exists, cards keep the item-photo / hanger fallback. Outfit detail can swipe older generated looks (WARDROBE-85 history when live; until then the current `render` is the only slide). Picking another look as main is session-only — no local history store and no invented Backend hero field.
+
+App bars use a solid burgundy (light) / plum-burgundy (dark) fill so the header is distinct from the page surface ([WARDROBE-84](https://tundetunde000.atlassian.net/browse/WARDROBE-84)). The rest of the burgundy/plum scheme is unchanged.
 
 ### Backend image fields inspected (WARDROBE-76)
 
@@ -183,7 +185,8 @@ No new Backend fields were added. Display uses only existing http(s) URLs:
 | Surface | Fields inspected | Gap |
 | --- | --- | --- |
 | Item cards / item detail / item slider | `originalImageUrl`, `processedImageUrl` (WARDROBE-54); aliases `rawImageUrl` / `originalUrl` / `processedUrl` / `imageUrl` / `url`; nested `image` map. S3 `image.originalKey` / `image.processedKey` are not turned into URLs. | If get/list omit the GET URLs and only return keys, cards show the hanger/placeholder. |
-| Outfit get/list hero and carousel | Optional `render.imageUrl` (presigned GET). `render.imageKey` is storage-only. | List/get may omit `render` or return `imageKey` without `imageUrl`. The client then falls back to an assigned item photo from the items list. There is no dedicated outfit-photo field besides try-on `render`. |
+| Outfit get/list hero and carousel | Optional `render.imageUrl` (presigned GET). `render.imageKey` is storage-only. List rows missing a URL call existing `GET /render`. | List/get may omit `render` or return `imageKey` without `imageUrl`. The client then falls back to an assigned item photo from the items list. There is no dedicated outfit-photo field besides try-on `render`. |
+| Outfit try-on gallery | Expected WARDROBE-85 `GET /wardrobes/{wardrobeId}/outfits/{outfitId}/renders` as `{ "renders": [ OutfitRender, … ] }` (also accepts `history` or a bare array). Same `status` / `aiProfileId` / `imageUrl` fields as GET `/render`. Optional `renderId` / `createdAt` are read when present. | **Backend gap:** wardrobe-backend `main` has no WARDROBE-85 collection yet (only POST/GET `/render`). 404 / 405 / 501 resolve to an empty gallery. The current outfit `render.imageUrl` is shown as the single slide until history lands. No local-only history is persisted. |
 | Recommendation get | `name` + `items[{itemId,slot}]` only. No `imageUrl` / `render`. | Suggestion covers use wardrobe item photos only. |
 | Try-on GET `/render` | `imageUrl` when `status` is `READY`. | Same as WARDROBE-51: no URL is invented from `imageKey`. |
 | AI profile get/list | `frontImageUrl` / `front.*` / `referenceImageUrls` / `imageUrl` (WARDROBE-71/73). | PERSONAL get/list still has no GET URL (WARDROBE-43/45); placeholder until WARDROBE-72. |
@@ -200,11 +203,14 @@ Entry points: outfit detail **Try on**, wardrobe **Virtual try-on**, outfits lis
 ```http
 POST /wardrobes/{wardrobeId}/outfits/{outfitId}/render
 GET  /wardrobes/{wardrobeId}/outfits/{outfitId}/render
+GET  /wardrobes/{wardrobeId}/outfits/{outfitId}/renders
 ```
 
 POST body: `{ "aiProfileId": "profile_…" }` (optional `items` / `itemIds`). POST returns `202` with an `Outfit` whose `render.status` is `PENDING`. The client polls GET `/render` every 2s (90s timeout) and shows `imageUrl` when `READY`. **No Gemini keys in the app** — the backend worker owns inference.
 
 GET `/render` before any POST is `404 RENDER_NOT_FOUND`. Profile must be READY PERSONAL (with a reference photo) or GENERIC_MODEL.
+
+`GET /renders` is the expected WARDROBE-85 history collection (newest first when `createdAt` is present). It is not live on Backend yet; the app treats a missing route as an empty list and still shows the latest GET `/render` photo.
 
 ## Profile and support
 

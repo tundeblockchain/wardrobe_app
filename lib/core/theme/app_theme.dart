@@ -10,6 +10,20 @@ abstract final class AppTheme {
 
   static ThemeData dark() => _build(AppColors.darkScheme());
 
+  /// Burgundy / plum AppBar fill — distinct from [ColorScheme.surface], not a tint.
+  static Color headerBackground(ColorScheme scheme) {
+    return scheme.brightness == Brightness.light
+        ? scheme.primary
+        : scheme.primaryContainer;
+  }
+
+  /// On-color for [headerBackground] (WCAG AA on the paired token).
+  static Color headerForeground(ColorScheme scheme) {
+    return scheme.brightness == Brightness.light
+        ? scheme.onPrimary
+        : scheme.onPrimaryContainer;
+  }
+
   static ThemeData _build(ColorScheme scheme) {
     final base = ThemeData(
       useMaterial3: true,
@@ -31,16 +45,18 @@ abstract final class AppTheme {
       visualDensity: VisualDensity.standard,
       materialTapTargetSize: MaterialTapTargetSize.padded,
       appBarTheme: AppBarTheme(
-        backgroundColor: scheme.surface,
-        foregroundColor: scheme.onSurface,
+        backgroundColor: headerBackground(scheme),
+        foregroundColor: headerForeground(scheme),
         surfaceTintColor: Colors.transparent,
         elevation: 0,
-        scrolledUnderElevation: 1,
+        scrolledUnderElevation: 0,
         centerTitle: false,
-        titleTextStyle: textTheme.titleLarge,
-        systemOverlayStyle: scheme.brightness == Brightness.light
-            ? SystemUiOverlayStyle.dark
-            : SystemUiOverlayStyle.light,
+        iconTheme: IconThemeData(color: headerForeground(scheme)),
+        actionsIconTheme: IconThemeData(color: headerForeground(scheme)),
+        titleTextStyle: textTheme.titleLarge?.copyWith(
+          color: headerForeground(scheme),
+        ),
+        systemOverlayStyle: SystemUiOverlayStyle.light,
       ),
       cardTheme: CardThemeData(
         color: scheme.surfaceContainerLow,

@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:wardrobe_app/core/network/api_exception.dart';
 import 'package:wardrobe_app/features/outfits/application/outfits_controller.dart';
 import 'package:wardrobe_app/features/outfits/data/dio_outfit_repository.dart';
+import 'package:wardrobe_app/features/outfits/domain/outfit_render.dart';
 
 import '../../../helpers/fake_outfit_repository.dart';
 
@@ -48,6 +49,26 @@ void main() {
     expect(
       container.read(outfitsControllerProvider('wd_abc123')).errorMessage,
       contains('connection'),
+    );
+  });
+
+  test('refresh hydrates READY list rows from GET /render', () async {
+    repository.outfits.add(
+      testOutfit(render: testOutfitRender(imageUrl: null)),
+    );
+    repository.renderPollQueue.add(
+      testOutfitRender(imageUrl: 'https://cdn.example.com/try-on/hydrated.png'),
+    );
+
+    container.read(outfitsControllerProvider('wd_abc123'));
+    await settle();
+
+    final state = container.read(outfitsControllerProvider('wd_abc123'));
+    expect(repository.listCalls, 1);
+    expect(repository.getRenderCalls, 1);
+    expect(
+      state.outfits.single.render?.imageUrl,
+      'https://cdn.example.com/try-on/hydrated.png',
     );
   });
 
