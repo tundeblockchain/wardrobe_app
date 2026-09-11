@@ -106,6 +106,45 @@ void main() {
     );
   });
 
+  test(
+    'READY GET outfit publishes official history as the latest hero',
+    () async {
+      const latest = 'https://cdn.example.com/try-on/outfit_123.png';
+      const older = 'https://cdn.example.com/try-on/older.png';
+      repository.outfits[0] = testOutfit(
+        renderImageUrls: const [older],
+        renderHistory: [
+          testTryOnHistoryEntry(
+            imageUrl: older,
+            createdAt: DateTime.utc(2026, 9, 1),
+          ),
+        ],
+      );
+      repository.renderPollQueue.add(
+        testOutfitRender(status: OutfitRenderStatus.ready),
+      );
+
+      container.read(tryOnControllerProvider(scope));
+      await settle();
+
+      final ok = await container
+          .read(tryOnControllerProvider(scope).notifier)
+          .submit();
+
+      expect(ok, isTrue);
+      expect(repository.getCalls, greaterThan(1));
+      expect(
+        container
+            .read(outfitsControllerProvider('wd_abc123'))
+            .outfits
+            .single
+            .renderImageUrls,
+        [latest, older],
+      );
+      expect(container.read(outfitHeroSelectionProvider(scope)), latest);
+    },
+  );
+
   test('submit surfaces FAILED render error', () async {
     repository.renderPollQueue.add(
       testOutfitRender(

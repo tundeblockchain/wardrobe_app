@@ -76,4 +76,40 @@ void main() {
     );
     expect(urls, isEmpty);
   });
+
+  test('keeps earlier URLs while the current render is PENDING', () {
+    const older = 'https://cdn.example.com/try-on/older.png';
+    expect(
+      tryOnDisplayUrls(
+        latestRender: testOutfitRender(status: OutfitRenderStatus.pending),
+        renderImageUrls: const [older],
+        history: [
+          testTryOnHistoryEntry(
+            imageUrl: older,
+            createdAt: DateTime.utc(2026, 9, 1),
+          ),
+        ],
+      ),
+      [older],
+    );
+  });
+
+  test('tryOnHistoryCaptionFor uses createdAt and skips missing URLs', () {
+    const latest = 'https://cdn.example.com/try-on/latest.png';
+    expect(
+      tryOnHistoryCaptionFor(latest, [
+        testTryOnHistoryEntry(
+          imageUrl: latest,
+          createdAt: DateTime.utc(2026, 9, 11, 8),
+        ),
+        testTryOnHistoryEntry(
+          imageKey: 'users/uid/outfits/outfit_123/renders/rend_old.png',
+          imageUrl: null,
+          createdAt: DateTime.utc(2026, 9, 1),
+        ),
+      ]),
+      '2026-09-11',
+    );
+    expect(tryOnHistoryCaptionFor(latest), isNull);
+  });
 }

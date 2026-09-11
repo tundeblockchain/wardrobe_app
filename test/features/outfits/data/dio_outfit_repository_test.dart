@@ -204,6 +204,46 @@ void main() {
     );
   });
 
+  test('listOutfits maps renderHistory and renderImageUrls', () async {
+    repository = buildRepository([
+      HttpScript(
+        statusCode: 200,
+        body: {
+          'outfits': [
+            {
+              ...payload,
+              'render': {
+                'status': 'PENDING',
+                'aiProfileId': 'profile_generic_02',
+              },
+              'renderHistory': [
+                {
+                  'imageKey': 'users/uid/outfits/outfit_123/render.png',
+                  'imageUrl': 'https://signed.example/try-on/older.png',
+                  'createdAt': '2026-09-01T00:00:00Z',
+                  'aiProfileId': 'profile_generic_01',
+                },
+              ],
+              'renderImageUrls': ['https://signed.example/try-on/older.png'],
+            },
+          ],
+        },
+      ),
+    ]);
+
+    final result = await repository.listOutfits('wd_abc123');
+
+    expect(result.single.render?.status.wireValue, 'PENDING');
+    expect(result.single.render?.imageUrl, isNull);
+    expect(result.single.renderImageUrls, [
+      'https://signed.example/try-on/older.png',
+    ]);
+    expect(
+      result.single.renderHistory.single.createdAt.toUtc(),
+      DateTime.utc(2026, 9, 1),
+    );
+  });
+
   test('getOutfit maps renderHistory and renderImageUrls', () async {
     repository = buildRepository([
       HttpScript(

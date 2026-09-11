@@ -45,8 +45,9 @@ String? latestOutfitTryOnUrl(Outfit outfit, {String? selectedUrl}) {
 /// Inspected Backend fields:
 /// - Outfit get/list: optional `render.imageUrl` (presigned GET). `render.imageKey`
 ///   is storage-only and is never turned into a URL.
-/// - WARDROBE-85: optional `renderImageUrls` (newest-first presigned GETs) and
-///   `renderHistory[].imageUrl`. `imageKey` is storage-only.
+/// - WARDROBE-85 (wardrobe-backend main `fbc9485`): optional `renderImageUrls`
+///   (newest-first presigned GETs) and `renderHistory[].imageUrl`. `imageKey`
+///   is storage-only.
 /// - Item get/list: `originalImageUrl` / `processedImageUrl` (WARDROBE-54),
 ///   mapped onto [Item.originalImageKey] / [Item.processedImageKey]. S3 keys
 ///   alone cannot be displayed.

@@ -121,6 +121,10 @@ class OutfitHeroCard extends StatelessWidget {
             )
           : OutfitTryOnGallery(
               imageUrls: urls,
+              captions: [
+                for (final url in urls)
+                  tryOnHistoryCaptionFor(url, outfit.renderHistory),
+              ],
               selectedUrl:
                   outfitHeroImageUrl(
                     latestRender: outfit.render,

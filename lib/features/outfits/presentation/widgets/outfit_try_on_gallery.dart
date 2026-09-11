@@ -8,11 +8,15 @@ class OutfitTryOnGallery extends StatefulWidget {
   const OutfitTryOnGallery({
     super.key,
     required this.imageUrls,
+    this.captions = const [],
     this.selectedUrl,
     this.onSelect,
   });
 
   final List<String> imageUrls;
+
+  /// Optional `renderHistory` dates, aligned with [imageUrls].
+  final List<String?> captions;
   final String? selectedUrl;
   final ValueChanged<String>? onSelect;
 
@@ -69,6 +73,14 @@ class _OutfitTryOnGalleryState extends State<OutfitTryOnGallery> {
   void _onPageChanged(int index) {
     setState(() => _index = index);
     widget.onSelect?.call(widget.imageUrls[index]);
+  }
+
+  String? _captionFor(int index) {
+    if (index < 0 || index >= widget.captions.length) {
+      return null;
+    }
+    final caption = widget.captions[index]?.trim();
+    return (caption == null || caption.isEmpty) ? null : caption;
   }
 
   @override
@@ -154,6 +166,15 @@ class _OutfitTryOnGalleryState extends State<OutfitTryOnGallery> {
             style: Theme.of(context).textTheme.labelMedium
                 ?.copyWith(color: scheme.onSurfaceVariant),
           ),
+          if (_captionFor(_index) case final caption?) ...[
+            const SizedBox(height: AppSpacing.xs),
+            Text(
+              caption,
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.labelSmall
+                  ?.copyWith(color: scheme.onSurfaceVariant),
+            ),
+          ],
         ],
       ],
     );

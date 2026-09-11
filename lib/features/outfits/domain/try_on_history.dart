@@ -1,6 +1,7 @@
 import 'outfit_render.dart';
 
-/// One successful try-on from Backend `renderHistory[]` (WARDROBE-85).
+/// One successful try-on from Backend `renderHistory[]` (WARDROBE-85 /
+/// wardrobe-backend main `fbc9485`).
 ///
 /// [imageKey] is storage-only. Display uses [imageUrl] when Backend presigned
 /// it. A missing URL is omitted from the gallery — never built from the key.
@@ -83,6 +84,32 @@ String? outfitHeroImageUrl({
   }
   if (urls.isNotEmpty) {
     return urls.first;
+  }
+  return null;
+}
+
+/// Date label for a gallery slide from `renderHistory[].createdAt`.
+String tryOnHistoryDateLabel(DateTime value) {
+  final date = value.toUtc();
+  final year = date.year.toString().padLeft(4, '0');
+  final month = date.month.toString().padLeft(2, '0');
+  final day = date.day.toString().padLeft(2, '0');
+  return '$year-$month-$day';
+}
+
+/// Caption for a signed gallery URL. Entries without [imageUrl] are skipped.
+String? tryOnHistoryCaptionFor(
+  String url, [
+  Iterable<TryOnHistoryEntry> history = const [],
+]) {
+  final signed = presignedTryOnUrl(url);
+  if (signed == null) {
+    return null;
+  }
+  for (final entry in history) {
+    if (presignedTryOnUrl(entry.imageUrl) == signed) {
+      return tryOnHistoryDateLabel(entry.createdAt);
+    }
   }
   return null;
 }

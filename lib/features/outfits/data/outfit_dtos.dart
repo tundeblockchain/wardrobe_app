@@ -181,8 +181,8 @@ abstract class RequestOutfitRenderRequest with _$RequestOutfitRenderRequest {
       _$RequestOutfitRenderRequestFromJson(json);
 }
 
-/// Backend `renderHistory[]` (WARDROBE-85 / wardrobe-backend #43). Newest first.
-/// Invalid rows and missing URLs are skipped; S3 keys are never turned into URLs.
+/// Backend `renderHistory[]` (WARDROBE-85 / wardrobe-backend main `fbc9485`).
+/// Newest first. A bad or missing URL is omitted only; S3 keys stay storage-only.
 List<TryOnHistoryEntry> parseRenderHistory(dynamic data) {
   if (data == null) {
     return const [];
@@ -197,16 +197,15 @@ List<TryOnHistoryEntry> parseRenderHistory(dynamic data) {
     }
     final json = Map<String, dynamic>.from(item);
     final imageKey = _optionalString(json['imageKey']);
-    final aiProfileId = _optionalString(json['aiProfileId']);
     final createdAt = _optionalDate(json['createdAt']);
-    if (imageKey == null || aiProfileId == null || createdAt == null) {
+    if (imageKey == null || createdAt == null) {
       continue;
     }
     entries.add(
       TryOnHistoryEntry(
         imageKey: imageKey,
         createdAt: createdAt,
-        aiProfileId: aiProfileId,
+        aiProfileId: _optionalString(json['aiProfileId']) ?? '',
         imageUrl: presignedTryOnUrl(_optionalString(json['imageUrl'])),
       ),
     );

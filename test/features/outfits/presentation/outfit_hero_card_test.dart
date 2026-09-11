@@ -74,6 +74,17 @@ void main() {
             'https://cdn.example.com/try-on/latest.png',
             'https://cdn.example.com/try-on/older.png',
           ],
+          renderHistory: [
+            testTryOnHistoryEntry(
+              imageUrl: 'https://cdn.example.com/try-on/latest.png',
+              createdAt: DateTime.utc(2026, 9, 11, 8),
+            ),
+            testTryOnHistoryEntry(
+              imageKey: 'users/uid/outfits/outfit_123/render.png',
+              imageUrl: 'https://cdn.example.com/try-on/older.png',
+              createdAt: DateTime.utc(2026, 9, 10, 8),
+            ),
+          ],
         ),
         onTryOn: () {},
       ),
@@ -81,5 +92,7 @@ void main() {
 
     expect(find.byKey(OutfitTryOnGallery.galleryKey), findsOneWidget);
     expect(find.byKey(OutfitHeroCard.tryOnHintKey), findsNothing);
+    expect(find.text('Latest look'), findsOneWidget);
+    expect(find.text('2026-09-11'), findsOneWidget);
   });
 }
