@@ -122,9 +122,11 @@ class _WardrobesScreenState extends ConsumerState<WardrobesScreen>
               )
             else ...[
               if (clothingItems.isNotEmpty) ...[
-                HomeClothingCarousel(
-                  items: clothingItems,
-                  autoScroll: autoScroll,
+                AppFadeIn(
+                  child: HomeClothingCarousel(
+                    items: clothingItems,
+                    autoScroll: autoScroll,
+                  ),
                 ),
                 const SizedBox(height: AppSpacing.md),
               ],

@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:wardrobe_app/core/router/app_routes.dart';
 import 'package:wardrobe_app/core/theme/app_theme.dart';
+import 'package:wardrobe_app/core/widgets/app_gloss.dart';
 import 'package:wardrobe_app/features/items/domain/item.dart';
 import 'package:wardrobe_app/features/wardrobes/presentation/widgets/home_clothing_carousel.dart';
 
@@ -79,6 +80,9 @@ void main() {
       findsOneWidget,
     );
 
+    expect(find.byType(AppGloss), findsWidgets);
+    expect(find.byKey(AppGlossOverlay.overlayKey), findsWidgets);
+
     await tester.tap(find.byKey(HomeClothingCarousel.cardKey('item_coat')));
     await tester.pumpAndSettle();
     expect(find.text('item item_coat wd_winter'), findsOneWidget);
@@ -121,5 +125,42 @@ void main() {
     expect(carouselScroll(tester).position.pixels, pausedAt);
     await gesture.moveBy(const Offset(-24, 0));
     await gesture.up();
+  });
+
+  testWidgets('reduced motion skips auto-scroll and keeps cards tappable', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(400, 800);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.light(),
+        builder: (context, child) {
+          return MediaQuery(
+            data: MediaQuery.of(context).copyWith(disableAnimations: true),
+            child: child!,
+          );
+        },
+        home: Scaffold(
+          body: HomeClothingCarousel(
+            items: [
+              testItem(),
+              testItem(id: 'item_jeans', name: 'Blue jeans'),
+              testItem(id: 'item_hat', name: 'Hat'),
+            ],
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+    await tester.pump();
+
+    final start = carouselScroll(tester).position.pixels;
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(carouselScroll(tester).position.pixels, start);
+    expect(find.byType(AppGloss), findsWidgets);
   });
 }
