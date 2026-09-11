@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/router/app_routes.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/app_empty_state.dart';
+import '../../../core/widgets/app_gloss.dart';
 import '../application/add_item_controller.dart';
 import '../domain/item.dart';
 import '../domain/item_taxonomy.dart';
@@ -83,7 +84,7 @@ class _AddItemScreenState extends ConsumerState<AddItemScreen> {
     final busy = state.isPicking || state.isSubmitting;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Add item')),
+      appBar: AppGlossBar(title: const Text('Add item')),
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(

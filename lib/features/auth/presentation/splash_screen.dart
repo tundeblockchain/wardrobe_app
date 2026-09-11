@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_spacing.dart';
+import '../../../core/widgets/app_fade_in.dart';
 
 /// Shown while auth state is restored from Firebase.
 class SplashScreen extends StatelessWidget {
@@ -23,19 +24,21 @@ class SplashScreen extends StatelessWidget {
             ],
           ),
         ),
-        child: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              CircularProgressIndicator(color: scheme.primary),
-              const SizedBox(height: AppSpacing.md),
-              Text(
-                'Restoring session…',
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: scheme.onSurfaceVariant,
+        child: AppFadeIn(
+          child: Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircularProgressIndicator(color: scheme.primary),
+                const SizedBox(height: AppSpacing.md),
+                Text(
+                  'Restoring session…',
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: scheme.onSurfaceVariant,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

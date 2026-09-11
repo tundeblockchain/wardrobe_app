@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 
 import '../theme/app_spacing.dart';
+import 'app_fade_in.dart';
+import 'app_gloss.dart';
+import 'app_sparkle.dart';
 
 /// Themed empty-list placeholder used across wardrobe, item, outfit, and
 /// suggestion screens.
@@ -28,40 +31,56 @@ class AppEmptyState extends StatelessWidget {
     final scheme = theme.colorScheme;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: AppSpacing.xl),
-      child: Column(
-        children: [
-          Container(
-            width: 72,
-            height: 72,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: scheme.primaryContainer,
+      child: AppFadeIn(
+        child: Column(
+          children: [
+            SizedBox(
+              width: 72,
+              height: 72,
+              child: ClipOval(
+                child: AppGloss(
+                  sheen: true,
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      ColoredBox(color: scheme.primaryContainer),
+                      Center(
+                        child: Icon(
+                          icon,
+                          size: 36,
+                          color: scheme.onPrimaryContainer,
+                        ),
+                      ),
+                      const Positioned.fill(child: AppSparkleAccent(count: 4)),
+                    ],
+                  ),
+                ),
+              ),
             ),
-            child: Icon(icon, size: 36, color: scheme.onPrimaryContainer),
-          ),
-          const SizedBox(height: AppSpacing.md),
-          Text(
-            title,
-            style: theme.textTheme.headlineSmall,
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          Text(
-            message,
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: scheme.onSurfaceVariant,
+            const SizedBox(height: AppSpacing.md),
+            Text(
+              title,
+              style: theme.textTheme.headlineSmall,
+              textAlign: TextAlign.center,
             ),
-            textAlign: TextAlign.center,
-          ),
-          if (actionLabel != null && onAction != null) ...[
-            const SizedBox(height: AppSpacing.lg),
-            FilledButton(
-              key: actionKey,
-              onPressed: onAction,
-              child: Text(actionLabel!),
+            const SizedBox(height: AppSpacing.sm),
+            Text(
+              message,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: scheme.onSurfaceVariant,
+              ),
+              textAlign: TextAlign.center,
             ),
+            if (actionLabel != null && onAction != null) ...[
+              const SizedBox(height: AppSpacing.lg),
+              FilledButton(
+                key: actionKey,
+                onPressed: onAction,
+                child: Text(actionLabel!),
+              ),
+            ],
           ],
-        ],
+        ),
       ),
     );
   }

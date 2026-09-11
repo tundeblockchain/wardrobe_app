@@ -6,6 +6,8 @@ import '../../../core/router/app_router.dart';
 import '../../../core/router/app_routes.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/app_empty_state.dart';
+import '../../../core/widgets/app_fade_in.dart';
+import '../../../core/widgets/app_gloss.dart';
 import '../../../core/widgets/entity_delete.dart';
 import '../../items/application/items_controller.dart';
 import '../../items/application/items_state.dart';
@@ -95,7 +97,7 @@ class _WardrobeDetailScreenState extends ConsumerState<WardrobeDetailScreen>
     });
 
     return Scaffold(
-      appBar: AppBar(
+      appBar: AppGlossBar(
         title: Text(wardrobe?.name ?? 'Wardrobe'),
         actions: [
           if (wardrobe != null) ...[
@@ -186,52 +188,54 @@ class _WardrobeDetailScreenState extends ConsumerState<WardrobeDetailScreen>
     }
 
     final wardrobe = state.wardrobe!;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Text(wardrobe.name, style: Theme.of(context).textTheme.headlineSmall),
-        if (state.errorMessage != null) ...[
-          const SizedBox(height: 16),
-          Text(
-            state.errorMessage!,
-            style: TextStyle(color: Theme.of(context).colorScheme.error),
+    return AppFadeIn(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(wardrobe.name, style: Theme.of(context).textTheme.headlineSmall),
+          if (state.errorMessage != null) ...[
+            const SizedBox(height: 16),
+            Text(
+              state.errorMessage!,
+              style: TextStyle(color: Theme.of(context).colorScheme.error),
+            ),
+          ],
+          if (state.isSaving) ...[
+            const SizedBox(height: 24),
+            const Center(child: CircularProgressIndicator()),
+          ],
+          const SizedBox(height: 32),
+          Text('Items', style: Theme.of(context).textTheme.titleMedium),
+          const SizedBox(height: 12),
+          _ItemsSection(wardrobeId: wardrobeId, state: itemsState),
+          const SizedBox(height: 32),
+          Text('Outfits', style: Theme.of(context).textTheme.titleMedium),
+          const SizedBox(height: 12),
+          _OutfitsSection(wardrobeId: wardrobeId, state: outfitsState),
+          const SizedBox(height: 32),
+          Text('Suggestions', style: Theme.of(context).textTheme.titleMedium),
+          const SizedBox(height: 12),
+          _RecommendationsSection(
+            wardrobeId: wardrobeId,
+            state: recommendationsState,
           ),
-        ],
-        if (state.isSaving) ...[
-          const SizedBox(height: 24),
-          const Center(child: CircularProgressIndicator()),
-        ],
-        const SizedBox(height: 32),
-        Text('Items', style: Theme.of(context).textTheme.titleMedium),
-        const SizedBox(height: 12),
-        _ItemsSection(wardrobeId: wardrobeId, state: itemsState),
-        const SizedBox(height: 32),
-        Text('Outfits', style: Theme.of(context).textTheme.titleMedium),
-        const SizedBox(height: 12),
-        _OutfitsSection(wardrobeId: wardrobeId, state: outfitsState),
-        const SizedBox(height: 32),
-        Text('Suggestions', style: Theme.of(context).textTheme.titleMedium),
-        const SizedBox(height: 12),
-        _RecommendationsSection(
-          wardrobeId: wardrobeId,
-          state: recommendationsState,
-        ),
-        const SizedBox(height: 32),
-        Text('Dressing room', style: Theme.of(context).textTheme.titleMedium),
-        const SizedBox(height: 12),
-        ListTile(
-          key: WardrobeDetailScreen.dressingRoomButtonKey,
-          contentPadding: EdgeInsets.zero,
-          leading: const CircleAvatar(
-            child: Icon(Icons.face_retouching_natural_outlined),
+          const SizedBox(height: 32),
+          Text('Dressing room', style: Theme.of(context).textTheme.titleMedium),
+          const SizedBox(height: 12),
+          ListTile(
+            key: WardrobeDetailScreen.dressingRoomButtonKey,
+            contentPadding: EdgeInsets.zero,
+            leading: const CircleAvatar(
+              child: Icon(Icons.face_retouching_natural_outlined),
+            ),
+            title: const Text('Virtual try-on'),
+            subtitle: const Text('Pick an outfit and an AI profile'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => context.push(AppRoutes.dressingRoom(wardrobeId)),
           ),
-          title: const Text('Virtual try-on'),
-          subtitle: const Text('Pick an outfit and an AI profile'),
-          trailing: const Icon(Icons.chevron_right),
-          onTap: () => context.push(AppRoutes.dressingRoom(wardrobeId)),
-        ),
-        const SizedBox(height: 72),
-      ],
+          const SizedBox(height: 72),
+        ],
+      ),
     );
   }
 
@@ -424,17 +428,19 @@ class _RecommendationPreviewTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      child: ListTile(
-        key: Key('wardrobe_recommendation_tile_$index'),
-        title: Text(recommendation.name),
-        subtitle: Text(
-          recommendation.items.length == 1
-              ? '1 item'
-              : '${recommendation.items.length} items',
+      child: AppGloss(
+        child: ListTile(
+          key: Key('wardrobe_recommendation_tile_$index'),
+          title: Text(recommendation.name),
+          subtitle: Text(
+            recommendation.items.length == 1
+                ? '1 item'
+                : '${recommendation.items.length} items',
+          ),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () =>
+              context.push(AppRoutes.recommendationDetail(wardrobeId, index)),
         ),
-        trailing: const Icon(Icons.chevron_right),
-        onTap: () =>
-            context.push(AppRoutes.recommendationDetail(wardrobeId, index)),
       ),
     );
   }
@@ -498,11 +504,13 @@ class _ItemsSection extends ConsumerWidget {
             message: 'No items match these filters.',
           )
         else
-          ItemSwipeDeck(
-            items: state.items,
-            onOpenItem: (item) =>
-                context.push(AppRoutes.itemDetail(wardrobeId, item.id)),
-            onDeleteItem: (item) => _deleteItem(context, ref, item),
+          AppFadeIn(
+            child: ItemSwipeDeck(
+              items: state.items,
+              onOpenItem: (item) =>
+                  context.push(AppRoutes.itemDetail(wardrobeId, item.id)),
+              onDeleteItem: (item) => _deleteItem(context, ref, item),
+            ),
           ),
       ],
     );

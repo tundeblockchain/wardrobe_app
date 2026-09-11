@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_spacing.dart';
+import '../../../../core/widgets/app_gloss.dart';
 import '../../../ai_profiles/domain/ai_profile.dart';
 import '../../../ai_profiles/presentation/widgets/ai_profile_picker_image.dart';
 
@@ -38,40 +39,46 @@ class TryOnPersonaCard extends StatelessWidget {
         key: cardKey(profile.id),
         color: selected ? scheme.primaryContainer : null,
         clipBehavior: Clip.antiAlias,
-        child: InkWell(
-          key: chipKey(profile.id),
-          onTap: onSelect,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              SizedBox(
-                height: photoHeight,
-                width: double.infinity,
-                child: AiProfilePickerImage(profile: profile),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(
-                  AppSpacing.sm,
-                  AppSpacing.sm,
-                  AppSpacing.sm,
-                  AppSpacing.md,
+        child: AppGloss(
+          child: InkWell(
+            key: chipKey(profile.id),
+            onTap: onSelect,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                SizedBox(
+                  height: photoHeight,
+                  width: double.infinity,
+                  child: AiProfilePickerImage(profile: profile),
                 ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        profile.displayName,
-                        style: theme.textTheme.titleSmall,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(
+                    AppSpacing.sm,
+                    AppSpacing.sm,
+                    AppSpacing.sm,
+                    AppSpacing.md,
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          profile.displayName,
+                          style: theme.textTheme.titleSmall,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
-                    ),
-                    if (selected)
-                      Icon(Icons.check_circle, color: scheme.primary, size: 18),
-                  ],
+                      if (selected)
+                        Icon(
+                          Icons.check_circle,
+                          color: scheme.primary,
+                          size: 18,
+                        ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

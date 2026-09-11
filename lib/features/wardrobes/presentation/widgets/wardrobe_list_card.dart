@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/router/app_routes.dart';
 import '../../../../core/theme/app_spacing.dart';
+import '../../../../core/widgets/app_gloss.dart';
 import '../../../../core/widgets/entity_delete.dart';
 import '../../../items/presentation/widgets/item_browse_image.dart';
 import '../../application/wardrobe_cover_provider.dart';
@@ -33,72 +34,75 @@ class WardrobeListCard extends ConsumerWidget {
 
     return Card(
       clipBehavior: Clip.antiAlias,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          InkWell(
-            key: cardKey(wardrobe.id),
-            onTap: () => context.push(AppRoutes.wardrobeDetail(wardrobe.id)),
-            child: AspectRatio(
-              aspectRatio: 16 / 10,
-              child: cover.when(
-                data: (WardrobeCover value) =>
-                    _CoverBody(wardrobeId: wardrobe.id, cover: value),
-                loading: () => const Center(child: CircularProgressIndicator()),
-                error: (_, _) => _EmptyWardrobeCover(wardrobeId: wardrobe.id),
+      child: AppGloss(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            InkWell(
+              key: cardKey(wardrobe.id),
+              onTap: () => context.push(AppRoutes.wardrobeDetail(wardrobe.id)),
+              child: AspectRatio(
+                aspectRatio: 16 / 10,
+                child: cover.when(
+                  data: (WardrobeCover value) =>
+                      _CoverBody(wardrobeId: wardrobe.id, cover: value),
+                  loading: () =>
+                      const Center(child: CircularProgressIndicator()),
+                  error: (_, _) => _EmptyWardrobeCover(wardrobeId: wardrobe.id),
+                ),
               ),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(
-              AppSpacing.md,
-              AppSpacing.md,
-              AppSpacing.sm,
-              AppSpacing.lg,
-            ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: InkWell(
-                    onTap: () =>
-                        context.push(AppRoutes.wardrobeDetail(wardrobe.id)),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          wardrobe.name,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: Theme.of(context).textTheme.titleMedium,
-                        ),
-                        const SizedBox(height: AppSpacing.xs),
-                        Text(
-                          cover.when(
-                            data: (value) => value.itemCountLabel,
-                            loading: () => 'Loading…',
-                            error: (_, _) => 'No items yet',
+            Padding(
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.md,
+                AppSpacing.md,
+                AppSpacing.sm,
+                AppSpacing.lg,
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: InkWell(
+                      onTap: () =>
+                          context.push(AppRoutes.wardrobeDetail(wardrobe.id)),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            wardrobe.name,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: Theme.of(context).textTheme.titleMedium,
                           ),
-                          style: Theme.of(context).textTheme.bodyMedium
-                              ?.copyWith(
-                                color: Theme.of(context)
-                                    .colorScheme
-                                    .onSurfaceVariant,
-                              ),
-                        ),
-                      ],
+                          const SizedBox(height: AppSpacing.xs),
+                          Text(
+                            cover.when(
+                              data: (value) => value.itemCountLabel,
+                              loading: () => 'Loading…',
+                              error: (_, _) => 'No items yet',
+                            ),
+                            style: Theme.of(context).textTheme.bodyMedium
+                                ?.copyWith(
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onSurfaceVariant,
+                                ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-                EntityDeleteIconButton(
-                  key: deleteKey(wardrobe.id),
-                  tooltip: 'Delete wardrobe',
-                  onPressed: () => _delete(context, ref),
-                ),
-              ],
+                  EntityDeleteIconButton(
+                    key: deleteKey(wardrobe.id),
+                    tooltip: 'Delete wardrobe',
+                    onPressed: () => _delete(context, ref),
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

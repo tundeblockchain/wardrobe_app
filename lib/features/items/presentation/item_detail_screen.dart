@@ -17,6 +17,7 @@ import '../application/item_scope.dart';
 import '../domain/item_detail_meta.dart';
 import 'widgets/item_browse_image.dart';
 import 'widgets/item_detail_meta_block.dart';
+import '../../../core/widgets/app_gloss.dart';
 
 /// Clothing item detail with edit and delete.
 class ItemDetailScreen extends ConsumerStatefulWidget {
@@ -93,7 +94,7 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen>
     });
 
     return Scaffold(
-      appBar: AppBar(
+      appBar: AppGlossBar(
         title: Text(item?.name ?? 'Item'),
         actions: [
           if (item != null) ...[

@@ -9,6 +9,7 @@ import '../application/outfit_detail_controller.dart';
 import '../application/outfit_scope.dart';
 import '../domain/outfit_validators.dart';
 import 'widgets/outfit_slot_picker.dart';
+import '../../../core/widgets/app_gloss.dart';
 
 /// Edit outfit name and slot assignments.
 class EditOutfitScreen extends ConsumerStatefulWidget {
@@ -84,7 +85,7 @@ class _EditOutfitScreenState extends ConsumerState<EditOutfitScreen> {
     }
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Edit outfit')),
+      appBar: AppGlossBar(title: const Text('Edit outfit')),
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(

@@ -9,6 +9,7 @@ import '../../items/application/items_controller.dart';
 import '../application/create_outfit_controller.dart';
 import '../domain/outfit_validators.dart';
 import 'widgets/outfit_slot_picker.dart';
+import '../../../core/widgets/app_gloss.dart';
 
 /// Name plus slot assignments that create an outfit from wardrobe items.
 class CreateOutfitScreen extends ConsumerStatefulWidget {
@@ -51,7 +52,7 @@ class _CreateOutfitScreenState extends ConsumerState<CreateOutfitScreen> {
     final itemsState = ref.watch(itemsControllerProvider(widget.wardrobeId));
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Create outfit')),
+      appBar: AppGlossBar(title: const Text('Create outfit')),
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(
