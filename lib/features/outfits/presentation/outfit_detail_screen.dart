@@ -14,6 +14,7 @@ import '../application/outfit_hero_selection.dart';
 import '../application/outfit_scope.dart';
 import 'widgets/outfit_hero_card.dart';
 import 'widgets/outfit_item_slider.dart';
+import '../../../core/widgets/app_gloss.dart';
 
 /// Outfit detail with edit and delete.
 class OutfitDetailScreen extends ConsumerWidget {
@@ -49,7 +50,7 @@ class OutfitDetailScreen extends ConsumerWidget {
     });
 
     return Scaffold(
-      appBar: AppBar(
+      appBar: AppGlossBar(
         title: Text(outfit?.name ?? 'Outfit'),
         actions: [
           if (outfit != null) ...[

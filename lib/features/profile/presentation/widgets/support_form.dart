@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../application/support_controller.dart';
 import '../../domain/support_form_kind.dart';
 import '../../domain/support_validators.dart';
+import '../../../../core/widgets/app_gloss.dart';
 
 /// Shared subject + message form for Contact us and Report a bug.
 ///
@@ -59,7 +60,7 @@ class _SupportFormState extends ConsumerState<SupportForm> {
     final state = ref.watch(supportControllerProvider(widget.kind));
 
     return Scaffold(
-      appBar: AppBar(title: Text(widget.kind.title)),
+      appBar: AppGlossBar(title: Text(widget.kind.title)),
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(

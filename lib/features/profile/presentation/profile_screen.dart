@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/router/app_routes.dart';
 import '../../../core/theme/theme_controller.dart';
+import '../../../core/widgets/app_gloss.dart';
 import '../../../core/widgets/type_to_confirm_dialog.dart';
 import '../../account/application/account_controller.dart';
 import '../../auth/application/auth_controller.dart';
@@ -50,7 +51,7 @@ class ProfileScreen extends ConsumerWidget {
 
     return Scaffold(
       key: screenKey,
-      appBar: AppBar(title: const Text('Account')),
+      appBar: AppGlossBar(title: const Text('Account')),
       body: ListView(
         padding: const EdgeInsets.all(24),
         children: [
@@ -235,35 +236,37 @@ class _AccountCard extends StatelessWidget {
     final initial = initialSource[0].toUpperCase();
 
     return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Row(
-          children: [
-            CircleAvatar(child: Text(initial)),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    (name != null && name.isNotEmpty) ? name : 'Your account',
-                    style: theme.textTheme.titleMedium,
-                  ),
-                  if (email != null && email.isNotEmpty) ...[
-                    const SizedBox(height: 4),
-                    Text(email, style: theme.textTheme.bodyMedium),
-                  ],
-                  if (provider != null) ...[
-                    const SizedBox(height: 4),
+      child: AppGloss(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              CircleAvatar(child: Text(initial)),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
                     Text(
-                      'Signed in with $provider',
-                      style: theme.textTheme.bodySmall,
+                      (name != null && name.isNotEmpty) ? name : 'Your account',
+                      style: theme.textTheme.titleMedium,
                     ),
+                    if (email != null && email.isNotEmpty) ...[
+                      const SizedBox(height: 4),
+                      Text(email, style: theme.textTheme.bodyMedium),
+                    ],
+                    if (provider != null) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        'Signed in with $provider',
+                        style: theme.textTheme.bodySmall,
+                      ),
+                    ],
                   ],
-                ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

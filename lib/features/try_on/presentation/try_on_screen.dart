@@ -5,6 +5,8 @@ import 'package:go_router/go_router.dart';
 import '../../../core/router/app_routes.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/app_empty_state.dart';
+import '../../../core/widgets/app_fade_in.dart';
+import '../../../core/widgets/app_gloss.dart';
 import '../../ai_profiles/application/generic_models_controller.dart';
 import '../../ai_profiles/application/personal_ai_profiles_controller.dart';
 import '../../ai_profiles/application/selected_ai_profile.dart';
@@ -53,7 +55,7 @@ class TryOnScreen extends ConsumerWidget {
 
     return Scaffold(
       key: screenKey,
-      appBar: AppBar(title: Text(outfit?.name ?? 'Try on')),
+      appBar: AppGlossBar(title: Text(outfit?.name ?? 'Try on')),
       body: RefreshIndicator(
         onRefresh: () =>
             ref.read(tryOnControllerProvider(_scope).notifier).refresh(),
@@ -190,7 +192,7 @@ class TryOnScreen extends ConsumerWidget {
           const SizedBox(height: AppSpacing.lg),
           Text('Your look', style: Theme.of(context).textTheme.titleLarge),
           const SizedBox(height: AppSpacing.sm),
-          TryOnResultImage(imageUrl: state.render!.imageUrl!),
+          AppFadeIn(child: TryOnResultImage(imageUrl: state.render!.imageUrl!)),
         ],
         if (state.errorMessage != null && !state.isFailed) ...[
           const SizedBox(height: AppSpacing.md),

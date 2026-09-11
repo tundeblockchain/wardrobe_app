@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/router/app_routes.dart';
 import '../../../../core/theme/app_spacing.dart';
+import '../../../../core/widgets/app_gloss.dart';
 import '../../../../core/widgets/entity_delete.dart';
 import '../../../items/domain/item.dart';
 import '../../domain/outfit.dart';
@@ -81,65 +82,68 @@ class _OutfitSlide extends StatelessWidget {
       width: OutfitCarousel.cardWidth,
       child: Card(
         clipBehavior: Clip.antiAlias,
-        child: Stack(
-          children: [
-            InkWell(
-              key: cardKey,
-              onTap: () =>
-                  context.push(AppRoutes.outfitDetail(wardrobeId, outfit.id)),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  SizedBox(
-                    height: OutfitCarousel.photoHeight,
-                    width: double.infinity,
-                    child: OutfitCoverPreview(
-                      outfit: outfit,
-                      wardrobeItems: wardrobeItems,
+        child: AppGloss(
+          sheen: true,
+          child: Stack(
+            children: [
+              InkWell(
+                key: cardKey,
+                onTap: () =>
+                    context.push(AppRoutes.outfitDetail(wardrobeId, outfit.id)),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    SizedBox(
+                      height: OutfitCarousel.photoHeight,
                       width: double.infinity,
-                      height: double.infinity,
+                      child: OutfitCoverPreview(
+                        outfit: outfit,
+                        wardrobeItems: wardrobeItems,
+                        width: double.infinity,
+                        height: double.infinity,
+                      ),
                     ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(
-                      AppSpacing.sm,
-                      AppSpacing.sm,
-                      AppSpacing.sm,
-                      AppSpacing.md,
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          outfit.name,
-                          style: theme.textTheme.titleSmall,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        Text(
-                          count == 1 ? '1 item' : '$count items',
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: theme.colorScheme.onSurfaceVariant,
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(
+                        AppSpacing.sm,
+                        AppSpacing.sm,
+                        AppSpacing.sm,
+                        AppSpacing.md,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            outfit.name,
+                            style: theme.textTheme.titleSmall,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
-                        ),
-                      ],
+                          Text(
+                            count == 1 ? '1 item' : '$count items',
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: theme.colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                ],
-              ),
-            ),
-            if (onDelete != null)
-              Positioned(
-                top: AppSpacing.xs,
-                right: AppSpacing.xs,
-                child: EntityDeleteIconButton(
-                  key: OutfitListTile.deleteKey(outfit.id),
-                  tooltip: 'Delete outfit',
-                  overlay: true,
-                  onPressed: onDelete,
+                  ],
                 ),
               ),
-          ],
+              if (onDelete != null)
+                Positioned(
+                  top: AppSpacing.xs,
+                  right: AppSpacing.xs,
+                  child: EntityDeleteIconButton(
+                    key: OutfitListTile.deleteKey(outfit.id),
+                    tooltip: 'Delete outfit',
+                    overlay: true,
+                    onPressed: onDelete,
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
     );

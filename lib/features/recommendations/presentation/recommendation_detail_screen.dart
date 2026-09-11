@@ -12,6 +12,7 @@ import '../application/recommendation_detail_controller.dart';
 import '../application/recommendation_detail_state.dart';
 import '../application/recommendation_scope.dart';
 import '../application/recommendations_controller.dart';
+import '../../../core/widgets/app_gloss.dart';
 
 /// Preview of one suggestion. Save uses existing outfit create and is opt-in.
 class RecommendationDetailScreen extends ConsumerWidget {
@@ -49,7 +50,9 @@ class RecommendationDetailScreen extends ConsumerWidget {
     });
 
     return Scaffold(
-      appBar: AppBar(title: Text(recommendation?.name ?? 'Suggested look')),
+      appBar: AppGlossBar(
+        title: Text(recommendation?.name ?? 'Suggested look'),
+      ),
       body: SafeArea(
         child: Padding(
           padding: AppSpacing.pageInsets,

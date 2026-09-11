@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../widgets/app_gloss.dart';
 import 'app_colors.dart';
+import 'app_motion.dart';
 import 'app_spacing.dart';
 
 /// Central [ThemeData] for Digital Wardrobe (WARDROBE-33).
@@ -44,6 +46,12 @@ abstract final class AppTheme {
       primaryTextTheme: textTheme,
       visualDensity: VisualDensity.standard,
       materialTapTargetSize: MaterialTapTargetSize.padded,
+      pageTransitionsTheme: PageTransitionsTheme(
+        builders: {
+          for (final platform in TargetPlatform.values)
+            platform: const AppFadePageTransitionsBuilder(),
+        },
+      ),
       appBarTheme: AppBarTheme(
         backgroundColor: headerBackground(scheme),
         foregroundColor: headerForeground(scheme),
@@ -77,7 +85,7 @@ abstract final class AppTheme {
           ),
           shape: const RoundedRectangleBorder(borderRadius: AppRadii.button),
           textStyle: textTheme.labelLarge,
-        ),
+        ).copyWith(backgroundBuilder: AppGloss.buttonBackground),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(

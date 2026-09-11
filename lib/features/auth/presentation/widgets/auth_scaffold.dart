@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_spacing.dart';
+import '../../../../core/widgets/app_fade_in.dart';
+import '../../../../core/widgets/app_gloss.dart';
+import '../../../../core/widgets/app_sparkle.dart';
 
 /// Shared layout for login / signup / forgot-password screens.
 class AuthScaffold extends StatelessWidget {
@@ -34,32 +37,34 @@ class AuthScaffold extends StatelessWidget {
           ),
         ),
         child: SafeArea(
-          child: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 420),
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.page,
-                  vertical: AppSpacing.lg,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    const _BrandMark(),
-                    const SizedBox(height: AppSpacing.md),
-                    Text(title, style: theme.textTheme.headlineMedium),
-                    if (subtitle != null) ...[
-                      const SizedBox(height: AppSpacing.sm),
-                      Text(
-                        subtitle!,
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: scheme.onSurfaceVariant,
+          child: AppFadeIn(
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 420),
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.page,
+                    vertical: AppSpacing.lg,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      const _BrandMark(),
+                      const SizedBox(height: AppSpacing.md),
+                      Text(title, style: theme.textTheme.headlineMedium),
+                      if (subtitle != null) ...[
+                        const SizedBox(height: AppSpacing.sm),
+                        Text(
+                          subtitle!,
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: scheme.onSurfaceVariant,
+                          ),
                         ),
-                      ),
+                      ],
+                      const SizedBox(height: AppSpacing.lg),
+                      child,
                     ],
-                    const SizedBox(height: AppSpacing.lg),
-                    child,
-                  ],
+                  ),
                 ),
               ),
             ),
@@ -96,7 +101,25 @@ class _BrandMark extends StatelessWidget {
             ),
           ],
         ),
-        child: Icon(Icons.checkroom_rounded, color: scheme.onPrimary, size: 28),
+        child: ClipOval(
+          child: AppGloss(
+            tone: AppGlossTone.header,
+            sheen: true,
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                Center(
+                  child: Icon(
+                    Icons.checkroom_rounded,
+                    color: scheme.onPrimary,
+                    size: 28,
+                  ),
+                ),
+                const Positioned.fill(child: AppSparkleAccent(count: 3)),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }

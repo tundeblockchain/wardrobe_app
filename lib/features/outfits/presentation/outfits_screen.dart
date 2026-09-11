@@ -5,12 +5,14 @@ import 'package:go_router/go_router.dart';
 import '../../../core/router/app_routes.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/app_empty_state.dart';
+import '../../../core/widgets/app_fade_in.dart';
 import '../../../core/widgets/entity_delete.dart';
 import '../../items/application/items_controller.dart';
 import '../application/outfits_controller.dart';
 import '../domain/outfit.dart';
 import 'widgets/outfit_carousel.dart';
 import 'widgets/outfit_list_tile.dart';
+import '../../../core/widgets/app_gloss.dart';
 
 /// Saved outfits for one wardrobe.
 class OutfitsScreen extends ConsumerWidget {
@@ -30,7 +32,7 @@ class OutfitsScreen extends ConsumerWidget {
     final wardrobeItems = ref.watch(itemsControllerProvider(wardrobeId)).items;
 
     return Scaffold(
-      appBar: AppBar(
+      appBar: AppGlossBar(
         title: const Text('Outfits'),
         actions: [
           IconButton(
@@ -95,13 +97,15 @@ class OutfitsScreen extends ConsumerWidget {
                     ),
                   ),
                 ),
-              OutfitCarousel(
-                wardrobeId: wardrobeId,
-                outfits: state.outfits,
-                wardrobeItems: wardrobeItems,
-                onDelete: (outfit) => _deleteOutfit(context, ref, outfit),
-                cardKeyFor: (outfit) =>
-                    OutfitListTile.defaultTileKey(outfit.id),
+              AppFadeIn(
+                child: OutfitCarousel(
+                  wardrobeId: wardrobeId,
+                  outfits: state.outfits,
+                  wardrobeItems: wardrobeItems,
+                  onDelete: (outfit) => _deleteOutfit(context, ref, outfit),
+                  cardKeyFor: (outfit) =>
+                      OutfitListTile.defaultTileKey(outfit.id),
+                ),
               ),
             ],
           ],

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_spacing.dart';
+import '../../../../core/widgets/app_gloss.dart';
 import '../../domain/ai_profile.dart';
 import 'ai_profile_picker_image.dart';
 import 'ai_profile_status_chip.dart';
@@ -31,51 +32,53 @@ class GenericModelCard extends StatelessWidget {
       key: cardKey(profile.id),
       color: selected ? scheme.primaryContainer : null,
       clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onSelect,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Expanded(
-              child: Stack(
-                fit: StackFit.expand,
-                children: [
-                  AiProfilePickerImage(profile: profile),
-                  if (selected)
-                    Positioned(
-                      top: AppSpacing.sm,
-                      right: AppSpacing.sm,
-                      child: Icon(
-                        Icons.check_circle,
-                        color: scheme.primary,
-                        size: 22,
+      child: AppGloss(
+        child: InkWell(
+          onTap: onSelect,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    AiProfilePickerImage(profile: profile),
+                    if (selected)
+                      Positioned(
+                        top: AppSpacing.sm,
+                        right: AppSpacing.sm,
+                        child: Icon(
+                          Icons.check_circle,
+                          color: scheme.primary,
+                          size: 22,
+                        ),
                       ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.sm,
+                  AppSpacing.sm,
+                  AppSpacing.sm,
+                  AppSpacing.md,
+                ),
+                child: Column(
+                  children: [
+                    Text(
+                      profile.displayName,
+                      style: theme.textTheme.titleMedium,
+                      textAlign: TextAlign.center,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                ],
+                    const SizedBox(height: 4),
+                    AiProfileStatusChip(status: profile.status),
+                  ],
+                ),
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(
-                AppSpacing.sm,
-                AppSpacing.sm,
-                AppSpacing.sm,
-                AppSpacing.md,
-              ),
-              child: Column(
-                children: [
-                  Text(
-                    profile.displayName,
-                    style: theme.textTheme.titleMedium,
-                    textAlign: TextAlign.center,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 4),
-                  AiProfileStatusChip(status: profile.status),
-                ],
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

@@ -6,6 +6,8 @@ import '../../../core/router/app_router.dart';
 import '../../../core/router/app_routes.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/app_empty_state.dart';
+import '../../../core/widgets/app_fade_in.dart';
+import '../../../core/widgets/app_gloss.dart';
 import '../application/wardrobe_cover_provider.dart';
 import '../application/wardrobe_items_provider.dart';
 import '../application/wardrobes_controller.dart';
@@ -75,7 +77,7 @@ class _WardrobesScreenState extends ConsumerState<WardrobesScreen>
     final autoScroll = ref.watch(homeClothingCarouselAutoScrollProvider);
 
     return Scaffold(
-      appBar: AppBar(
+      appBar: AppGlossBar(
         title: const Text('Wardrobes', key: WardrobesScreen.titleKey),
         actions: [
           IconButton(
@@ -120,9 +122,11 @@ class _WardrobesScreenState extends ConsumerState<WardrobesScreen>
               )
             else ...[
               if (clothingItems.isNotEmpty) ...[
-                HomeClothingCarousel(
-                  items: clothingItems,
-                  autoScroll: autoScroll,
+                AppFadeIn(
+                  child: HomeClothingCarousel(
+                    items: clothingItems,
+                    autoScroll: autoScroll,
+                  ),
                 ),
                 const SizedBox(height: AppSpacing.md),
               ],
@@ -142,8 +146,14 @@ class _WardrobesScreenState extends ConsumerState<WardrobesScreen>
                     ),
                   ),
                 ),
-              for (final wardrobe in state.wardrobes)
-                WardrobeListCard(wardrobe: wardrobe),
+              AppFadeIn(
+                child: Column(
+                  children: [
+                    for (final wardrobe in state.wardrobes)
+                      WardrobeListCard(wardrobe: wardrobe),
+                  ],
+                ),
+              ),
             ],
           ],
         ),

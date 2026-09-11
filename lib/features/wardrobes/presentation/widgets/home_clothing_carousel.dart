@@ -5,7 +5,10 @@ import 'package:flutter/scheduler.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/router/app_routes.dart';
+import '../../../../core/theme/app_motion.dart';
 import '../../../../core/theme/app_spacing.dart';
+import '../../../../core/widgets/app_gloss.dart';
+import '../../../../core/widgets/app_sheen.dart';
 import '../../../items/domain/item.dart';
 import '../../../items/presentation/widgets/item_browse_image.dart';
 
@@ -59,6 +62,11 @@ class _HomeClothingCarouselState extends State<HomeClothingCarousel>
   void initState() {
     super.initState();
     _controller = ScrollController();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
     _syncTicker();
   }
 
@@ -72,8 +80,11 @@ class _HomeClothingCarouselState extends State<HomeClothingCarousel>
     }
   }
 
+  bool get _autoScrollEnabled =>
+      widget.autoScroll && !AppMotion.reduce(context);
+
   void _syncTicker() {
-    final shouldRun = widget.autoScroll && _uniqueCount > 0;
+    final shouldRun = _autoScrollEnabled && _uniqueCount > 0;
     if (shouldRun) {
       _ticker ??= createTicker(_onTick);
       if (!(_ticker?.isActive ?? false)) {
@@ -125,6 +136,7 @@ class _HomeClothingCarouselState extends State<HomeClothingCarousel>
   void _jumpToLoopStartIfNeeded() {
     if (_didJumpToLoop ||
         !widget.autoScroll ||
+        AppMotion.reduce(context) ||
         !_controller.hasClients ||
         _uniqueCount == 0) {
       return;
@@ -150,7 +162,7 @@ class _HomeClothingCarouselState extends State<HomeClothingCarousel>
     if (_uniqueCount == 0) {
       return const SizedBox.shrink();
     }
-    final itemCount = widget.autoScroll
+    final itemCount = _autoScrollEnabled
         ? _uniqueCount * _loopCount
         : _uniqueCount;
 
@@ -161,23 +173,28 @@ class _HomeClothingCarouselState extends State<HomeClothingCarousel>
     return SizedBox(
       key: HomeClothingCarousel.carouselKey,
       height: HomeClothingCarousel.photoHeight + 56,
-      child: Listener(
-        onPointerDown: (_) => _pause(),
-        onPointerUp: (_) => _scheduleResume(),
-        onPointerCancel: (_) => _scheduleResume(),
-        child: ListView.builder(
-          controller: _controller,
-          primary: false,
-          scrollDirection: Axis.horizontal,
-          itemCount: itemCount,
-          itemBuilder: (context, index) {
-            final item = widget.items[index % _uniqueCount];
-            return Padding(
-              padding: const EdgeInsets.only(right: AppSpacing.sm),
-              child: _HomeClothingSlide(item: item),
-            );
-          },
-        ),
+      child: Stack(
+        children: [
+          Listener(
+            onPointerDown: (_) => _pause(),
+            onPointerUp: (_) => _scheduleResume(),
+            onPointerCancel: (_) => _scheduleResume(),
+            child: ListView.builder(
+              controller: _controller,
+              primary: false,
+              scrollDirection: Axis.horizontal,
+              itemCount: itemCount,
+              itemBuilder: (context, index) {
+                final item = widget.items[index % _uniqueCount];
+                return Padding(
+                  padding: const EdgeInsets.only(right: AppSpacing.sm),
+                  child: _HomeClothingSlide(item: item),
+                );
+              },
+            ),
+          ),
+          const Positioned.fill(child: AppSheenSweep()),
+        ],
       ),
     );
   }
@@ -195,33 +212,35 @@ class _HomeClothingSlide extends StatelessWidget {
       width: HomeClothingCarousel.cardWidth,
       child: Card(
         clipBehavior: Clip.antiAlias,
-        child: InkWell(
-          key: HomeClothingCarousel.cardKey(item.id),
-          onTap: () =>
-              context.push(AppRoutes.itemDetail(item.wardrobeId, item.id)),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              SizedBox(
-                height: HomeClothingCarousel.photoHeight,
-                width: double.infinity,
-                child: ItemBrowseImage(item: item),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(
-                  AppSpacing.sm,
-                  AppSpacing.sm,
-                  AppSpacing.sm,
-                  AppSpacing.md,
+        child: AppGloss(
+          child: InkWell(
+            key: HomeClothingCarousel.cardKey(item.id),
+            onTap: () =>
+                context.push(AppRoutes.itemDetail(item.wardrobeId, item.id)),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                SizedBox(
+                  height: HomeClothingCarousel.photoHeight,
+                  width: double.infinity,
+                  child: ItemBrowseImage(item: item),
                 ),
-                child: Text(
-                  item.name,
-                  style: theme.textTheme.titleSmall,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(
+                    AppSpacing.sm,
+                    AppSpacing.sm,
+                    AppSpacing.sm,
+                    AppSpacing.md,
+                  ),
+                  child: Text(
+                    item.name,
+                    style: theme.textTheme.titleSmall,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

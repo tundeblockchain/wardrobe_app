@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/router/app_routes.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/app_empty_state.dart';
+import '../../../core/widgets/app_gloss.dart';
 import '../application/edit_item_controller.dart';
 import '../application/item_detail_controller.dart';
 import '../application/item_scope.dart';
@@ -114,7 +115,7 @@ class _EditItemScreenState extends ConsumerState<EditItemScreen> {
     final busy = state.isPicking || state.isSaving;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Edit item')),
+      appBar: AppGlossBar(title: const Text('Edit item')),
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(
