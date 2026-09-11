@@ -2,6 +2,7 @@ import 'package:wardrobe_app/core/network/api_exception.dart';
 import 'package:wardrobe_app/features/items/domain/item.dart';
 import 'package:wardrobe_app/features/items/domain/item_list_filters.dart';
 import 'package:wardrobe_app/features/items/domain/item_repository.dart';
+import 'package:wardrobe_app/features/items/domain/item_subcategory_patch.dart';
 
 /// In-memory [ItemRepository] for unit tests.
 class FakeItemRepository implements ItemRepository {
@@ -15,6 +16,8 @@ class FakeItemRepository implements ItemRepository {
   int updateCalls = 0;
   int deleteCalls = 0;
   String? lastImageKey;
+  String? lastSubcategoryArg;
+  ItemSubcategoryPatch lastSubcategoryPatch = const ItemSubcategoryPatch.omit();
   ItemListFilters lastListFilters = const ItemListFilters();
 
   @override
@@ -61,6 +64,7 @@ class FakeItemRepository implements ItemRepository {
   }) async {
     createCalls++;
     lastImageKey = imageKey;
+    lastSubcategoryArg = subcategory;
     _maybeFail();
     final now = DateTime.utc(2026, 9, 4, 12);
     final item = Item(
@@ -86,12 +90,18 @@ class FakeItemRepository implements ItemRepository {
     required String itemId,
     String? name,
     ItemCategory? category,
-    String? subcategory,
+    ItemSubcategoryPatch subcategory = const ItemSubcategoryPatch.omit(),
     List<String>? colours,
     String? brand,
     String? imageKey,
   }) async {
     updateCalls++;
+    lastSubcategoryPatch = subcategory;
+    lastSubcategoryArg = switch (subcategory.op) {
+      ItemSubcategoryPatchOp.omit => null,
+      ItemSubcategoryPatchOp.clear => null,
+      ItemSubcategoryPatchOp.set => subcategory.value,
+    };
     if (imageKey != null) {
       lastImageKey = imageKey;
     }
@@ -107,10 +117,15 @@ class FakeItemRepository implements ItemRepository {
       );
     }
     final current = items[index];
+    final nextSubcategory = switch (subcategory.op) {
+      ItemSubcategoryPatchOp.omit => current.subcategory,
+      ItemSubcategoryPatchOp.clear => null,
+      ItemSubcategoryPatchOp.set => subcategory.value,
+    };
     final updated = current.copyWith(
       name: name ?? current.name,
       category: category ?? current.category,
-      subcategory: subcategory ?? current.subcategory,
+      subcategory: nextSubcategory,
       colours: colours ?? current.colours,
       brand: brand ?? current.brand,
       originalImageKey: imageKey ?? current.originalImageKey,

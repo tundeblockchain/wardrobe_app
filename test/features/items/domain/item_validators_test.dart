@@ -14,6 +14,12 @@ void main() {
     expect(ItemValidators.category(ItemCategory.top), isNull);
   });
 
+  test('subcategory is optional', () {
+    expect(ItemValidators.subcategory(null), isNull);
+    expect(ItemValidators.subcategory(''), isNull);
+    expect(ItemValidators.subcategory('TSHIRT'), isNull);
+  });
+
   test('parseColours splits and trims comma-separated values', () {
     expect(ItemValidators.parseColours(' black, white , '), ['black', 'white']);
     expect(ItemValidators.parseColours(''), isEmpty);

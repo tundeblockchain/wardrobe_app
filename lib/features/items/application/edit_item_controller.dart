@@ -8,6 +8,7 @@ import '../data/image_picker_item_image_picker.dart';
 import '../domain/item.dart';
 import '../domain/item_image_picker.dart';
 import '../domain/item_repository.dart';
+import '../domain/item_subcategory_patch.dart';
 import '../domain/picked_image.dart';
 import '../domain/upload_repository.dart';
 import 'edit_item_state.dart';
@@ -54,7 +55,7 @@ class EditItemController extends Notifier<EditItemState> {
   Future<Item?> submit({
     required String name,
     required ItemCategory category,
-    String? subcategory,
+    ItemSubcategoryPatch subcategory = const ItemSubcategoryPatch.omit(),
     List<String>? colours,
     String? brand,
   }) async {

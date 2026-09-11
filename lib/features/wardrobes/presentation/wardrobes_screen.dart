@@ -7,7 +7,9 @@ import '../../../core/router/app_routes.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/app_empty_state.dart';
 import '../application/wardrobe_cover_provider.dart';
+import '../application/wardrobe_items_provider.dart';
 import '../application/wardrobes_controller.dart';
+import 'widgets/home_clothing_carousel.dart';
 import 'widgets/wardrobe_list_card.dart';
 
 /// Authenticated wardrobe card list with empty state and create navigation.
@@ -18,6 +20,8 @@ class WardrobesScreen extends ConsumerStatefulWidget {
   static const createButtonKey = Key('wardrobes_create');
   static const emptyStateKey = Key('wardrobes_empty');
   static const retryButtonKey = Key('wardrobes_retry');
+  static const titleKey = Key('wardrobes_title');
+  static const listHeadingKey = Key('wardrobes_list_heading');
 
   @override
   ConsumerState<WardrobesScreen> createState() => _WardrobesScreenState();
@@ -59,6 +63,7 @@ class _WardrobesScreenState extends ConsumerState<WardrobesScreen>
 
   void _refreshCovers() {
     for (final wardrobe in ref.read(wardrobesControllerProvider).wardrobes) {
+      ref.invalidate(wardrobeItemsProvider(wardrobe.id));
       ref.invalidate(wardrobeCoverProvider(wardrobe.id));
     }
   }
@@ -66,10 +71,12 @@ class _WardrobesScreenState extends ConsumerState<WardrobesScreen>
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(wardrobesControllerProvider);
+    final clothingItems = ref.watch(homeClothingItemsProvider);
+    final autoScroll = ref.watch(homeClothingCarouselAutoScrollProvider);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Wardrobes'),
+        title: const Text('Wardrobes', key: WardrobesScreen.titleKey),
         actions: [
           IconButton(
             key: WardrobesScreen.profileButtonKey,
@@ -112,6 +119,19 @@ class _WardrobesScreenState extends ConsumerState<WardrobesScreen>
                 onAction: () => context.push(AppRoutes.createWardrobe),
               )
             else ...[
+              if (clothingItems.isNotEmpty) ...[
+                HomeClothingCarousel(
+                  items: clothingItems,
+                  autoScroll: autoScroll,
+                ),
+                const SizedBox(height: AppSpacing.md),
+              ],
+              Text(
+                'Wardrobes',
+                key: WardrobesScreen.listHeadingKey,
+                style: Theme.of(context).textTheme.headlineSmall,
+              ),
+              const SizedBox(height: AppSpacing.md),
               if (state.errorMessage != null)
                 Padding(
                   padding: const EdgeInsets.only(bottom: AppSpacing.md),

@@ -20,7 +20,7 @@ void main() {
 
     await tester.pumpWidget(harness.app());
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const Key('wardrobe_tile_wd_abc123')));
+    await tapHomeWardrobeCard(tester);
     await tester.pumpAndSettle();
 
     await tester.tap(find.byKey(WardrobeDetailScreen.deleteButtonKey));
@@ -42,7 +42,7 @@ void main() {
 
     await tester.pumpWidget(harness.app());
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const Key('wardrobe_tile_wd_abc123')));
+    await tapHomeWardrobeCard(tester);
     await tester.pumpAndSettle();
 
     await tester.tap(find.byKey(WardrobeDetailScreen.deleteButtonKey));
@@ -63,7 +63,7 @@ void main() {
 
     await tester.pumpWidget(harness.app());
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const Key('wardrobe_tile_wd_abc123')));
+    await tapHomeWardrobeCard(tester);
     await tester.pumpAndSettle();
     harness.wardrobes.nextFailure = const ApiException(
       message: 'Wardrobe not found.',
@@ -85,7 +85,7 @@ void main() {
 
     await tester.pumpWidget(harness.app());
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const Key('wardrobe_tile_wd_abc123')));
+    await tapHomeWardrobeCard(tester);
     await tester.pumpAndSettle();
     await _openItemDetail(tester);
 
@@ -106,7 +106,7 @@ void main() {
 
     await tester.pumpWidget(harness.app());
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const Key('wardrobe_tile_wd_abc123')));
+    await tapHomeWardrobeCard(tester);
     await tester.pumpAndSettle();
     await _openItemDetail(tester);
 

@@ -7,7 +7,9 @@ import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/app_empty_state.dart';
 import '../application/add_item_controller.dart';
 import '../domain/item.dart';
+import '../domain/item_taxonomy.dart';
 import '../domain/item_validators.dart';
+import 'widgets/item_subcategory_field.dart';
 
 /// Camera / gallery pick, then metadata form that uploads and creates the item.
 class AddItemScreen extends ConsumerStatefulWidget {
@@ -20,6 +22,7 @@ class AddItemScreen extends ConsumerStatefulWidget {
   static const nameFieldKey = Key('add_item_name');
   static const categoryFieldKey = Key('add_item_category');
   static const submitButtonKey = Key('add_item_submit');
+  static const subcategoryFieldKey = ItemSubcategoryField.fieldKey;
 
   @override
   ConsumerState<AddItemScreen> createState() => _AddItemScreenState();
@@ -28,18 +31,32 @@ class AddItemScreen extends ConsumerStatefulWidget {
 class _AddItemScreenState extends ConsumerState<AddItemScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
-  final _subcategoryController = TextEditingController();
   final _coloursController = TextEditingController();
   final _brandController = TextEditingController();
   ItemCategory? _category;
+  String? _subcategory;
 
   @override
   void dispose() {
     _nameController.dispose();
-    _subcategoryController.dispose();
     _coloursController.dispose();
     _brandController.dispose();
     super.dispose();
+  }
+
+  void _onCategoryChanged(ItemCategory? value) {
+    setState(() {
+      _category = value;
+      final allowed = value == null
+          ? const <String>{}
+          : {
+              for (final option in ItemSubcategory.forCategory(value))
+                option.wireValue,
+            };
+      if (_subcategory != null && !allowed.contains(_subcategory)) {
+        _subcategory = null;
+      }
+    });
   }
 
   Future<void> _submit() async {
@@ -51,7 +68,7 @@ class _AddItemScreenState extends ConsumerState<AddItemScreen> {
         .submit(
           name: _nameController.text,
           category: _category!,
-          subcategory: _subcategoryController.text,
+          subcategory: _subcategory,
           colours: ItemValidators.parseColours(_coloursController.text),
           brand: _brandController.text,
         );
@@ -167,22 +184,16 @@ class _AddItemScreenState extends ConsumerState<AddItemScreen> {
                             child: Text(category.label),
                           ),
                       ],
-                      onChanged: busy
-                          ? null
-                          : (value) => setState(() => _category = value),
+                      onChanged: busy ? null : _onCategoryChanged,
                       validator: ItemValidators.category,
                     ),
                     const SizedBox(height: 16),
-                    TextFormField(
-                      controller: _subcategoryController,
-                      textCapitalization: TextCapitalization.characters,
-                      maxLength: ItemValidators.maxSubcategoryLength,
-                      decoration: const InputDecoration(
-                        labelText: 'Subcategory (optional)',
-                        hintText: 'T-shirt, jeans…',
-                      ),
-                      validator: ItemValidators.subcategory,
+                    ItemSubcategoryField(
+                      category: _category,
+                      value: _subcategory,
                       enabled: !busy,
+                      onChanged: (value) =>
+                          setState(() => _subcategory = value),
                     ),
                     const SizedBox(height: 16),
                     TextFormField(

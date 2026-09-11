@@ -5,11 +5,13 @@ import 'package:wardrobe_app/features/auth/application/auth_controller.dart';
 import 'package:wardrobe_app/features/auth/domain/app_user.dart';
 import 'package:wardrobe_app/features/items/data/dio_item_repository.dart';
 import 'package:wardrobe_app/features/items/presentation/widgets/item_browse_image.dart';
+import 'package:wardrobe_app/features/wardrobes/application/wardrobe_items_provider.dart';
 import 'package:wardrobe_app/features/wardrobes/data/dio_wardrobe_repository.dart';
 import 'package:wardrobe_app/core/network/api_exception.dart';
 import 'package:wardrobe_app/core/widgets/destructive_confirm_dialog.dart';
 import 'package:wardrobe_app/features/wardrobes/presentation/wardrobe_detail_screen.dart';
 import 'package:wardrobe_app/features/wardrobes/presentation/wardrobes_screen.dart';
+import 'package:wardrobe_app/features/wardrobes/presentation/widgets/home_clothing_carousel.dart';
 import 'package:wardrobe_app/features/wardrobes/presentation/widgets/wardrobe_list_card.dart';
 
 import '../../../helpers/date_stamp_matchers.dart';
@@ -40,6 +42,7 @@ void main() {
           itemRepositoryProvider.overrideWithValue(
             FakeItemRepository(seed: [testItem()]),
           ),
+          homeClothingCarouselAutoScrollProvider.overrideWithValue(false),
         ],
         child: const MaterialApp(home: WardrobesScreen()),
       ),
@@ -53,6 +56,7 @@ void main() {
     await pumpList(tester);
 
     expect(find.byType(WardrobesScreen), findsOneWidget);
+    expect(find.byKey(WardrobesScreen.titleKey), findsOneWidget);
     expect(find.text('Summer Clothes'), findsOneWidget);
     expect(find.byKey(const Key('wardrobe_tile_wd_abc123')), findsOneWidget);
     expect(find.byKey(WardrobesScreen.createButtonKey), findsOneWidget);
@@ -77,6 +81,7 @@ void main() {
     expect(find.byKey(WardrobesScreen.emptyStateKey), findsOneWidget);
     expect(find.text('No wardrobes yet'), findsOneWidget);
     expect(find.byType(WardrobeListCard), findsNothing);
+    expect(find.byKey(HomeClothingCarousel.carouselKey), findsNothing);
     expect(find.textContaining('Signed in as'), findsNothing);
     expect(find.text('Sign out'), findsNothing);
   });
@@ -110,6 +115,14 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(WardrobeListCard), findsNWidgets(2));
+    expect(find.byKey(WardrobesScreen.titleKey), findsOneWidget);
+    expect(find.byKey(WardrobesScreen.listHeadingKey), findsOneWidget);
+    expect(find.byKey(HomeClothingCarousel.carouselKey), findsOneWidget);
+    expect(find.byKey(HomeClothingCarousel.cardKey(shirt.id)), findsOneWidget);
+    expect(
+      find.byKey(HomeClothingCarousel.cardKey('item_jeans')),
+      findsOneWidget,
+    );
     expect(find.byType(ListTile), findsNothing);
     expect(
       find.byKey(WardrobeListCard.cardKey(shirt.wardrobeId)),
@@ -119,10 +132,10 @@ void main() {
       find.byKey(WardrobeListCard.coverKey(shirt.wardrobeId)),
       findsOneWidget,
     );
-    expect(find.byKey(ItemBrowseImage.imageKey(shirt.id)), findsOneWidget);
+    expect(find.byKey(ItemBrowseImage.imageKey(shirt.id)), findsWidgets);
     expect(
       find.byKey(ItemBrowseImage.sourceKey(shirt.originalImageKey!)),
-      findsOneWidget,
+      findsWidgets,
     );
     expect(find.text('Summer Clothes'), findsOneWidget);
     expect(find.text('2 items'), findsOneWidget);
@@ -136,6 +149,48 @@ void main() {
     expect(find.textContaining('Signed in as'), findsNothing);
     expect(find.text('Sign out'), findsNothing);
     expectNoCreatedUpdatedDateStamps();
+  });
+
+  testWidgets('home carousel includes clothing from every wardrobe', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(800, 1400);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final harness = TestAppHarness(
+      wardrobes: FakeWardrobeRepository(
+        seed: [
+          testWardrobe(),
+          testWardrobe(id: 'wd_winter', name: 'Winter'),
+        ],
+      ),
+      items: FakeItemRepository(
+        seed: [
+          testItem(),
+          testItem(id: 'item_coat', wardrobeId: 'wd_winter', name: 'Wool coat'),
+        ],
+      ),
+    );
+    addTearDown(harness.dispose);
+
+    await tester.pumpWidget(harness.app());
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(WardrobesScreen.titleKey), findsOneWidget);
+    expect(find.byKey(WardrobesScreen.listHeadingKey), findsOneWidget);
+    expect(find.byKey(HomeClothingCarousel.carouselKey), findsOneWidget);
+    expect(
+      find.byKey(HomeClothingCarousel.cardKey('item_xyz123')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(HomeClothingCarousel.cardKey('item_coat')),
+      findsOneWidget,
+    );
+    expect(find.text('Summer Clothes'), findsOneWidget);
+    expect(find.text('Winter'), findsOneWidget);
   });
 
   testWidgets('tapping a wardrobe card opens detail', (tester) async {
