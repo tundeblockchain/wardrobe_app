@@ -274,7 +274,7 @@ as ItemCategory,
 /// @nodoc
 mixin _$Outfit {
 
- String get id; String get wardrobeId; String get name; List<OutfitItem> get items; OutfitRender? get render; DateTime get createdAt; DateTime get updatedAt;
+ String get id; String get wardrobeId; String get name; List<OutfitItem> get items; OutfitRender? get render; List<TryOnHistoryEntry> get renderHistory; List<String> get renderImageUrls; DateTime get createdAt; DateTime get updatedAt;
 /// Create a copy of Outfit
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -285,16 +285,16 @@ $OutfitCopyWith<Outfit> get copyWith => _$OutfitCopyWithImpl<Outfit>(this as Out
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Outfit&&(identical(other.id, id) || other.id == id)&&(identical(other.wardrobeId, wardrobeId) || other.wardrobeId == wardrobeId)&&(identical(other.name, name) || other.name == name)&&const DeepCollectionEquality().equals(other.items, items)&&(identical(other.render, render) || other.render == render)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Outfit&&(identical(other.id, id) || other.id == id)&&(identical(other.wardrobeId, wardrobeId) || other.wardrobeId == wardrobeId)&&(identical(other.name, name) || other.name == name)&&const DeepCollectionEquality().equals(other.items, items)&&(identical(other.render, render) || other.render == render)&&const DeepCollectionEquality().equals(other.renderHistory, renderHistory)&&const DeepCollectionEquality().equals(other.renderImageUrls, renderImageUrls)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,wardrobeId,name,const DeepCollectionEquality().hash(items),render,createdAt,updatedAt);
+int get hashCode => Object.hash(runtimeType,id,wardrobeId,name,const DeepCollectionEquality().hash(items),render,const DeepCollectionEquality().hash(renderHistory),const DeepCollectionEquality().hash(renderImageUrls),createdAt,updatedAt);
 
 @override
 String toString() {
-  return 'Outfit(id: $id, wardrobeId: $wardrobeId, name: $name, items: $items, render: $render, createdAt: $createdAt, updatedAt: $updatedAt)';
+  return 'Outfit(id: $id, wardrobeId: $wardrobeId, name: $name, items: $items, render: $render, renderHistory: $renderHistory, renderImageUrls: $renderImageUrls, createdAt: $createdAt, updatedAt: $updatedAt)';
 }
 
 
@@ -305,7 +305,7 @@ abstract mixin class $OutfitCopyWith<$Res>  {
   factory $OutfitCopyWith(Outfit value, $Res Function(Outfit) _then) = _$OutfitCopyWithImpl;
 @useResult
 $Res call({
- String id, String wardrobeId, String name, List<OutfitItem> items, OutfitRender? render, DateTime createdAt, DateTime updatedAt
+ String id, String wardrobeId, String name, List<OutfitItem> items, OutfitRender? render, List<TryOnHistoryEntry> renderHistory, List<String> renderImageUrls, DateTime createdAt, DateTime updatedAt
 });
 
 
@@ -322,14 +322,16 @@ class _$OutfitCopyWithImpl<$Res>
 
 /// Create a copy of Outfit
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? wardrobeId = null,Object? name = null,Object? items = null,Object? render = freezed,Object? createdAt = null,Object? updatedAt = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? wardrobeId = null,Object? name = null,Object? items = null,Object? render = freezed,Object? renderHistory = null,Object? renderImageUrls = null,Object? createdAt = null,Object? updatedAt = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,wardrobeId: null == wardrobeId ? _self.wardrobeId : wardrobeId // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,items: null == items ? _self.items : items // ignore: cast_nullable_to_non_nullable
 as List<OutfitItem>,render: freezed == render ? _self.render : render // ignore: cast_nullable_to_non_nullable
-as OutfitRender?,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
+as OutfitRender?,renderHistory: null == renderHistory ? _self.renderHistory : renderHistory // ignore: cast_nullable_to_non_nullable
+as List<TryOnHistoryEntry>,renderImageUrls: null == renderImageUrls ? _self.renderImageUrls : renderImageUrls // ignore: cast_nullable_to_non_nullable
+as List<String>,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime,updatedAt: null == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
 as DateTime,
   ));
@@ -428,10 +430,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String wardrobeId,  String name,  List<OutfitItem> items,  OutfitRender? render,  DateTime createdAt,  DateTime updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String wardrobeId,  String name,  List<OutfitItem> items,  OutfitRender? render,  List<TryOnHistoryEntry> renderHistory,  List<String> renderImageUrls,  DateTime createdAt,  DateTime updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Outfit() when $default != null:
-return $default(_that.id,_that.wardrobeId,_that.name,_that.items,_that.render,_that.createdAt,_that.updatedAt);case _:
+return $default(_that.id,_that.wardrobeId,_that.name,_that.items,_that.render,_that.renderHistory,_that.renderImageUrls,_that.createdAt,_that.updatedAt);case _:
   return orElse();
 
 }
@@ -449,10 +451,10 @@ return $default(_that.id,_that.wardrobeId,_that.name,_that.items,_that.render,_t
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String wardrobeId,  String name,  List<OutfitItem> items,  OutfitRender? render,  DateTime createdAt,  DateTime updatedAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String wardrobeId,  String name,  List<OutfitItem> items,  OutfitRender? render,  List<TryOnHistoryEntry> renderHistory,  List<String> renderImageUrls,  DateTime createdAt,  DateTime updatedAt)  $default,) {final _that = this;
 switch (_that) {
 case _Outfit():
-return $default(_that.id,_that.wardrobeId,_that.name,_that.items,_that.render,_that.createdAt,_that.updatedAt);case _:
+return $default(_that.id,_that.wardrobeId,_that.name,_that.items,_that.render,_that.renderHistory,_that.renderImageUrls,_that.createdAt,_that.updatedAt);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -469,10 +471,10 @@ return $default(_that.id,_that.wardrobeId,_that.name,_that.items,_that.render,_t
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String wardrobeId,  String name,  List<OutfitItem> items,  OutfitRender? render,  DateTime createdAt,  DateTime updatedAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String wardrobeId,  String name,  List<OutfitItem> items,  OutfitRender? render,  List<TryOnHistoryEntry> renderHistory,  List<String> renderImageUrls,  DateTime createdAt,  DateTime updatedAt)?  $default,) {final _that = this;
 switch (_that) {
 case _Outfit() when $default != null:
-return $default(_that.id,_that.wardrobeId,_that.name,_that.items,_that.render,_that.createdAt,_that.updatedAt);case _:
+return $default(_that.id,_that.wardrobeId,_that.name,_that.items,_that.render,_that.renderHistory,_that.renderImageUrls,_that.createdAt,_that.updatedAt);case _:
   return null;
 
 }
@@ -484,7 +486,7 @@ return $default(_that.id,_that.wardrobeId,_that.name,_that.items,_that.render,_t
 
 
 class _Outfit implements Outfit {
-  const _Outfit({required this.id, required this.wardrobeId, required this.name, this.items = const [], this.render, required this.createdAt, required this.updatedAt});
+  const _Outfit({required this.id, required this.wardrobeId, required this.name, this.items = const [], this.render, this.renderHistory = const [], this.renderImageUrls = const [], required this.createdAt, required this.updatedAt});
   
 
 @override final  String id;
@@ -492,6 +494,8 @@ class _Outfit implements Outfit {
 @override final  String name;
 @override@JsonKey() final  List<OutfitItem> items;
 @override final  OutfitRender? render;
+@override@JsonKey() final  List<TryOnHistoryEntry> renderHistory;
+@override@JsonKey() final  List<String> renderImageUrls;
 @override final  DateTime createdAt;
 @override final  DateTime updatedAt;
 
@@ -505,16 +509,16 @@ _$OutfitCopyWith<_Outfit> get copyWith => __$OutfitCopyWithImpl<_Outfit>(this, _
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Outfit&&(identical(other.id, id) || other.id == id)&&(identical(other.wardrobeId, wardrobeId) || other.wardrobeId == wardrobeId)&&(identical(other.name, name) || other.name == name)&&const DeepCollectionEquality().equals(other.items, items)&&(identical(other.render, render) || other.render == render)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Outfit&&(identical(other.id, id) || other.id == id)&&(identical(other.wardrobeId, wardrobeId) || other.wardrobeId == wardrobeId)&&(identical(other.name, name) || other.name == name)&&const DeepCollectionEquality().equals(other.items, items)&&(identical(other.render, render) || other.render == render)&&const DeepCollectionEquality().equals(other.renderHistory, renderHistory)&&const DeepCollectionEquality().equals(other.renderImageUrls, renderImageUrls)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,wardrobeId,name,const DeepCollectionEquality().hash(items),render,createdAt,updatedAt);
+int get hashCode => Object.hash(runtimeType,id,wardrobeId,name,const DeepCollectionEquality().hash(items),render,const DeepCollectionEquality().hash(renderHistory),const DeepCollectionEquality().hash(renderImageUrls),createdAt,updatedAt);
 
 @override
 String toString() {
-  return 'Outfit(id: $id, wardrobeId: $wardrobeId, name: $name, items: $items, render: $render, createdAt: $createdAt, updatedAt: $updatedAt)';
+  return 'Outfit(id: $id, wardrobeId: $wardrobeId, name: $name, items: $items, render: $render, renderHistory: $renderHistory, renderImageUrls: $renderImageUrls, createdAt: $createdAt, updatedAt: $updatedAt)';
 }
 
 
@@ -525,7 +529,7 @@ abstract mixin class _$OutfitCopyWith<$Res> implements $OutfitCopyWith<$Res> {
   factory _$OutfitCopyWith(_Outfit value, $Res Function(_Outfit) _then) = __$OutfitCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String wardrobeId, String name, List<OutfitItem> items, OutfitRender? render, DateTime createdAt, DateTime updatedAt
+ String id, String wardrobeId, String name, List<OutfitItem> items, OutfitRender? render, List<TryOnHistoryEntry> renderHistory, List<String> renderImageUrls, DateTime createdAt, DateTime updatedAt
 });
 
 
@@ -542,14 +546,16 @@ class __$OutfitCopyWithImpl<$Res>
 
 /// Create a copy of Outfit
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? wardrobeId = null,Object? name = null,Object? items = null,Object? render = freezed,Object? createdAt = null,Object? updatedAt = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? wardrobeId = null,Object? name = null,Object? items = null,Object? render = freezed,Object? renderHistory = null,Object? renderImageUrls = null,Object? createdAt = null,Object? updatedAt = null,}) {
   return _then(_Outfit(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,wardrobeId: null == wardrobeId ? _self.wardrobeId : wardrobeId // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,items: null == items ? _self.items : items // ignore: cast_nullable_to_non_nullable
 as List<OutfitItem>,render: freezed == render ? _self.render : render // ignore: cast_nullable_to_non_nullable
-as OutfitRender?,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
+as OutfitRender?,renderHistory: null == renderHistory ? _self.renderHistory : renderHistory // ignore: cast_nullable_to_non_nullable
+as List<TryOnHistoryEntry>,renderImageUrls: null == renderImageUrls ? _self.renderImageUrls : renderImageUrls // ignore: cast_nullable_to_non_nullable
+as List<String>,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime,updatedAt: null == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
 as DateTime,
   ));

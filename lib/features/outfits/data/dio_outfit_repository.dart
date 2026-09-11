@@ -140,8 +140,15 @@ List<Outfit> parseOutfitList(dynamic data) {
     return data.whereType<Map>().map((item) => parseOutfit(item)).toList();
   }
   if (data is Map) {
-    return OutfitListResponse.fromJson(Map<String, dynamic>.from(data))
-        .toDomain();
+    final map = Map<String, dynamic>.from(data);
+    final nested = map['outfits'];
+    if (nested is List) {
+      return [
+        for (final item in nested)
+          if (item is Map) parseOutfit(item),
+      ];
+    }
+    return OutfitListResponse.fromJson(map).toDomain();
   }
   throw const ApiException(
     message: 'Unexpected outfits response.',
@@ -151,7 +158,12 @@ List<Outfit> parseOutfitList(dynamic data) {
 
 Outfit parseOutfit(dynamic data) {
   if (data is Map) {
-    return OutfitResponse.fromJson(Map<String, dynamic>.from(data)).toDomain();
+    final map = Map<String, dynamic>.from(data);
+    final outfit = OutfitResponse.fromJson(map).toDomain();
+    return outfit.copyWith(
+      renderHistory: parseRenderHistory(map['renderHistory']),
+      renderImageUrls: parseRenderImageUrls(map['renderImageUrls']),
+    );
   }
   throw const ApiException(
     message: 'Unexpected outfit response.',

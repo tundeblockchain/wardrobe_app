@@ -69,5 +69,42 @@ void main() {
       expect(cover.kind, OutfitCoverKind.none);
       expect(cover.hasPhoto, isFalse);
     });
+
+    test('uses renderImageUrls[0] when render.imageUrl is omitted', () {
+      const latest = 'https://cdn.example.com/try-on/latest.png';
+      final cover = resolveOutfitCover(
+        testOutfit(renderImageUrls: const [latest]),
+      );
+
+      expect(cover.kind, OutfitCoverKind.render);
+      expect(cover.networkUrl, latest);
+    });
+
+    test('prefers an explicit try-on URL over render and item photos', () {
+      const hero = 'https://cdn.example.com/try-on/picked.png';
+      final cover = resolveOutfitCover(testOutfit(render: testOutfitRender()), [
+        testItem(
+          id: 'item_top123',
+          originalImageUrl: 'https://cdn.example.com/top.jpg',
+        ),
+      ], hero);
+
+      expect(cover.kind, OutfitCoverKind.render);
+      expect(cover.networkUrl, hero);
+    });
+  });
+
+  group('latestOutfitTryOnUrl', () {
+    test('uses renderImageUrls[0] and honors a selected URL', () {
+      const latest = 'https://cdn.example.com/try-on/latest.png';
+      const older = 'https://cdn.example.com/try-on/older.png';
+      final outfit = testOutfit(
+        render: testOutfitRender(imageUrl: latest),
+        renderImageUrls: const [latest, older],
+      );
+
+      expect(latestOutfitTryOnUrl(outfit), latest);
+      expect(latestOutfitTryOnUrl(outfit, selectedUrl: older), older);
+    });
   });
 }

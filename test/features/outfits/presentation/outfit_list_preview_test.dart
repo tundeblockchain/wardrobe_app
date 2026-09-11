@@ -82,4 +82,24 @@ void main() {
     expect(find.byKey(OutfitListPreview.hangerKey(outfit.id)), findsNothing);
     expect(tester.widget<Image>(find.byType(Image)).fit, BoxFit.cover);
   });
+
+  testWidgets('heroImageUrl wins over the outfit render', (tester) async {
+    const hero = 'https://cdn.example.com/try-on/picked.png';
+    final outfit = testOutfit(render: testOutfitRender());
+
+    await pumpPreview(
+      tester,
+      child: OutfitListPreview(outfit: outfit, heroImageUrl: hero),
+    );
+
+    expect(find.byKey(OutfitListPreview.urlKey(hero)), findsOneWidget);
+    expect(
+      find.byKey(
+        OutfitListPreview.urlKey(
+          'https://cdn.example.com/try-on/outfit_123.png',
+        ),
+      ),
+      findsNothing,
+    );
+  });
 }

@@ -92,10 +92,28 @@ void main() {
     expect(theme.cardTheme.shape, isA<RoundedRectangleBorder>());
     final cardShape = theme.cardTheme.shape! as RoundedRectangleBorder;
     expect(cardShape.borderRadius, AppRadii.card);
+    expect(theme.appBarTheme.backgroundColor, AppColors.lightPrimary);
+    expect(theme.appBarTheme.foregroundColor, AppColors.lightOnPrimary);
+    expect(theme.appBarTheme.backgroundColor, isNot(theme.colorScheme.surface));
+    _expectAaContrast(
+      theme.appBarTheme.foregroundColor!,
+      theme.appBarTheme.backgroundColor!,
+    );
     expect(theme.dialogTheme.shape, isA<RoundedRectangleBorder>());
     expect(
       (theme.inputDecorationTheme.border! as OutlineInputBorder).borderRadius,
       AppRadii.input,
+    );
+  });
+
+  test('dark AppBar uses plum-burgundy fill distinct from the surface', () {
+    final theme = AppTheme.dark();
+    expect(theme.appBarTheme.backgroundColor, AppColors.darkPrimaryContainer);
+    expect(theme.appBarTheme.foregroundColor, AppColors.darkOnPrimaryContainer);
+    expect(theme.appBarTheme.backgroundColor, isNot(theme.colorScheme.surface));
+    _expectAaContrast(
+      theme.appBarTheme.foregroundColor!,
+      theme.appBarTheme.backgroundColor!,
     );
   });
 

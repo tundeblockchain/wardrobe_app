@@ -204,6 +204,89 @@ void main() {
     );
   });
 
+  test('listOutfits maps renderHistory and renderImageUrls', () async {
+    repository = buildRepository([
+      HttpScript(
+        statusCode: 200,
+        body: {
+          'outfits': [
+            {
+              ...payload,
+              'render': {
+                'status': 'PENDING',
+                'aiProfileId': 'profile_generic_02',
+              },
+              'renderHistory': [
+                {
+                  'imageKey': 'users/uid/outfits/outfit_123/render.png',
+                  'imageUrl': 'https://signed.example/try-on/older.png',
+                  'createdAt': '2026-09-01T00:00:00Z',
+                  'aiProfileId': 'profile_generic_01',
+                },
+              ],
+              'renderImageUrls': ['https://signed.example/try-on/older.png'],
+            },
+          ],
+        },
+      ),
+    ]);
+
+    final result = await repository.listOutfits('wd_abc123');
+
+    expect(result.single.render?.status.wireValue, 'PENDING');
+    expect(result.single.render?.imageUrl, isNull);
+    expect(result.single.renderImageUrls, [
+      'https://signed.example/try-on/older.png',
+    ]);
+    expect(
+      result.single.renderHistory.single.createdAt.toUtc(),
+      DateTime.utc(2026, 9, 1),
+    );
+  });
+
+  test('getOutfit maps renderHistory and renderImageUrls', () async {
+    repository = buildRepository([
+      HttpScript(
+        statusCode: 200,
+        body: {
+          ...payload,
+          'render': {
+            'status': 'READY',
+            'aiProfileId': 'profile_generic_01',
+            'imageKey': 'users/uid/outfits/outfit_123/renders/rend_new.png',
+            'imageUrl': 'https://cdn.example.com/try-on/newer.png',
+          },
+          'renderHistory': [
+            {
+              'imageKey': 'users/uid/outfits/outfit_123/renders/rend_new.png',
+              'imageUrl': 'https://cdn.example.com/try-on/newer.png',
+              'createdAt': '2026-09-10T00:00:00Z',
+              'aiProfileId': 'profile_generic_01',
+            },
+            {
+              'imageKey': 'users/uid/outfits/outfit_123/render.png',
+              'createdAt': '2026-09-01T00:00:00Z',
+              'aiProfileId': 'profile_generic_01',
+            },
+          ],
+          'renderImageUrls': ['https://cdn.example.com/try-on/newer.png'],
+        },
+      ),
+    ]);
+
+    final result = await repository.getOutfit(
+      wardrobeId: 'wd_abc123',
+      outfitId: 'outfit_123',
+    );
+
+    expect(result.renderImageUrls, [
+      'https://cdn.example.com/try-on/newer.png',
+    ]);
+    expect(result.renderHistory, hasLength(2));
+    expect(result.renderHistory.first.imageUrl, contains('newer.png'));
+    expect(result.renderHistory[1].imageUrl, isNull);
+  });
+
   test('getRender maps RENDER_NOT_FOUND', () async {
     repository = buildRepository([
       const HttpScript(

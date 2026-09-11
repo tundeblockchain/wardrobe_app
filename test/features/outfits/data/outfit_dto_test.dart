@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wardrobe_app/core/network/api_exception.dart';
 import 'package:wardrobe_app/features/items/domain/item.dart';
+import 'package:wardrobe_app/features/outfits/data/dio_outfit_repository.dart';
 import 'package:wardrobe_app/features/outfits/data/outfit_dtos.dart';
 import 'package:wardrobe_app/features/outfits/domain/outfit.dart';
 import 'package:wardrobe_app/features/outfits/domain/outfit_render.dart';
@@ -161,6 +162,123 @@ void main() {
 
       expect(domain.render?.status, OutfitRenderStatus.pending);
       expect(domain.render?.aiProfileId, 'profile_generic_01');
+    });
+  });
+
+  group('WARDROBE-85 render history mapping', () {
+    test('keeps newest-first URLs and omits a bad or missing URL only', () {
+      final entries = parseRenderHistory([
+        {
+          'imageKey': 'users/uid/outfits/outfit_123/renders/rend_new.png',
+          'imageUrl': 'https://cdn.example.com/try-on/newer.png',
+          'createdAt': '2026-09-10T00:00:00Z',
+          'aiProfileId': 'profile_generic_02',
+        },
+        {
+          'imageKey': 'users/uid/outfits/outfit_123/render.png',
+          'createdAt': '2026-09-01T00:00:00Z',
+          'aiProfileId': 'profile_generic_01',
+        },
+        {
+          'imageKey': 'users/uid/outfits/outfit_123/renders/bad.png',
+          'imageUrl': 'users/uid/outfits/outfit_123/renders/bad.png',
+          'createdAt': '2026-08-01T00:00:00Z',
+          'aiProfileId': 'profile_generic_01',
+        },
+      ]);
+
+      expect(entries, hasLength(3));
+      expect(
+        entries.first.imageUrl,
+        'https://cdn.example.com/try-on/newer.png',
+      );
+      expect(entries[1].imageUrl, isNull);
+      expect(entries[2].imageUrl, isNull);
+    });
+
+    test('parseRenderImageUrls drops keys and empty strings', () {
+      expect(
+        parseRenderImageUrls([
+          'https://cdn.example.com/try-on/newer.png',
+          'users/uid/outfits/outfit_123/renders/rend_old.png',
+          '',
+          'https://cdn.example.com/try-on/older.png',
+        ]),
+        [
+          'https://cdn.example.com/try-on/newer.png',
+          'https://cdn.example.com/try-on/older.png',
+        ],
+      );
+      expect(parseRenderImageUrls(null), isEmpty);
+    });
+
+    test('keeps a row when aiProfileId is omitted (Backend fbc9485)', () {
+      final entries = parseRenderHistory([
+        {
+          'imageKey': 'users/uid/outfits/outfit_123/renders/rend_new.png',
+          'createdAt': '2026-09-11T08:00:00.000Z',
+        },
+      ]);
+
+      expect(entries, hasLength(1));
+      expect(entries.single.aiProfileId, isEmpty);
+      expect(entries.single.imageUrl, isNull);
+    });
+
+    test('maps the wardrobe-backend main fbc9485 outfit sample', () {
+      final outfit = parseOutfit({
+        'outfitId': 'outfit_xyz123ab',
+        'wardrobeId': 'wd_abc123xyz0',
+        'name': 'Friday Night',
+        'items': [
+          {'itemId': 'item_top123', 'slot': 'TOP'},
+          {'itemId': 'item_bottom456', 'slot': 'BOTTOM'},
+        ],
+        'render': {
+          'status': 'READY',
+          'aiProfileId': 'profile_generic_01',
+          'imageKey':
+              'users/uid/outfits/outfit_xyz123ab/renders/rend_new1abcd.png',
+          'imageUrl': 'https://signed.example/try-on/latest.png?X-Amz=1',
+        },
+        'renderHistory': [
+          {
+            'imageKey':
+                'users/uid/outfits/outfit_xyz123ab/renders/rend_new1abcd.png',
+            'imageUrl': 'https://signed.example/try-on/latest.png?X-Amz=1',
+            'createdAt': '2026-09-11T08:00:00.000Z',
+            'aiProfileId': 'profile_generic_01',
+          },
+          {
+            'imageKey': 'users/uid/outfits/outfit_xyz123ab/render.png',
+            'imageUrl': 'https://signed.example/try-on/earlier.png?X-Amz=1',
+            'createdAt': '2026-09-10T08:00:00.000Z',
+            'aiProfileId': 'profile_generic_01',
+          },
+        ],
+        'renderImageUrls': [
+          'https://signed.example/try-on/latest.png?X-Amz=1',
+          'https://signed.example/try-on/earlier.png?X-Amz=1',
+        ],
+        'createdAt': '2026-09-03T19:10:00.000Z',
+        'updatedAt': '2026-09-11T08:00:00.000Z',
+      });
+
+      expect(outfit.id, 'outfit_xyz123ab');
+      expect(outfit.render?.status, OutfitRenderStatus.ready);
+      expect(outfit.renderImageUrls, [
+        'https://signed.example/try-on/latest.png?X-Amz=1',
+        'https://signed.example/try-on/earlier.png?X-Amz=1',
+      ]);
+      expect(outfit.renderHistory, hasLength(2));
+      expect(
+        outfit.renderHistory.first.imageKey,
+        contains('rend_new1abcd.png'),
+      );
+      expect(
+        outfit.renderHistory.first.createdAt.toUtc(),
+        DateTime.utc(2026, 9, 11, 8),
+      );
     });
   });
 }

@@ -11,7 +11,7 @@ import '../../items/application/items_controller.dart';
 import '../../items/domain/item.dart';
 import '../../outfits/application/outfits_controller.dart';
 import '../../outfits/domain/outfit.dart';
-import '../../outfits/presentation/widgets/outfit_list_preview.dart';
+import '../../outfits/presentation/widgets/outfit_cover_preview.dart';
 
 /// Wardrobe-level outfit picker that opens the try-on screen.
 class DressingRoomScreen extends ConsumerWidget {
@@ -151,7 +151,7 @@ class _DressingRoomOutfitTile extends StatelessWidget {
     return Card(
       child: ListTile(
         key: Key('dressing_room_outfit_${outfit.id}'),
-        leading: OutfitListPreview(
+        leading: OutfitCoverPreview(
           outfit: outfit,
           wardrobeItems: wardrobeItems,
         ),

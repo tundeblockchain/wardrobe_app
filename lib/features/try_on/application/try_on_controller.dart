@@ -4,10 +4,16 @@ import '../../../core/network/api_exception.dart';
 import '../../../core/session/session_gate.dart';
 import '../../ai_profiles/application/selected_ai_profile.dart';
 import '../../ai_profiles/domain/ai_profile.dart';
+import '../../outfits/application/outfit_detail_controller.dart';
+import '../../outfits/application/outfit_hero_selection.dart';
 import '../../outfits/application/outfit_scope.dart';
+import '../../outfits/application/outfits_controller.dart';
 import '../../outfits/data/dio_outfit_repository.dart';
+import '../../outfits/domain/outfit.dart';
+import '../../outfits/domain/outfit_cover.dart';
 import '../../outfits/domain/outfit_render.dart';
 import '../../outfits/domain/outfit_repository.dart';
+import '../../outfits/domain/try_on_history.dart';
 import 'try_on_poll.dart';
 import 'try_on_state.dart';
 
@@ -71,6 +77,7 @@ class TryOnController extends Notifier<TryOnState> {
         render: outfit.render,
         clearRender: outfit.render == null,
       );
+      _publishOutfit(outfit, selectLatestHero: true);
     } on ApiException catch (error) {
       if (!ref.mounted) {
         return;
@@ -110,6 +117,7 @@ class TryOnController extends Notifier<TryOnState> {
         render: outfit.render,
         clearRender: outfit.render == null,
       );
+      _publishOutfit(outfit);
     } on ApiException catch (error) {
       if (!ref.mounted) {
         return false;
@@ -127,6 +135,9 @@ class TryOnController extends Notifier<TryOnState> {
       return false;
     }
     if (state.render?.status.isTerminal == true) {
+      if (state.isReady) {
+        await _refreshHistoryFromOutfit();
+      }
       return state.isReady;
     }
     await _pollUntilDone();
@@ -167,15 +178,21 @@ class TryOnController extends Notifier<TryOnState> {
           if (!ref.mounted) {
             return;
           }
-          final outfit = state.outfit;
+          final outfit = state.outfit?.copyWith(render: next);
           state = state.copyWith(
             render: next,
-            outfit: outfit?.copyWith(render: next),
+            outfit: outfit,
             errorMessage: next.status == OutfitRenderStatus.failed
                 ? (next.error ?? 'Try-on failed. Please try again.')
                 : null,
             clearError: next.status != OutfitRenderStatus.failed,
           );
+          if (outfit != null) {
+            _publishOutfit(outfit);
+            if (next.hasDisplayImage) {
+              await _refreshHistoryFromOutfit();
+            }
+          }
         } on ApiException catch (error) {
           if (!ref.mounted) {
             return;
@@ -198,6 +215,53 @@ class TryOnController extends Notifier<TryOnState> {
         state = state.copyWith(isPolling: false);
       }
     }
+  }
+
+  /// Push list/detail heroes from the outfit DTO (including prior history).
+  void _publishOutfit(Outfit outfit, {bool selectLatestHero = false}) {
+    final withLatest = _withLatestGalleryUrl(outfit);
+    ref
+        .read(outfitsControllerProvider(scope.wardrobeId).notifier)
+        .upsert(withLatest);
+    ref
+        .read(outfitDetailControllerProvider(scope).notifier)
+        .replace(withLatest);
+    if (selectLatestHero) {
+      final hero = latestOutfitTryOnUrl(withLatest);
+      if (hero != null) {
+        ref.read(outfitHeroSelectionProvider(scope).notifier).select(hero);
+      }
+    }
+  }
+
+  Future<void> _refreshHistoryFromOutfit() async {
+    try {
+      final fresh = await _repository.getOutfit(
+        wardrobeId: scope.wardrobeId,
+        outfitId: scope.outfitId,
+      );
+      if (!ref.mounted) {
+        return;
+      }
+      state = state.copyWith(
+        outfit: fresh,
+        render: fresh.render,
+        clearRender: fresh.render == null,
+      );
+      _publishOutfit(fresh, selectLatestHero: true);
+    } on ApiException {
+      // Keep the polled render; gallery still has that URL.
+    } catch (_) {
+      // Same soft fallback as a missing history envelope.
+    }
+  }
+
+  Outfit _withLatestGalleryUrl(Outfit outfit) {
+    final url = presignedTryOnUrl(outfit.render?.imageUrl);
+    if (url == null || outfit.renderImageUrls.contains(url)) {
+      return outfit;
+    }
+    return outfit.copyWith(renderImageUrls: [url, ...outfit.renderImageUrls]);
   }
 }
 

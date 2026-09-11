@@ -11,6 +11,7 @@ import '../../features/items/application/items_controller.dart';
 import '../../features/outfits/application/create_outfit_controller.dart';
 import '../../features/outfits/application/edit_outfit_controller.dart';
 import '../../features/outfits/application/outfit_detail_controller.dart';
+import '../../features/outfits/application/outfit_hero_selection.dart';
 import '../../features/outfits/application/outfits_controller.dart';
 import '../../features/recommendations/application/recommendation_detail_controller.dart';
 import '../../features/recommendations/application/recommendations_controller.dart';
@@ -52,6 +53,7 @@ void invalidateUserScopedProviders(Ref ref) {
   ref.invalidate(createOutfitControllerProvider);
   ref.invalidate(editOutfitControllerProvider);
   ref.invalidate(outfitDetailControllerProvider);
+  ref.invalidate(outfitHeroSelectionProvider);
   ref.invalidate(recommendationsControllerProvider);
   ref.invalidate(recommendationDetailControllerProvider);
   ref.invalidate(tryOnControllerProvider);

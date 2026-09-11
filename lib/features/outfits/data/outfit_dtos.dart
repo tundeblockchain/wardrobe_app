@@ -4,6 +4,7 @@ import '../../../core/network/api_exception.dart';
 import '../../items/domain/item.dart';
 import '../domain/outfit.dart';
 import '../domain/outfit_render.dart';
+import '../domain/try_on_history.dart';
 
 part 'outfit_dtos.freezed.dart';
 part 'outfit_dtos.g.dart';
@@ -178,4 +179,73 @@ abstract class RequestOutfitRenderRequest with _$RequestOutfitRenderRequest {
 
   factory RequestOutfitRenderRequest.fromJson(Map<String, dynamic> json) =>
       _$RequestOutfitRenderRequestFromJson(json);
+}
+
+/// Backend `renderHistory[]` (WARDROBE-85 / wardrobe-backend main `fbc9485`).
+/// Newest first. A bad or missing URL is omitted only; S3 keys stay storage-only.
+List<TryOnHistoryEntry> parseRenderHistory(dynamic data) {
+  if (data == null) {
+    return const [];
+  }
+  if (data is! List) {
+    return const [];
+  }
+  final entries = <TryOnHistoryEntry>[];
+  for (final item in data) {
+    if (item is! Map) {
+      continue;
+    }
+    final json = Map<String, dynamic>.from(item);
+    final imageKey = _optionalString(json['imageKey']);
+    final createdAt = _optionalDate(json['createdAt']);
+    if (imageKey == null || createdAt == null) {
+      continue;
+    }
+    entries.add(
+      TryOnHistoryEntry(
+        imageKey: imageKey,
+        createdAt: createdAt,
+        aiProfileId: _optionalString(json['aiProfileId']) ?? '',
+        imageUrl: presignedTryOnUrl(_optionalString(json['imageUrl'])),
+      ),
+    );
+  }
+  return entries;
+}
+
+/// Backend `renderImageUrls[]` — newest-first presigned GETs. Soft-omit junk.
+List<String> parseRenderImageUrls(dynamic data) {
+  if (data == null) {
+    return const [];
+  }
+  if (data is! List) {
+    return const [];
+  }
+  final urls = <String>[];
+  for (final item in data) {
+    if (item is! String) {
+      continue;
+    }
+    final url = presignedTryOnUrl(item);
+    if (url == null || urls.contains(url)) {
+      continue;
+    }
+    urls.add(url);
+  }
+  return urls;
+}
+
+String? _optionalString(dynamic value) {
+  if (value is! String) {
+    return null;
+  }
+  final trimmed = value.trim();
+  return trimmed.isEmpty ? null : trimmed;
+}
+
+DateTime? _optionalDate(dynamic value) {
+  if (value is! String) {
+    return null;
+  }
+  return DateTime.tryParse(value.trim());
 }

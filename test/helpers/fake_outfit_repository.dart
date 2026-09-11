@@ -3,6 +3,7 @@ import 'package:wardrobe_app/features/items/domain/item.dart';
 import 'package:wardrobe_app/features/outfits/domain/outfit.dart';
 import 'package:wardrobe_app/features/outfits/domain/outfit_render.dart';
 import 'package:wardrobe_app/features/outfits/domain/outfit_repository.dart';
+import 'package:wardrobe_app/features/outfits/domain/try_on_history.dart';
 
 /// In-memory [OutfitRepository] for unit tests.
 class FakeOutfitRepository implements OutfitRepository {
@@ -198,6 +199,8 @@ Outfit testOutfit({
   String wardrobeId = 'wd_abc123',
   String name = 'Friday Night',
   OutfitRender? render,
+  List<TryOnHistoryEntry> renderHistory = const [],
+  List<String> renderImageUrls = const [],
 }) {
   return Outfit(
     id: id,
@@ -209,6 +212,8 @@ Outfit testOutfit({
       OutfitItem(itemId: 'item_shoes789', slot: ItemCategory.shoes),
     ],
     render: render,
+    renderHistory: renderHistory,
+    renderImageUrls: renderImageUrls,
     createdAt: DateTime.utc(2026, 9, 4, 18),
     updatedAt: DateTime.utc(2026, 9, 4, 18),
   );
@@ -227,5 +232,19 @@ OutfitRender testOutfitRender({
     imageKey: status == OutfitRenderStatus.ready ? imageKey : null,
     imageUrl: status == OutfitRenderStatus.ready ? imageUrl : null,
     error: error,
+  );
+}
+
+TryOnHistoryEntry testTryOnHistoryEntry({
+  String imageKey = 'users/uid/outfits/outfit_123/renders/rend_1.png',
+  DateTime? createdAt,
+  String aiProfileId = 'profile_generic_01',
+  String? imageUrl = 'https://cdn.example.com/try-on/outfit_123.png',
+}) {
+  return TryOnHistoryEntry(
+    imageKey: imageKey,
+    createdAt: createdAt ?? DateTime.utc(2026, 9, 10, 8),
+    aiProfileId: aiProfileId,
+    imageUrl: imageUrl,
   );
 }

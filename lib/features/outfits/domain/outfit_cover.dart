@@ -1,6 +1,7 @@
 import '../../items/domain/item.dart';
 import '../../items/domain/item_image_source.dart';
 import 'outfit.dart';
+import 'try_on_history.dart';
 
 /// Where an outfit card photo came from.
 enum OutfitCoverKind { render, item, none }
@@ -25,19 +26,28 @@ class OutfitCover {
 
 /// Existing Backend try-on `imageUrl` when present. Never built from `imageKey`.
 String? outfitPreviewImageUrl(Outfit outfit) {
-  final url = outfit.render?.imageUrl?.trim();
-  if (url == null || url.isEmpty) {
-    return null;
-  }
-  return url;
+  return presignedTryOnUrl(outfit.render?.imageUrl);
 }
 
-/// Outfit photo: try-on `render.imageUrl`, else first assigned item http(s)
-/// photo, else none (hanger).
+/// Latest try-on for cards: session pick, `renderImageUrls[0]`, then `render`.
+String? latestOutfitTryOnUrl(Outfit outfit, {String? selectedUrl}) {
+  return outfitHeroImageUrl(
+    latestRender: outfit.render,
+    renderImageUrls: outfit.renderImageUrls,
+    history: outfit.renderHistory,
+    selectedUrl: selectedUrl,
+  );
+}
+
+/// Outfit photo: latest try-on URL, else first assigned item http(s) photo,
+/// else none (hanger).
 ///
 /// Inspected Backend fields:
 /// - Outfit get/list: optional `render.imageUrl` (presigned GET). `render.imageKey`
 ///   is storage-only and is never turned into a URL.
+/// - WARDROBE-85 (wardrobe-backend main `fbc9485`): optional `renderImageUrls`
+///   (newest-first presigned GETs) and `renderHistory[].imageUrl`. `imageKey`
+///   is storage-only.
 /// - Item get/list: `originalImageUrl` / `processedImageUrl` (WARDROBE-54),
 ///   mapped onto [Item.originalImageKey] / [Item.processedImageKey]. S3 keys
 ///   alone cannot be displayed.
@@ -45,8 +55,10 @@ String? outfitPreviewImageUrl(Outfit outfit) {
 OutfitCover resolveOutfitCover(
   Outfit outfit, [
   List<Item> wardrobeItems = const [],
+  String? preferredTryOnUrl,
 ]) {
-  final renderUrl = outfitPreviewImageUrl(outfit);
+  final renderUrl =
+      presignedTryOnUrl(preferredTryOnUrl) ?? latestOutfitTryOnUrl(outfit);
   if (renderUrl != null) {
     return OutfitCover(networkUrl: renderUrl, kind: OutfitCoverKind.render);
   }

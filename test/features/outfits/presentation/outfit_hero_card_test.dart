@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:wardrobe_app/core/theme/app_theme.dart';
 import 'package:wardrobe_app/core/widgets/enlarged_image_popup.dart';
 import 'package:wardrobe_app/features/outfits/presentation/widgets/outfit_hero_card.dart';
+import 'package:wardrobe_app/features/outfits/presentation/widgets/outfit_try_on_gallery.dart';
 
 import '../../../helpers/fake_outfit_repository.dart';
 
@@ -59,5 +60,39 @@ void main() {
 
     expect(tryOn, 0);
     expect(find.byKey(EnlargedImagePopup.dialogKey), findsOneWidget);
+  });
+
+  testWidgets('multiple history photos become a swipe gallery', (tester) async {
+    await pumpCard(
+      tester,
+      child: OutfitHeroCard(
+        outfit: testOutfit(
+          render: testOutfitRender(
+            imageUrl: 'https://cdn.example.com/try-on/latest.png',
+          ),
+          renderImageUrls: const [
+            'https://cdn.example.com/try-on/latest.png',
+            'https://cdn.example.com/try-on/older.png',
+          ],
+          renderHistory: [
+            testTryOnHistoryEntry(
+              imageUrl: 'https://cdn.example.com/try-on/latest.png',
+              createdAt: DateTime.utc(2026, 9, 11, 8),
+            ),
+            testTryOnHistoryEntry(
+              imageKey: 'users/uid/outfits/outfit_123/render.png',
+              imageUrl: 'https://cdn.example.com/try-on/older.png',
+              createdAt: DateTime.utc(2026, 9, 10, 8),
+            ),
+          ],
+        ),
+        onTryOn: () {},
+      ),
+    );
+
+    expect(find.byKey(OutfitTryOnGallery.galleryKey), findsOneWidget);
+    expect(find.byKey(OutfitHeroCard.tryOnHintKey), findsNothing);
+    expect(find.text('Latest look'), findsOneWidget);
+    expect(find.text('2026-09-11'), findsOneWidget);
   });
 }

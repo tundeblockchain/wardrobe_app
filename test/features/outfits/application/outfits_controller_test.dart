@@ -51,6 +51,26 @@ void main() {
     );
   });
 
+  test('refresh hydrates READY list rows from GET /render', () async {
+    repository.outfits.add(
+      testOutfit(render: testOutfitRender(imageUrl: null)),
+    );
+    repository.renderPollQueue.add(
+      testOutfitRender(imageUrl: 'https://cdn.example.com/try-on/hydrated.png'),
+    );
+
+    container.read(outfitsControllerProvider('wd_abc123'));
+    await settle();
+
+    final state = container.read(outfitsControllerProvider('wd_abc123'));
+    expect(repository.listCalls, 1);
+    expect(repository.getRenderCalls, 1);
+    expect(
+      state.outfits.single.render?.imageUrl,
+      'https://cdn.example.com/try-on/hydrated.png',
+    );
+  });
+
   test('deleteOutfit calls DELETE and removes the list row', () async {
     repository.outfits.add(testOutfit());
     container.read(outfitsControllerProvider('wd_abc123'));

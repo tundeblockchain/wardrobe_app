@@ -12,12 +12,14 @@ class OutfitListPreview extends StatelessWidget {
     super.key,
     required this.outfit,
     this.wardrobeItems = const [],
+    this.heroImageUrl,
     this.width = 56,
     this.height = 72,
   });
 
   final Outfit outfit;
   final List<Item> wardrobeItems;
+  final String? heroImageUrl;
   final double width;
   final double height;
 
@@ -33,7 +35,7 @@ class OutfitListPreview extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final cover = resolveOutfitCover(outfit, wardrobeItems);
+    final cover = resolveOutfitCover(outfit, wardrobeItems, heroImageUrl);
 
     final Widget child;
     if (cover.hasPhoto) {

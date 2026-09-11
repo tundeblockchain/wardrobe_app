@@ -4,6 +4,8 @@ import '../../../core/network/api_exception.dart';
 import '../../../core/session/session_gate.dart';
 import '../data/dio_outfit_repository.dart';
 import '../domain/outfit.dart';
+import '../domain/outfit_cover.dart';
+import '../domain/outfit_render.dart';
 import '../domain/outfit_repository.dart';
 import 'outfits_state.dart';
 
@@ -31,7 +33,11 @@ class OutfitsController extends Notifier<OutfitsState> {
       if (!ref.mounted) {
         return;
       }
-      state = state.copyWith(isLoading: false, outfits: outfits);
+      final hydrated = await _hydrateTryOnUrls(outfits);
+      if (!ref.mounted) {
+        return;
+      }
+      state = state.copyWith(isLoading: false, outfits: hydrated);
     } on ApiException catch (error) {
       if (!ref.mounted) {
         return;
@@ -46,6 +52,40 @@ class OutfitsController extends Notifier<OutfitsState> {
         errorMessage: 'Something went wrong. Please try again.',
       );
     }
+  }
+
+  /// List omits `render.imageUrl`; fill READY rows from GET `/render`.
+  Future<List<Outfit>> _hydrateTryOnUrls(List<Outfit> outfits) async {
+    return Future.wait([for (final outfit in outfits) _hydrateOne(outfit)]);
+  }
+
+  Future<Outfit> _hydrateOne(Outfit outfit) async {
+    if (outfitPreviewImageUrl(outfit) != null ||
+        outfit.renderImageUrls.isNotEmpty) {
+      return outfit;
+    }
+    final render = outfit.render;
+    if (render == null) {
+      return outfit;
+    }
+    final hasKey = render.imageKey?.trim().isNotEmpty == true;
+    if (render.status != OutfitRenderStatus.ready && !hasKey) {
+      return outfit;
+    }
+    try {
+      final latest = await _repository.getRender(
+        wardrobeId: wardrobeId,
+        outfitId: outfit.id,
+      );
+      if (latest.hasDisplayImage) {
+        return outfit.copyWith(render: latest);
+      }
+    } on ApiException {
+      // Keep the list row; cards fall back to an item photo or hanger.
+    } catch (_) {
+      // Same soft fallback as a missing presigned URL.
+    }
+    return outfit;
   }
 
   void upsert(Outfit outfit) {
