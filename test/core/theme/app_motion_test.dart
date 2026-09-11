@@ -203,16 +203,19 @@ void main() {
     await tester.pumpWidget(
       MediaQuery(
         data: const MediaQueryData(disableAnimations: true),
-        child: Builder(
-          builder: (context) {
-            return builder.buildTransitions<void>(
-              route,
-              context,
-              const AlwaysStoppedAnimation(0),
-              const AlwaysStoppedAnimation(0),
-              const Text('Route'),
-            );
-          },
+        child: Directionality(
+          textDirection: TextDirection.ltr,
+          child: Builder(
+            builder: (context) {
+              return builder.buildTransitions<void>(
+                route,
+                context,
+                const AlwaysStoppedAnimation(0),
+                const AlwaysStoppedAnimation(0),
+                const Text('Route'),
+              );
+            },
+          ),
         ),
       ),
     );
