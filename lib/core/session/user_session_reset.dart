@@ -13,11 +13,14 @@ import '../../features/outfits/application/edit_outfit_controller.dart';
 import '../../features/outfits/application/outfit_detail_controller.dart';
 import '../../features/outfits/application/outfit_hero_selection.dart';
 import '../../features/outfits/application/outfits_controller.dart';
+import '../../features/outfits/application/wardrobe_outfits_provider.dart';
+import '../../features/search/application/app_search_providers.dart';
 import '../../features/recommendations/application/recommendation_detail_controller.dart';
 import '../../features/recommendations/application/recommendations_controller.dart';
 import '../../features/try_on/application/try_on_controller.dart';
 import '../../features/wardrobes/application/wardrobe_cover_provider.dart';
 import '../../features/wardrobes/application/wardrobe_detail_controller.dart';
+import '../../features/wardrobes/application/wardrobe_items_provider.dart';
 import '../../features/wardrobes/application/wardrobes_controller.dart';
 import 'session_local_store.dart';
 
@@ -44,6 +47,9 @@ void invalidateUserScopedProviders(Ref ref) {
   ref.invalidate(createWardrobeControllerProvider);
   ref.invalidate(wardrobeDetailControllerProvider);
   ref.invalidate(wardrobeCoverProvider);
+  ref.invalidate(wardrobeItemsProvider);
+  ref.invalidate(wardrobeOutfitsProvider);
+  ref.invalidate(appSearchQueryProvider);
   ref.invalidate(itemsControllerProvider);
   ref.invalidate(itemDetailControllerProvider);
   ref.invalidate(addItemControllerProvider);

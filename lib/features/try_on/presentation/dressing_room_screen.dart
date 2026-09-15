@@ -12,7 +12,7 @@ import '../../items/domain/item.dart';
 import '../../outfits/application/outfits_controller.dart';
 import '../../outfits/domain/outfit.dart';
 import '../../outfits/presentation/widgets/outfit_cover_preview.dart';
-import '../../../core/widgets/app_gloss.dart';
+import '../../search/presentation/app_search_gloss_bar.dart';
 
 /// Wardrobe-level outfit picker that opens the try-on screen.
 class DressingRoomScreen extends ConsumerWidget {
@@ -34,7 +34,7 @@ class DressingRoomScreen extends ConsumerWidget {
 
     return Scaffold(
       key: screenKey,
-      appBar: AppGlossBar(title: const Text('Dressing room')),
+      appBar: AppSearchGlossBar(title: const Text('Dressing room')),
       body: RefreshIndicator(
         onRefresh: () =>
             ref.read(outfitsControllerProvider(wardrobeId).notifier).refresh(),

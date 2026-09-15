@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/router/app_routes.dart';
 import '../../../core/theme/theme_controller.dart';
 import '../../../core/widgets/app_gloss.dart';
+import '../../search/presentation/app_search_gloss_bar.dart';
 import '../../../core/widgets/type_to_confirm_dialog.dart';
 import '../../account/application/account_controller.dart';
 import '../../auth/application/auth_controller.dart';
@@ -51,7 +52,7 @@ class ProfileScreen extends ConsumerWidget {
 
     return Scaffold(
       key: screenKey,
-      appBar: AppGlossBar(title: const Text('Account')),
+      appBar: AppSearchGlossBar(title: const Text('Account')),
       body: ListView(
         padding: const EdgeInsets.all(24),
         children: [

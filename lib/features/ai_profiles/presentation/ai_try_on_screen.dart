@@ -15,7 +15,7 @@ import '../domain/ai_profile.dart';
 import 'widgets/ai_profile_picker_image.dart';
 import 'widgets/generic_model_card.dart';
 import 'widgets/personal_ai_profile_card.dart';
-import '../../../core/widgets/app_gloss.dart';
+import '../../search/presentation/app_search_gloss_bar.dart';
 
 /// Phase-3 hub: manage a PERSONAL AI profile and pick a GENERIC_MODEL look.
 ///
@@ -39,7 +39,7 @@ class AiTryOnScreen extends ConsumerWidget {
 
     return Scaffold(
       key: screenKey,
-      appBar: AppGlossBar(title: const Text('AI try-on')),
+      appBar: AppSearchGlossBar(title: const Text('AI try-on')),
       body: RefreshIndicator(
         onRefresh: () async {
           await Future.wait([

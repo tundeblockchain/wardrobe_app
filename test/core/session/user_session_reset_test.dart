@@ -7,6 +7,7 @@ import 'package:wardrobe_app/core/session/session_local_store.dart';
 import 'package:wardrobe_app/core/session/user_session_reset.dart';
 import 'package:wardrobe_app/features/ai_profiles/application/selected_ai_profile.dart';
 import 'package:wardrobe_app/features/items/application/item_local_preview_cache.dart';
+import 'package:wardrobe_app/features/search/application/app_search_providers.dart';
 import 'package:wardrobe_app/features/wardrobes/application/wardrobes_controller.dart';
 import 'package:wardrobe_app/features/wardrobes/data/dio_wardrobe_repository.dart';
 
@@ -55,6 +56,7 @@ void main() {
       container
           .read(selectedAiProfileProvider.notifier)
           .select(testPersonalProfile());
+      container.read(appSearchQueryProvider.notifier).setQuery('coat');
 
       await container.read(userSessionResetProvider).clear();
 
@@ -64,6 +66,7 @@ void main() {
       expect(images.clearCount, 1);
       expect(container.read(itemLocalPreviewCacheProvider), isEmpty);
       expect(container.read(selectedAiProfileProvider), isNull);
+      expect(container.read(appSearchQueryProvider), isEmpty);
       expect(container.read(sessionGateProvider).allowUserDataFetch, isTrue);
 
       container.read(sessionGateProvider.notifier).markSignedOut();

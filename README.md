@@ -29,8 +29,8 @@ Sign in with Apple on iOS
 
 Layers (dependencies point downward only):
 
-1. **Presentation** — screens (`login`, `signup`, `forgot-password`, splash, wardrobes list / create / detail, add item / item detail / edit item, outfits list / create / detail / edit, dressing room / try-on, profile / contact us / report a bug / AI try-on)
-2. **Controller / Provider** — Riverpod auth, wardrobe, item, outfit, try-on, recommendation, support / rate-app, account, and AI-profile controllers
+1. **Presentation** — screens (`login`, `signup`, `forgot-password`, splash, wardrobes list / create / detail, add item / item detail / edit item, outfits list / create / detail / edit, dressing room / try-on, profile / contact us / report a bug / AI try-on) plus header search
+2. **Controller / Provider** — Riverpod auth, wardrobe, item, outfit, try-on, recommendation, support / rate-app, account, AI-profile, and header-search controllers
 3. **Repository** — `AuthRepository`, `WardrobeRepository`, `ItemRepository`, `UploadRepository`, `OutfitRepository`, `RecommendationRepository`, `SupportRepository`, `AccountRepository`, `AiProfileRepository`
 4. **API client / Firebase** — `FirebaseAuthRepository` (email/password + Google + Apple on iOS), Dio + ID-token interceptor, wardrobe/item/upload/outfit/recommendation/support/account/AI-profile Dio repositories, `image_picker` behind `ItemImagePicker`, `in_app_review` behind `AppReviewer`
 
@@ -57,7 +57,11 @@ Authenticated routes:
 - `/profile/report-bug` — in-app form → `POST /support/bug` (optional `replyTo` + `meta`)
 - `/wardrobes` — home: clothing carousel from every wardrobe (continuous
   auto-scroll, pause on drag) plus wardrobe cards; clear **Wardrobes** title
-  (account icon → `/profile`)
+  (account icon → `/profile`). Header search
+  ([WARDROBE-89](https://tundetunde000.atlassian.net/browse/WARDROBE-89))
+  filters already-loaded items (name / category / subcategory), outfits
+  (name), and wardrobes (name); empty query hides the results panel
+
 - `/wardrobes/create` — name form
 - `/wardrobes/:wardrobeId` — detail, rename, delete, item list, outfits entry, suggestions entry
 

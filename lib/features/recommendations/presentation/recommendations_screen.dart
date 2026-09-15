@@ -7,6 +7,7 @@ import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/app_empty_state.dart';
 import '../../../core/widgets/app_fade_in.dart';
 import '../../../core/widgets/app_gloss.dart';
+import '../../search/presentation/app_search_gloss_bar.dart';
 import '../application/recommendations_controller.dart';
 import '../domain/recommendation.dart';
 
@@ -25,7 +26,7 @@ class RecommendationsScreen extends ConsumerWidget {
     final state = ref.watch(recommendationsControllerProvider(wardrobeId));
 
     return Scaffold(
-      appBar: AppGlossBar(title: const Text('Suggested outfits')),
+      appBar: AppSearchGlossBar(title: const Text('Suggested outfits')),
       body: RefreshIndicator(
         onRefresh: () => ref
             .read(recommendationsControllerProvider(wardrobeId).notifier)

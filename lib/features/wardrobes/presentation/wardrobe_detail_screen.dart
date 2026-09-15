@@ -8,6 +8,7 @@ import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/app_empty_state.dart';
 import '../../../core/widgets/app_fade_in.dart';
 import '../../../core/widgets/app_gloss.dart';
+import '../../search/presentation/app_search_gloss_bar.dart';
 import '../../../core/widgets/entity_delete.dart';
 import '../../items/application/items_controller.dart';
 import '../../items/application/items_state.dart';
@@ -97,7 +98,7 @@ class _WardrobeDetailScreenState extends ConsumerState<WardrobeDetailScreen>
     });
 
     return Scaffold(
-      appBar: AppGlossBar(
+      appBar: AppSearchGlossBar(
         title: Text(wardrobe?.name ?? 'Wardrobe'),
         actions: [
           if (wardrobe != null) ...[
