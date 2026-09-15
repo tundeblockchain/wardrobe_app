@@ -8,7 +8,7 @@ import '../application/personal_ai_profiles_controller.dart';
 import '../domain/ai_profile.dart';
 import '../domain/ai_profile_body_context.dart';
 import 'widgets/ai_profile_body_form.dart';
-import '../../../core/widgets/app_gloss.dart';
+import '../../search/presentation/app_search_gloss_bar.dart';
 
 /// View and edit optional PERSONAL body/context fields (WARDROBE-81/83).
 ///
@@ -33,7 +33,7 @@ class AiProfileBodyScreen extends ConsumerWidget {
 
     return Scaffold(
       key: screenKey,
-      appBar: AppGlossBar(title: const Text('Body details')),
+      appBar: AppSearchGlossBar(title: const Text('Body details')),
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(

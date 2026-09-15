@@ -7,7 +7,7 @@ import '../../../core/router/app_routes.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/app_empty_state.dart';
 import '../../../core/widgets/app_fade_in.dart';
-import '../../../core/widgets/app_gloss.dart';
+import '../../search/presentation/app_search_gloss_bar.dart';
 import '../application/wardrobe_cover_provider.dart';
 import '../application/wardrobe_items_provider.dart';
 import '../application/wardrobes_controller.dart';
@@ -77,7 +77,7 @@ class _WardrobesScreenState extends ConsumerState<WardrobesScreen>
     final autoScroll = ref.watch(homeClothingCarouselAutoScrollProvider);
 
     return Scaffold(
-      appBar: AppGlossBar(
+      appBar: AppSearchGlossBar(
         title: const Text('Wardrobes', key: WardrobesScreen.titleKey),
         actions: [
           IconButton(

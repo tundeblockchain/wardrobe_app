@@ -7,7 +7,7 @@ import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/app_empty_state.dart';
 import '../application/wardrobes_controller.dart';
 import '../domain/wardrobe_validators.dart';
-import '../../../core/widgets/app_gloss.dart';
+import '../../search/presentation/app_search_gloss_bar.dart';
 
 /// Form to create a wardrobe by name.
 class CreateWardrobeScreen extends ConsumerStatefulWidget {
@@ -48,7 +48,7 @@ class _CreateWardrobeScreenState extends ConsumerState<CreateWardrobeScreen> {
     final state = ref.watch(createWardrobeControllerProvider);
 
     return Scaffold(
-      appBar: AppGlossBar(title: const Text('Create wardrobe')),
+      appBar: AppSearchGlossBar(title: const Text('Create wardrobe')),
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(

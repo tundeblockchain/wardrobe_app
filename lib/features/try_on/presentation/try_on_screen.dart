@@ -6,7 +6,7 @@ import '../../../core/router/app_routes.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/app_empty_state.dart';
 import '../../../core/widgets/app_fade_in.dart';
-import '../../../core/widgets/app_gloss.dart';
+import '../../search/presentation/app_search_gloss_bar.dart';
 import '../../ai_profiles/application/generic_models_controller.dart';
 import '../../ai_profiles/application/personal_ai_profiles_controller.dart';
 import '../../ai_profiles/application/selected_ai_profile.dart';
@@ -55,7 +55,7 @@ class TryOnScreen extends ConsumerWidget {
 
     return Scaffold(
       key: screenKey,
-      appBar: AppGlossBar(title: Text(outfit?.name ?? 'Try on')),
+      appBar: AppSearchGlossBar(title: Text(outfit?.name ?? 'Try on')),
       body: RefreshIndicator(
         onRefresh: () =>
             ref.read(tryOnControllerProvider(_scope).notifier).refresh(),

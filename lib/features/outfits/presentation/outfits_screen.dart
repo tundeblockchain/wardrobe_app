@@ -12,7 +12,7 @@ import '../application/outfits_controller.dart';
 import '../domain/outfit.dart';
 import 'widgets/outfit_carousel.dart';
 import 'widgets/outfit_list_tile.dart';
-import '../../../core/widgets/app_gloss.dart';
+import '../../search/presentation/app_search_gloss_bar.dart';
 
 /// Saved outfits for one wardrobe.
 class OutfitsScreen extends ConsumerWidget {
@@ -32,7 +32,7 @@ class OutfitsScreen extends ConsumerWidget {
     final wardrobeItems = ref.watch(itemsControllerProvider(wardrobeId)).items;
 
     return Scaffold(
-      appBar: AppGlossBar(
+      appBar: AppSearchGlossBar(
         title: const Text('Outfits'),
         actions: [
           IconButton(
