@@ -39,6 +39,12 @@ void main() {
       expect(find.byKey(ItemFilterBar.acquiredAfterRowKey), findsOneWidget);
       expect(find.text('Hide older than'), findsOneWidget);
       expect(find.text('Choose date'), findsOneWidget);
+      expect(
+        find.text(
+          'Items acquired before this date, and items with no acquired date, are hidden.',
+        ),
+        findsOneWidget,
+      );
       expect(find.byKey(ItemFilterBar.clearButtonKey), findsNothing);
     },
   );

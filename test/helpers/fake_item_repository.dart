@@ -25,8 +25,8 @@ class FakeItemRepository implements ItemRepository {
   ItemListFilters lastListFilters = const ItemListFilters();
 
   /// When false (default), acquired query params are recorded but not applied
-  /// so tests cover the WARDROBE-93 client-side fallback while Backend
-  /// WARDROBE-92 is not live.
+  /// so tests cover the client-side [ItemListFilters.applyLoadedFallback]
+  /// window. Set true to mimic Backend WARDROBE-92 list filtering.
   bool applyAcquiredQueryParams = false;
 
   @override

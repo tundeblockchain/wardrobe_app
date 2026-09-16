@@ -208,7 +208,9 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Vintage coat'), findsNothing);
-    expect(find.text('1 of 2'), findsOneWidget);
+    expect(find.text('No date shirt'), findsNothing);
+    expect(find.text('New tee'), findsOneWidget);
+    expect(find.text('1 of 1'), findsOneWidget);
     expect(find.byKey(ItemFilterBar.clearButtonKey), findsOneWidget);
   });
 

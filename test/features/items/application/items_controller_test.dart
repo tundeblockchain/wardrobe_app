@@ -117,7 +117,36 @@ void main() {
         repository.lastListFilters.acquiredAfter,
         DateTime.utc(2024, 1, 1),
       );
-      expect(state.items.map((item) => item.id), ['new', 'unknown']);
+      expect(state.items.map((item) => item.id), ['new']);
+    },
+  );
+
+  test(
+    'setFilters sends acquiredAfter and matches Backend exclusion',
+    () async {
+      repository.applyAcquiredQueryParams = true;
+      repository.items.addAll([
+        testItem(id: 'old', acquiredAt: DateTime.utc(2020, 1, 1)),
+        testItem(id: 'new', acquiredAt: DateTime.utc(2025, 6, 1)),
+        testItem(id: 'unknown', acquiredAt: null),
+      ]);
+      container.read(itemsControllerProvider('wd_abc123'));
+      await settle();
+
+      await container
+          .read(itemsControllerProvider('wd_abc123').notifier)
+          .setFilters(ItemListFilters(acquiredAfter: DateTime.utc(2024, 1, 1)));
+
+      expect(repository.lastListFilters.toQueryParameters(), {
+        'acquiredAfter': '2024-01-01',
+      });
+      expect(
+        container
+            .read(itemsControllerProvider('wd_abc123'))
+            .items
+            .map((item) => item.id),
+        ['new'],
+      );
     },
   );
 

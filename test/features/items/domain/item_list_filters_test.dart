@@ -105,10 +105,17 @@ void main() {
       final unknown = testItem(id: 'unknown', acquiredAt: null);
       final filters = ItemListFilters(acquiredAfter: DateTime.utc(2024, 1, 1));
 
-      expect(filters.applyLoadedFallback([older, newer, unknown]), [
-        newer,
-        unknown,
-      ]);
+      expect(filters.applyLoadedFallback([older, newer, unknown]), [newer]);
+    });
+
+    test('excludes items with no acquiredAt when a bound is set', () {
+      final unknown = testItem(id: 'unknown', acquiredAt: null);
+      final dated = testItem(id: 'dated', acquiredAt: DateTime.utc(2024, 6, 1));
+      final filters = ItemListFilters(
+        acquiredBefore: DateTime.utc(2025, 12, 31),
+      );
+
+      expect(filters.applyLoadedFallback([unknown, dated]), [dated]);
     });
 
     test('hides items acquired after acquiredBefore', () {
@@ -124,6 +131,19 @@ void main() {
     test('empty acquired window returns the loaded list unchanged', () {
       final items = [testItem(), testItem(id: 'item_2')];
       expect(const ItemListFilters().applyLoadedFallback(items), items);
+    });
+
+    test('inclusive bounds keep items acquired on the bound dates', () {
+      final onBound = testItem(
+        id: 'on-bound',
+        acquiredAt: DateTime.utc(2024, 1, 1),
+      );
+      final filters = ItemListFilters(
+        acquiredAfter: DateTime.utc(2024, 1, 1),
+        acquiredBefore: DateTime.utc(2024, 1, 1),
+      );
+
+      expect(filters.applyLoadedFallback([onBound]), [onBound]);
     });
   });
 }

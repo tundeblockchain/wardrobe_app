@@ -194,7 +194,7 @@ class _AcquiredAfterFilter extends StatelessWidget {
         ),
         const SizedBox(height: AppSpacing.xs),
         Text(
-          'Items acquired before this date are hidden. Items without a date stay visible.',
+          'Items acquired before this date, and items with no acquired date, are hidden.',
           style: theme.textTheme.bodySmall,
         ),
       ],

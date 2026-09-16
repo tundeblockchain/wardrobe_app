@@ -86,12 +86,13 @@ Authenticated routes nested under a wardrobe:
   send JSON `null` (not a dummy token) to clear; send a trimmed string to set.
   Create still soft-omits empty subcategory.
   Optional acquired / purchased date ([WARDROBE-93](https://tundetunde000.atlassian.net/browse/WARDROBE-93))
-  maps to Backend `acquiredAt` ([WARDROBE-92](https://tundetunde000.atlassian.net/browse/WARDROBE-92)):
-  ISO date `YYYY-MM-DD` on the wire (ISO datetime is accepted and reduced to
-  the calendar date). Create/update soft-omit empty; PATCH clear sends JSON
-  `null`. Item lists can hide older clothes via `acquiredAfter` /
-  `acquiredBefore` query params, with a client-side window over the loaded
-  list while Backend filter is not live.
+  maps to Backend `acquiredAt` ([WARDROBE-92](https://tundetunde000.atlassian.net/browse/WARDROBE-92),
+  wardrobe-backend#45 squash `f8f6ded`): ISO date `YYYY-MM-DD` on the wire
+  (ISO datetime is accepted on read and reduced to the calendar date).
+  Create soft-omits empty; PATCH omit / JSON `null` clear matches subcategory
+  REMOVE. Item lists send inclusive `acquiredAfter` / `acquiredBefore` query
+  params. Items with no `acquiredAt` are excluded when either bound is set.
+  A matching client-side window still filters the loaded card deck.
 
 Upload flow:
 
@@ -116,9 +117,9 @@ key exists). Flutter maps those two fields first; aliases such as
 `rawImageUrl` / `imageUrl` remain as fallbacks.
 An empty wardrobe keeps the existing empty state. Category / colour /
 subcategory chips still send WARDROBE-21 query params to
-`GET /wardrobes/{wardrobeId}/items`. Hide-older-than uses WARDROBE-92
-`acquiredAfter` (and optional `acquiredBefore`) and also filters the loaded
-card deck so the UI works before that Backend filter is live. The client
+`GET /wardrobes/{wardrobeId}/items`. Hide-older-than sends WARDROBE-92
+`acquiredAfter` (and optional `acquiredBefore`) and applies the same
+inclusive window to the loaded card deck. The client
 refetches on pull-to-refresh, app resume, and route re-entry (no websockets).
 Camera/gallery is abstracted as `ItemImagePicker` so unit tests never need a
 device. On Android, gallery uses the system Photo Picker (no

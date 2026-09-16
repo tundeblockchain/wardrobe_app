@@ -47,15 +47,17 @@ class ItemListFilters {
     };
   }
 
-  /// Inclusive acquired-date window. Items without [Item.acquiredAt] stay
-  /// visible — unknown is not treated as older.
+  /// Inclusive acquired-date window (WARDROBE-92 / backend `f8f6ded`).
+  ///
+  /// Items without [Item.acquiredAt] are excluded when either bound is set —
+  /// they cannot be proven to fall in range.
   bool matchesAcquired(Item item) {
     if (!hasAcquiredWindow) {
       return true;
     }
     final acquired = ItemAcquiredAt.dateOnlyOrNull(item.acquiredAt);
     if (acquired == null) {
-      return true;
+      return false;
     }
     final after = ItemAcquiredAt.dateOnlyOrNull(acquiredAfter);
     if (after != null && acquired.isBefore(after)) {
@@ -70,10 +72,9 @@ class ItemListFilters {
 
   /// Client-side acquired-date window over an already-loaded list.
   ///
-  /// Prefer Backend `acquiredAfter` / `acquiredBefore` query params
-  /// ([toQueryParameters]). This fallback still applies when WARDROBE-92 is
-  /// not live yet (unknown params ignored). When Backend filters, the same
-  /// window is idempotent.
+  /// List requests send `acquiredAfter` / `acquiredBefore` ([toQueryParameters]).
+  /// This fallback still applies the same inclusive window if Backend has not
+  /// filtered yet. When Backend filters, the result is idempotent.
   List<Item> applyLoadedFallback(List<Item> items) {
     if (!hasAcquiredWindow) {
       return items;
