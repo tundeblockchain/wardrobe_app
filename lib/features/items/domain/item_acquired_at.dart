@@ -1,8 +1,8 @@
 /// Optional clothing-item acquired / purchased date (WARDROBE-93).
 ///
 /// Backend contract ([WARDROBE-92](https://tundetunde000.atlassian.net/browse/WARDROBE-92),
-/// wardrobe-backend#45 squash `f8f6ded`): wire field `acquiredAt` as ISO date
-/// `YYYY-MM-DD`. Responses omit the field when unset (never JSON `null`).
+/// wardrobe-backend#45 merged main `f8f6ded`): wire field `acquiredAt` as ISO
+/// date `YYYY-MM-DD`. Responses omit the field when unset (never JSON `null`).
 /// Flutter also accepts an ISO datetime on **read** and keeps the calendar
 /// date. Blank / null / unparseable values are treated as unset so list/get
 /// stay usable when the field is absent. Writes send `YYYY-MM-DD` only.

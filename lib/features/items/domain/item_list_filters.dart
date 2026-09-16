@@ -47,7 +47,7 @@ class ItemListFilters {
     };
   }
 
-  /// Inclusive acquired-date window (WARDROBE-92 / backend `f8f6ded`).
+  /// Inclusive acquired-date window (WARDROBE-92 / live Backend `f8f6ded`).
   ///
   /// Items without [Item.acquiredAt] are excluded when either bound is set —
   /// they cannot be proven to fall in range.
@@ -72,9 +72,9 @@ class ItemListFilters {
 
   /// Client-side acquired-date window over an already-loaded list.
   ///
-  /// List requests send `acquiredAfter` / `acquiredBefore` ([toQueryParameters]).
-  /// This fallback still applies the same inclusive window if Backend has not
-  /// filtered yet. When Backend filters, the result is idempotent.
+  /// List requests send `acquiredAfter` / `acquiredBefore` ([toQueryParameters])
+  /// to live Backend main (`f8f6ded`). This fallback is an idempotent safety
+  /// window over the loaded deck with the same exclusive-missing-date semantics.
   List<Item> applyLoadedFallback(List<Item> items) {
     if (!hasAcquiredWindow) {
       return items;

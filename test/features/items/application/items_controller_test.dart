@@ -93,33 +93,27 @@ void main() {
     );
   });
 
-  test(
-    'setFilters applies acquiredAfter over the loaded list as MVP fallback',
-    () async {
-      repository.items.addAll([
-        testItem(id: 'old', acquiredAt: DateTime.utc(2020, 1, 1)),
-        testItem(id: 'new', acquiredAt: DateTime.utc(2025, 6, 1)),
-        testItem(id: 'unknown', acquiredAt: null),
-      ]);
-      container.read(itemsControllerProvider('wd_abc123'));
-      await settle();
-      expect(
-        container.read(itemsControllerProvider('wd_abc123')).items,
-        hasLength(3),
-      );
+  test('setFilters applies acquiredAfter over the loaded list as an idempotent safety window', () async {
+    repository.items.addAll([
+      testItem(id: 'old', acquiredAt: DateTime.utc(2020, 1, 1)),
+      testItem(id: 'new', acquiredAt: DateTime.utc(2025, 6, 1)),
+      testItem(id: 'unknown', acquiredAt: null),
+    ]);
+    container.read(itemsControllerProvider('wd_abc123'));
+    await settle();
+    expect(
+      container.read(itemsControllerProvider('wd_abc123')).items,
+      hasLength(3),
+    );
 
-      await container
-          .read(itemsControllerProvider('wd_abc123').notifier)
-          .setFilters(ItemListFilters(acquiredAfter: DateTime.utc(2024, 1, 1)));
+    await container
+        .read(itemsControllerProvider('wd_abc123').notifier)
+        .setFilters(ItemListFilters(acquiredAfter: DateTime.utc(2024, 1, 1)));
 
-      final state = container.read(itemsControllerProvider('wd_abc123'));
-      expect(
-        repository.lastListFilters.acquiredAfter,
-        DateTime.utc(2024, 1, 1),
-      );
-      expect(state.items.map((item) => item.id), ['new']);
-    },
-  );
+    final state = container.read(itemsControllerProvider('wd_abc123'));
+    expect(repository.lastListFilters.acquiredAfter, DateTime.utc(2024, 1, 1));
+    expect(state.items.map((item) => item.id), ['new']);
+  });
 
   test(
     'setFilters sends acquiredAfter and matches Backend exclusion',

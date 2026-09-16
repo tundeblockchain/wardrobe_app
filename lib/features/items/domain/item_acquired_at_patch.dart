@@ -3,7 +3,8 @@ import 'item_acquired_at.dart';
 /// PATCH encoding for optional clothing-item acquired date (WARDROBE-93).
 ///
 /// Matches Backend [WARDROBE-92](https://tundetunde000.atlassian.net/browse/WARDROBE-92)
-/// on wardrobe-backend `f8f6ded` ([#45](https://github.com/tundeblockchain/wardrobe-backend/pull/45)),
+/// on live wardrobe-backend main `f8f6ded`
+/// ([#45](https://github.com/tundeblockchain/wardrobe-backend/pull/45)),
 /// same omit / REMOVE pattern as subcategory on WARDROBE-86/87:
 ///
 /// * field **omitted** → no change

@@ -26,7 +26,7 @@ class FakeItemRepository implements ItemRepository {
 
   /// When false (default), acquired query params are recorded but not applied
   /// so tests cover the client-side [ItemListFilters.applyLoadedFallback]
-  /// window. Set true to mimic Backend WARDROBE-92 list filtering.
+  /// window. Set true to mimic live Backend WARDROBE-92 (`f8f6ded`) filtering.
   bool applyAcquiredQueryParams = false;
 
   @override
