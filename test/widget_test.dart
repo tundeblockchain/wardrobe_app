@@ -30,11 +30,13 @@ import 'helpers/fake_recommendation_repository.dart';
 import 'helpers/fake_support_repository.dart';
 import 'helpers/fake_upload_repository.dart';
 import 'helpers/fake_wardrobe_repository.dart';
+import 'helpers/test_app.dart';
 
 void main() {
   testWidgets('login then logout follows the auth redirect shell', (
     tester,
   ) async {
+    useTallProfileViewport(tester);
     final repository = FakeAuthRepository();
     addTearDown(repository.dispose);
 
@@ -52,6 +54,7 @@ void main() {
           ),
           uploadRepositoryProvider.overrideWithValue(FakeUploadRepository()),
           itemImagePickerProvider.overrideWithValue(FakeItemImagePicker()),
+          ...entitlementTestOverrides(),
           supportRepositoryProvider.overrideWithValue(FakeSupportRepository()),
           appReviewerProvider.overrideWithValue(FakeAppReviewer()),
           deviceContextProvider.overrideWithValue(const FakeDeviceContext()),
@@ -86,11 +89,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(ProfileScreen), findsOneWidget);
-    await tester.scrollUntilVisible(
-      find.byKey(ProfileScreen.signOutButtonKey),
-      80,
-    );
-    await tester.tap(find.byKey(ProfileScreen.signOutButtonKey));
+    await tapInScrollView(tester, find.byKey(ProfileScreen.signOutButtonKey));
     await tester.pumpAndSettle();
 
     expect(find.byType(LoginScreen), findsOneWidget);
@@ -114,6 +113,7 @@ void main() {
           ),
           uploadRepositoryProvider.overrideWithValue(FakeUploadRepository()),
           itemImagePickerProvider.overrideWithValue(FakeItemImagePicker()),
+          ...entitlementTestOverrides(),
           supportRepositoryProvider.overrideWithValue(FakeSupportRepository()),
           appReviewerProvider.overrideWithValue(FakeAppReviewer()),
           deviceContextProvider.overrideWithValue(const FakeDeviceContext()),
@@ -143,8 +143,11 @@ void main() {
     expect(find.text('user@example.com'), findsOneWidget);
     expect(find.text('Signed in with Email'), findsOneWidget);
     expect(find.text('AI try-on'), findsOneWidget);
+    await tester.scrollUntilVisible(find.text('Rate the app'), 80);
     expect(find.text('Rate the app'), findsOneWidget);
+    await tester.scrollUntilVisible(find.text('Contact us'), 80);
     expect(find.text('Contact us'), findsOneWidget);
+    await tester.scrollUntilVisible(find.text('Report a bug'), 80);
     expect(find.text('Report a bug'), findsOneWidget);
     await tester.scrollUntilVisible(find.text('Delete account'), 80);
     expect(find.text('Clear all content'), findsOneWidget);
@@ -171,6 +174,7 @@ void main() {
           ),
           uploadRepositoryProvider.overrideWithValue(FakeUploadRepository()),
           itemImagePickerProvider.overrideWithValue(FakeItemImagePicker()),
+          ...entitlementTestOverrides(),
         ],
         child: const WardrobeApp(),
       ),
@@ -210,6 +214,7 @@ void main() {
           ),
           uploadRepositoryProvider.overrideWithValue(FakeUploadRepository()),
           itemImagePickerProvider.overrideWithValue(FakeItemImagePicker()),
+          ...entitlementTestOverrides(),
         ],
         child: const WardrobeApp(),
       ),
@@ -254,6 +259,7 @@ void main() {
           ),
           uploadRepositoryProvider.overrideWithValue(FakeUploadRepository()),
           itemImagePickerProvider.overrideWithValue(FakeItemImagePicker()),
+          ...entitlementTestOverrides(),
         ],
         child: const WardrobeApp(),
       ),
@@ -289,6 +295,7 @@ void main() {
           ),
           uploadRepositoryProvider.overrideWithValue(FakeUploadRepository()),
           itemImagePickerProvider.overrideWithValue(FakeItemImagePicker()),
+          ...entitlementTestOverrides(),
         ],
         child: const WardrobeApp(),
       ),
@@ -330,6 +337,7 @@ void main() {
           ),
           uploadRepositoryProvider.overrideWithValue(FakeUploadRepository()),
           itemImagePickerProvider.overrideWithValue(FakeItemImagePicker()),
+          ...entitlementTestOverrides(),
         ],
         child: const WardrobeApp(),
       ),
@@ -371,6 +379,7 @@ void main() {
           ),
           uploadRepositoryProvider.overrideWithValue(FakeUploadRepository()),
           itemImagePickerProvider.overrideWithValue(FakeItemImagePicker()),
+          ...entitlementTestOverrides(),
         ],
         child: const WardrobeApp(),
       ),
@@ -419,6 +428,7 @@ void main() {
           ),
           uploadRepositoryProvider.overrideWithValue(FakeUploadRepository()),
           itemImagePickerProvider.overrideWithValue(FakeItemImagePicker()),
+          ...entitlementTestOverrides(),
         ],
         child: const WardrobeApp(),
       ),

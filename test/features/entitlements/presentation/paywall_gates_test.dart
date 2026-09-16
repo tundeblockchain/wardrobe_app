@@ -85,6 +85,10 @@ void main() {
     expect(find.textContaining('Premium'), findsWidgets);
 
     final restoresBefore = harness.paywall.restoreCount;
+    await tester.scrollUntilVisible(
+      find.byKey(ProfileScreen.restorePurchasesTileKey),
+      80,
+    );
     await tester.tap(find.byKey(ProfileScreen.restorePurchasesTileKey));
     await tester.pumpAndSettle();
 
@@ -102,6 +106,10 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(WardrobesScreen.profileButtonKey));
     await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(
+      find.byKey(ProfileScreen.aiTryOnTileKey),
+      80,
+    );
     await tester.tap(find.byKey(ProfileScreen.aiTryOnTileKey));
     await tester.pumpAndSettle();
 

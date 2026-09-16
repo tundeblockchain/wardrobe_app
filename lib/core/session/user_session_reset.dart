@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../features/ai_profiles/application/generic_models_controller.dart';
 import '../../features/ai_profiles/application/personal_ai_profiles_controller.dart';
 import '../../features/ai_profiles/application/selected_ai_profile.dart';
-import '../../features/entitlements/application/entitlements_controller.dart';
 import '../../features/items/application/add_item_controller.dart';
 import '../../features/items/application/edit_item_controller.dart';
 import '../../features/items/application/item_detail_controller.dart';
@@ -67,7 +66,6 @@ void invalidateUserScopedProviders(Ref ref) {
   ref.invalidate(personalAiProfilesControllerProvider);
   ref.invalidate(genericModelsControllerProvider);
   ref.invalidate(selectedAiProfileProvider);
-  ref.invalidate(entitlementsControllerProvider);
 }
 
 final userSessionResetProvider = Provider<UserSessionReset>((ref) {

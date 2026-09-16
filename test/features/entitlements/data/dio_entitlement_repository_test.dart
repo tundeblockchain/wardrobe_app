@@ -47,7 +47,7 @@ void main() {
 
   test('non-map payload becomes INVALID_RESPONSE', () async {
     final repository = buildRepository([
-      const HttpScript(statusCode: 200, body: 'nope'),
+      const HttpScript(statusCode: 200, body: []),
     ]);
 
     expect(

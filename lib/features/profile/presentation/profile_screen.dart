@@ -93,35 +93,23 @@ class ProfileScreen extends ConsumerWidget {
                   ? 'Unlimited wardrobes'
                   : '1 wardrobe, 5 items, 5 outfits'}',
             ),
-            trailing: entitlements.isLoading || entitlements.isRestoring
-                ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : Text(
-                    plan.tier == SubscriptionTier.premium
-                        ? 'Manage'
-                        : 'Upgrade',
-                  ),
-            onTap: entitlements.isLoading
-                ? null
-                : () async {
-                    final placement = plan.tier == SubscriptionTier.premium
-                        ? PaywallPlacement.upgradePremium
-                        : plan.tier == SubscriptionTier.basic
-                        ? PaywallPlacement.upgradePremium
-                        : PaywallPlacement.upgradeBasic;
-                    await ref
-                        .read(paywallGatewayProvider)
-                        .present(placement: placement, context: context);
-                    if (!context.mounted) {
-                      return;
-                    }
-                    await ref
-                        .read(entitlementsControllerProvider.notifier)
-                        .refresh();
-                  },
+            trailing: Text(
+              plan.tier == SubscriptionTier.premium ? 'Manage' : 'Upgrade',
+            ),
+            onTap: () async {
+              final placement = plan.tier == SubscriptionTier.premium
+                  ? PaywallPlacement.upgradePremium
+                  : plan.tier == SubscriptionTier.basic
+                  ? PaywallPlacement.upgradePremium
+                  : PaywallPlacement.upgradeBasic;
+              await ref
+                  .read(paywallGatewayProvider)
+                  .present(placement: placement, context: context);
+              if (!context.mounted) {
+                return;
+              }
+              await ref.read(entitlementsControllerProvider.notifier).refresh();
+            },
           ),
           ListTile(
             key: ProfileScreen.restorePurchasesTileKey,

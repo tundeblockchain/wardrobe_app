@@ -124,6 +124,22 @@ class TestAppHarness {
   }
 }
 
+/// Default test surface is 800×600, which clips Account after Plan/Restore.
+void useTallProfileViewport(WidgetTester tester) {
+  tester.view.physicalSize = const Size(800, 1600);
+  tester.view.devicePixelRatio = 1;
+  addTearDown(tester.view.resetPhysicalSize);
+  addTearDown(tester.view.resetDevicePixelRatio);
+}
+
+/// Scrolls until [finder] can receive a tap (center on-screen).
+Future<void> tapInScrollView(WidgetTester tester, Finder finder) async {
+  await tester.scrollUntilVisible(finder, 80);
+  await tester.ensureVisible(finder);
+  await tester.pumpAndSettle();
+  await tester.tap(finder);
+}
+
 Future<void> tapHomeWardrobeCard(
   WidgetTester tester, {
   String wardrobeId = 'wd_abc123',
