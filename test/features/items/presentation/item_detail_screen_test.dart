@@ -11,11 +11,16 @@ import 'package:wardrobe_app/features/items/presentation/widgets/item_detail_met
 import 'package:wardrobe_app/features/items/presentation/widgets/processing_status_chip.dart';
 import 'package:wardrobe_app/features/outfits/data/dio_outfit_repository.dart';
 import 'package:wardrobe_app/features/outfits/domain/outfit.dart';
+import 'package:wardrobe_app/features/shopping_links/data/dio_shopping_links_repository.dart';
+import 'package:wardrobe_app/features/shopping_links/presentation/widgets/related_shopping_links_section.dart';
+import 'package:wardrobe_app/features/shopping_links/presentation/widgets/shopping_product_card.dart';
 import 'package:wardrobe_app/features/wardrobes/data/dio_wardrobe_repository.dart';
 
 import '../../../helpers/date_stamp_matchers.dart';
 import '../../../helpers/fake_item_repository.dart';
 import '../../../helpers/fake_outfit_repository.dart';
+import '../../../helpers/fake_shopping_link_opener.dart';
+import '../../../helpers/fake_shopping_links_repository.dart';
 import '../../../helpers/fake_wardrobe_repository.dart';
 import '../../../helpers/item_processing_poll_overrides.dart';
 
@@ -25,6 +30,8 @@ void main() {
     FakeItemRepository? repository,
     FakeWardrobeRepository? wardrobes,
     FakeOutfitRepository? outfits,
+    FakeShoppingLinksRepository? shoppingLinks,
+    FakeShoppingLinkOpener? shoppingOpener,
   }) async {
     tester.view.physicalSize = const Size(800, 1600);
     tester.view.devicePixelRatio = 1;
@@ -42,6 +49,12 @@ void main() {
           ),
           outfitRepositoryProvider.overrideWithValue(
             outfits ?? FakeOutfitRepository(),
+          ),
+          shoppingLinksRepositoryProvider.overrideWithValue(
+            shoppingLinks ?? FakeShoppingLinksRepository(),
+          ),
+          shoppingLinkOpenerProvider.overrideWithValue(
+            shoppingOpener ?? FakeShoppingLinkOpener(),
           ),
           ...itemProcessingPollTestOverrides(),
         ],
@@ -163,5 +176,35 @@ void main() {
     await tester.tap(find.byKey(EnlargedImagePopup.closeKey));
     await tester.pumpAndSettle();
     expect(find.byKey(EnlargedImagePopup.dialogKey), findsNothing);
+  });
+
+  testWidgets('item detail shows empty related shopping links', (tester) async {
+    await pumpDetail(tester);
+
+    expect(find.byKey(RelatedShoppingLinksSection.sectionKey), findsOneWidget);
+    expect(find.text('Related shopping links'), findsOneWidget);
+    expect(find.text('No similar products to shop yet.'), findsOneWidget);
+    expect(find.byType(ShoppingProductCard), findsNothing);
+    expect(find.text('Black Nike T-Shirt'), findsWidgets);
+  });
+
+  testWidgets('item detail shopping cards open externally', (tester) async {
+    final opener = FakeShoppingLinkOpener();
+    final link = testShoppingLink();
+    await pumpDetail(
+      tester,
+      shoppingOpener: opener,
+      shoppingLinks: FakeShoppingLinksRepository(
+        byItem: {
+          'item_xyz123': [link],
+        },
+      ),
+    );
+
+    expect(find.byType(ShoppingProductCard), findsOneWidget);
+    expect(find.text('Black cotton tee'), findsOneWidget);
+    await tester.tap(find.byKey(ShoppingProductCard.cardKey(link.url)));
+    await tester.pump();
+    expect(opener.opened, [Uri.parse(link.url)]);
   });
 }

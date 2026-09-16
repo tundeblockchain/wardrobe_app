@@ -9,6 +9,9 @@ import '../../../core/widgets/app_empty_state.dart';
 import '../../../core/widgets/enlarged_image_popup.dart';
 import '../../../core/widgets/entity_delete.dart';
 import '../../outfits/application/outfits_controller.dart';
+import '../../search/presentation/app_search_gloss_bar.dart';
+import '../../shopping_links/application/item_shopping_links_controller.dart';
+import '../../shopping_links/presentation/widgets/related_shopping_links_section.dart';
 import '../../wardrobes/application/wardrobes_controller.dart';
 import '../application/item_detail_controller.dart';
 import '../application/item_detail_state.dart';
@@ -17,7 +20,6 @@ import '../application/item_scope.dart';
 import '../domain/item_detail_meta.dart';
 import 'widgets/item_browse_image.dart';
 import 'widgets/item_detail_meta_block.dart';
-import '../../search/presentation/app_search_gloss_bar.dart';
 
 /// Clothing item detail with edit and delete.
 class ItemDetailScreen extends ConsumerStatefulWidget {
@@ -69,6 +71,7 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen>
   @override
   void didPopNext() {
     ref.read(itemDetailControllerProvider(_scope).notifier).refresh();
+    ref.read(itemShoppingLinksControllerProvider(_scope).notifier).refresh();
   }
 
   @override
@@ -119,8 +122,14 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen>
       ),
       body: SafeArea(
         child: RefreshIndicator(
-          onRefresh: () =>
+          onRefresh: () async {
+            await Future.wait([
               ref.read(itemDetailControllerProvider(_scope).notifier).refresh(),
+              ref
+                  .read(itemShoppingLinksControllerProvider(_scope).notifier)
+                  .refresh(),
+            ]);
+          },
           child: ListView(
             physics: const AlwaysScrollableScrollPhysics(),
             padding: AppSpacing.pageInsets,
@@ -193,6 +202,13 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen>
               context.push(AppRoutes.wardrobeDetail(wardrobeId)),
           onOutfitTap: (outfitId) =>
               context.push(AppRoutes.outfitDetail(widget.wardrobeId, outfitId)),
+        ),
+        const SizedBox(height: 16),
+        RelatedShoppingLinksSection(
+          state: ref.watch(itemShoppingLinksControllerProvider(_scope)),
+          onRetry: () => ref
+              .read(itemShoppingLinksControllerProvider(_scope).notifier)
+              .refresh(),
         ),
         if (state.errorMessage != null) ...[
           const SizedBox(height: 16),

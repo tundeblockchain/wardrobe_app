@@ -10,6 +10,8 @@ import '../../../core/widgets/app_fade_in.dart';
 import '../../entitlements/domain/entitlement_action.dart';
 import '../../entitlements/presentation/entitlement_guard.dart';
 import '../../search/presentation/app_search_gloss_bar.dart';
+import '../../shopping_links/application/home_shopping_links_controller.dart';
+import '../../shopping_links/presentation/widgets/related_shopping_links_section.dart';
 import '../application/wardrobe_cover_provider.dart';
 import '../application/wardrobe_items_provider.dart';
 import '../application/wardrobes_controller.dart';
@@ -61,7 +63,10 @@ class _WardrobesScreenState extends ConsumerState<WardrobesScreen>
   }
 
   Future<void> _refreshList() async {
-    await ref.read(wardrobesControllerProvider.notifier).refresh();
+    await Future.wait([
+      ref.read(wardrobesControllerProvider.notifier).refresh(),
+      ref.read(homeShoppingLinksControllerProvider.notifier).refresh(),
+    ]);
     _refreshCovers();
   }
 
@@ -107,6 +112,21 @@ class _WardrobesScreenState extends ConsumerState<WardrobesScreen>
           physics: const AlwaysScrollableScrollPhysics(),
           padding: AppSpacing.pageInsets,
           children: [
+            if (clothingItems.isNotEmpty) ...[
+              AppFadeIn(
+                child: HomeClothingCarousel(
+                  items: clothingItems,
+                  autoScroll: autoScroll,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.md),
+            ],
+            RelatedShoppingLinksSection(
+              state: ref.watch(homeShoppingLinksControllerProvider),
+              onRetry: () => ref
+                  .read(homeShoppingLinksControllerProvider.notifier)
+                  .refresh(),
+            ),
             if (state.isLoading && state.wardrobes.isEmpty)
               const Padding(
                 padding: EdgeInsets.symmetric(vertical: AppSpacing.xxl),
@@ -133,15 +153,6 @@ class _WardrobesScreenState extends ConsumerState<WardrobesScreen>
                 ),
               )
             else ...[
-              if (clothingItems.isNotEmpty) ...[
-                AppFadeIn(
-                  child: HomeClothingCarousel(
-                    items: clothingItems,
-                    autoScroll: autoScroll,
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.md),
-              ],
               Text(
                 'Wardrobes',
                 key: WardrobesScreen.listHeadingKey,
