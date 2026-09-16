@@ -21,6 +21,8 @@ void main() {
     expect(find.byType(AddItemScreen), findsOneWidget);
     expect(find.byKey(AddItemScreen.galleryButtonKey), findsOneWidget);
     expect(find.byKey(AddItemScreen.cameraButtonKey), findsOneWidget);
+    expect(find.byKey(AddItemScreen.acquiredAtFieldKey), findsOneWidget);
+    expect(find.text('Acquired / purchased (optional)'), findsOneWidget);
     expect(find.text('Gallery'), findsOneWidget);
     expect(find.text('Camera'), findsOneWidget);
 

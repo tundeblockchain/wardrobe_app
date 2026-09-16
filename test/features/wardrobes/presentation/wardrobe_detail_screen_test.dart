@@ -181,6 +181,39 @@ void main() {
     expect(find.text('Black Nike T-Shirt'), findsNothing);
   });
 
+  testWidgets('hide-older-than filter drops clothes acquired before the date', (
+    tester,
+  ) async {
+    final older = testItem(
+      id: 'item_old',
+      name: 'Vintage coat',
+      acquiredAt: DateTime.utc(2020, 1, 1),
+    );
+    final newer = testItem(
+      id: 'item_new',
+      name: 'New tee',
+      acquiredAt: DateTime.utc(2026, 9, 16),
+    );
+    final unknown = testItem(id: 'item_unknown', name: 'No date shirt');
+    await pumpDetail(tester, items: [older, newer, unknown]);
+
+    expect(find.text('1 of 3'), findsOneWidget);
+    await tester.ensureVisible(
+      find.byKey(ItemFilterBar.acquiredAfterButtonKey),
+    );
+    await tester.tap(find.byKey(ItemFilterBar.acquiredAfterButtonKey));
+    await tester.pumpAndSettle();
+    expect(find.byType(DatePickerDialog), findsOneWidget);
+    await tester.tap(find.text('OK'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Vintage coat'), findsNothing);
+    expect(find.text('No date shirt'), findsNothing);
+    expect(find.text('New tee'), findsOneWidget);
+    expect(find.text('1 of 1'), findsOneWidget);
+    expect(find.byKey(ItemFilterBar.clearButtonKey), findsOneWidget);
+  });
+
   testWidgets('PROCESSING item card shows a delete control', (tester) async {
     await pumpDetail(
       tester,

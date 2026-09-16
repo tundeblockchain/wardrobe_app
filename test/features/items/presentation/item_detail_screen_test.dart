@@ -123,6 +123,7 @@ void main() {
     expect(find.text('Subcategory'), findsOneWidget);
     expect(find.text('Colours'), findsOneWidget);
     expect(find.text('Brand'), findsOneWidget);
+    expect(find.text('Acquired'), findsOneWidget);
     expect(find.text('T-shirt'), findsOneWidget);
     expect(find.text('Black'), findsOneWidget);
     expect(find.text('Summer Clothes'), findsOneWidget);
@@ -143,7 +144,7 @@ void main() {
     expect(find.byKey(ItemDetailMetaBlock.subcategoryRowKey), findsOneWidget);
     expect(find.byKey(ItemDetailMetaBlock.coloursRowKey), findsOneWidget);
     expect(find.byKey(ItemDetailMetaBlock.brandRowKey), findsOneWidget);
-    expect(find.text(ItemDetailMeta.emptyPlaceholder), findsNWidgets(4));
+    expect(find.text(ItemDetailMeta.emptyPlaceholder), findsNWidgets(5));
     expect(find.text('Summer Clothes'), findsOneWidget);
   });
 

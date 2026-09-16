@@ -5,9 +5,10 @@ import '../../domain/item.dart';
 import '../../domain/item_detail_meta.dart';
 import '../../domain/item_taxonomy.dart';
 
-/// Stylish burgundy/plum card for category, colours, brand, wardrobes, outfits.
+/// Stylish burgundy/plum card for category, colours, brand, acquired date,
+/// wardrobes, outfits.
 ///
-/// The four attribute rows always render. Empty values use
+/// Attribute rows always render. Empty values use
 /// [ItemDetailMeta.emptyPlaceholder] instead of hiding.
 class ItemDetailMetaBlock extends StatelessWidget {
   const ItemDetailMetaBlock({
@@ -30,6 +31,7 @@ class ItemDetailMetaBlock extends StatelessWidget {
   static const subcategoryRowKey = Key('item_detail_meta_subcategory');
   static const coloursRowKey = Key('item_detail_meta_colours');
   static const brandRowKey = Key('item_detail_meta_brand');
+  static const acquiredAtRowKey = Key('item_detail_meta_acquired_at');
   static const wardrobesSectionKey = Key('item_detail_meta_wardrobes');
   static const outfitsSectionKey = Key('item_detail_meta_outfits');
 
@@ -89,6 +91,12 @@ class ItemDetailMetaBlock extends StatelessWidget {
               rowKey: brandRowKey,
               label: 'Brand',
               child: _ValueText(brand),
+            ),
+            const _MetaDivider(),
+            _MetaRow(
+              rowKey: acquiredAtRowKey,
+              label: 'Acquired',
+              child: _ValueText(ItemDetailMeta.acquiredAtLabel(item)),
             ),
             const SizedBox(height: AppSpacing.lg),
             const _SectionHeader(

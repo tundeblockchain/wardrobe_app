@@ -12,6 +12,10 @@ void main() {
     expect(ItemDetailMeta.subcategoryLabel(item), 'T-shirt');
     expect(ItemDetailMeta.colourLabels(item), ['Black']);
     expect(ItemDetailMeta.brandLabel(item), 'Nike');
+    expect(
+      ItemDetailMeta.acquiredAtLabel(item),
+      ItemDetailMeta.emptyPlaceholder,
+    );
   });
 
   test('empty subcategory, colours, and brand render the placeholder', () {
@@ -25,6 +29,10 @@ void main() {
     expect(ItemDetailMeta.colourWires(item), isEmpty);
     expect(ItemDetailMeta.colourLabels(item), isEmpty);
     expect(ItemDetailMeta.brandLabel(item), ItemDetailMeta.emptyPlaceholder);
+    expect(
+      ItemDetailMeta.acquiredAtLabel(item),
+      ItemDetailMeta.emptyPlaceholder,
+    );
     expect(
       ItemDetailMeta.isPlaceholder(ItemDetailMeta.brandLabel(item)),
       isTrue,
@@ -66,5 +74,14 @@ void main() {
     expect(ItemDetailMeta.humanizeToken('NAVY_BLUE'), 'Navy Blue');
     expect(ItemDetailMeta.colourLabel('CUSTOM_TEAL'), 'Custom Teal');
     expect(ItemDetailMeta.brandLabel(testItem(brand: '   ')), 'Not set');
+  });
+
+  test('formats acquiredAt as a short calendar label', () {
+    expect(
+      ItemDetailMeta.acquiredAtLabel(
+        testItem(acquiredAt: DateTime.utc(2024, 3, 9)),
+      ),
+      '9 Mar 2024',
+    );
   });
 }

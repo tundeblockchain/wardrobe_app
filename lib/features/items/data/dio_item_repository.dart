@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../core/network/dio_client.dart';
 import '../domain/item.dart';
+import '../domain/item_acquired_at.dart';
+import '../domain/item_acquired_at_patch.dart';
 import '../domain/item_list_filters.dart';
 import '../domain/item_repository.dart';
 import '../domain/item_subcategory_patch.dart';
@@ -52,6 +54,7 @@ class DioItemRepository implements ItemRepository {
     List<String>? colours,
     String? brand,
     required String imageKey,
+    DateTime? acquiredAt,
   }) {
     return _guard(() async {
       final response = await _dio.post<dynamic>(
@@ -63,6 +66,7 @@ class DioItemRepository implements ItemRepository {
           colours: _optionalList(colours),
           brand: _optional(brand),
           imageKey: imageKey,
+          acquiredAt: ItemAcquiredAt.dateOnlyOrNull(acquiredAt),
         ).toJson(),
       );
       return parseItem(response.data);
@@ -79,6 +83,7 @@ class DioItemRepository implements ItemRepository {
     List<String>? colours,
     String? brand,
     String? imageKey,
+    ItemAcquiredAtPatch acquiredAt = const ItemAcquiredAtPatch.omit(),
   }) {
     return _guard(() async {
       final response = await _dio.patch<dynamic>(
@@ -92,6 +97,7 @@ class DioItemRepository implements ItemRepository {
             imageKey: imageKey,
           ).toJson(),
           ...subcategory.toJson(),
+          ...acquiredAt.toJson(),
         },
       );
       return parseItem(response.data);

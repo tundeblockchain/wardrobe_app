@@ -7,6 +7,7 @@ import '../data/dio_upload_repository.dart';
 import '../data/image_picker_item_image_picker.dart';
 import '../domain/item.dart';
 import '../domain/item_image_picker.dart';
+import '../domain/item_acquired_at_patch.dart';
 import '../domain/item_repository.dart';
 import '../domain/item_subcategory_patch.dart';
 import '../domain/picked_image.dart';
@@ -58,6 +59,7 @@ class EditItemController extends Notifier<EditItemState> {
     ItemSubcategoryPatch subcategory = const ItemSubcategoryPatch.omit(),
     List<String>? colours,
     String? brand,
+    ItemAcquiredAtPatch acquiredAt = const ItemAcquiredAtPatch.omit(),
   }) async {
     state = state.copyWith(isSaving: true, clearError: true);
     try {
@@ -84,6 +86,7 @@ class EditItemController extends Notifier<EditItemState> {
         colours: colours ?? const [],
         brand: brand,
         imageKey: imageKey,
+        acquiredAt: acquiredAt,
       );
       if (!ref.mounted) {
         return item;

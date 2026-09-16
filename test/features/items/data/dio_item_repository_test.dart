@@ -7,6 +7,7 @@ import 'package:wardrobe_app/core/network/dio_client.dart';
 import 'package:wardrobe_app/core/network/id_token_source.dart';
 import 'package:wardrobe_app/features/items/data/dio_item_repository.dart';
 import 'package:wardrobe_app/features/items/domain/item.dart';
+import 'package:wardrobe_app/features/items/domain/item_acquired_at_patch.dart';
 import 'package:wardrobe_app/features/items/domain/item_list_filters.dart';
 import 'package:wardrobe_app/features/items/domain/item_subcategory_patch.dart';
 import 'package:wardrobe_app/features/items/domain/item_taxonomy.dart';
@@ -110,6 +111,30 @@ void main() {
     );
 
     expect(adapter.requests.single.queryParameters, {'category': 'TOP'});
+  });
+
+  test('listItems sends acquiredAfter and acquiredBefore ISO dates', () async {
+    repository = buildRepository([
+      const HttpScript(
+        statusCode: 200,
+        body: {
+          'items': [payload],
+        },
+      ),
+    ]);
+
+    await repository.listItems(
+      'wd_abc123',
+      filters: ItemListFilters(
+        acquiredAfter: DateTime.utc(2024, 1, 1),
+        acquiredBefore: DateTime.utc(2025, 12, 31),
+      ),
+    );
+
+    expect(adapter.requests.single.queryParameters, {
+      'acquiredAfter': '2024-01-01',
+      'acquiredBefore': '2025-12-31',
+    });
   });
 
   test('listItems accepts a bare array', () async {
@@ -224,6 +249,44 @@ void main() {
     });
   });
 
+  test('createItem posts acquiredAt as YYYY-MM-DD', () async {
+    repository = buildRepository([
+      HttpScript(
+        statusCode: 201,
+        body: {...payload, 'acquiredAt': '2024-03-09'},
+      ),
+    ]);
+
+    final result = await repository.createItem(
+      wardrobeId: 'wd_abc123',
+      name: 'Black Nike T-Shirt',
+      category: ItemCategory.top,
+      imageKey: 'users/uid/uploads/uuid.jpg',
+      acquiredAt: DateTime.utc(2024, 3, 9),
+    );
+
+    expect(result.acquiredAt, DateTime.utc(2024, 3, 9));
+    expect(_requestBody(adapter.requests.single)['acquiredAt'], '2024-03-09');
+  });
+
+  test('createItem omits acquiredAt when unset', () async {
+    repository = buildRepository([
+      const HttpScript(statusCode: 201, body: payload),
+    ]);
+
+    await repository.createItem(
+      wardrobeId: 'wd_abc123',
+      name: 'Black Nike T-Shirt',
+      category: ItemCategory.top,
+      imageKey: 'users/uid/uploads/uuid.jpg',
+    );
+
+    expect(
+      _requestBody(adapter.requests.single).containsKey('acquiredAt'),
+      isFalse,
+    );
+  });
+
   test('updateItem patches provided fields', () async {
     repository = buildRepository([
       HttpScript(statusCode: 200, body: {...payload, 'name': 'Navy Tee'}),
@@ -281,6 +344,51 @@ void main() {
     );
 
     expect(_requestBody(adapter.requests.single), {'subcategory': 'SHIRT'});
+  });
+
+  test('updateItem omits acquiredAt when the patch is omit', () async {
+    repository = buildRepository([HttpScript(statusCode: 200, body: payload)]);
+
+    await repository.updateItem(
+      wardrobeId: 'wd_abc123',
+      itemId: 'item_xyz123',
+      name: 'Navy Tee',
+      acquiredAt: const ItemAcquiredAtPatch.omit(),
+    );
+
+    expect(
+      _requestBody(adapter.requests.single).containsKey('acquiredAt'),
+      isFalse,
+    );
+  });
+
+  test('updateItem PATCHes JSON null to clear acquiredAt', () async {
+    repository = buildRepository([HttpScript(statusCode: 200, body: payload)]);
+
+    await repository.updateItem(
+      wardrobeId: 'wd_abc123',
+      itemId: 'item_xyz123',
+      acquiredAt: const ItemAcquiredAtPatch.clear(),
+    );
+
+    expect(_requestBody(adapter.requests.single), {'acquiredAt': null});
+  });
+
+  test('updateItem PATCHes acquiredAt as YYYY-MM-DD', () async {
+    repository = buildRepository([
+      HttpScript(
+        statusCode: 200,
+        body: {...payload, 'acquiredAt': '2024-03-09'},
+      ),
+    ]);
+
+    await repository.updateItem(
+      wardrobeId: 'wd_abc123',
+      itemId: 'item_xyz123',
+      acquiredAt: ItemAcquiredAtPatch.set(DateTime.utc(2024, 3, 9)),
+    );
+
+    expect(_requestBody(adapter.requests.single), {'acquiredAt': '2024-03-09'});
   });
 
   test('createItem still omits empty subcategory', () async {

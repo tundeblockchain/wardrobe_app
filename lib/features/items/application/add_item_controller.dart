@@ -58,6 +58,7 @@ class AddItemController extends Notifier<AddItemState> {
     String? subcategory,
     List<String>? colours,
     String? brand,
+    DateTime? acquiredAt,
   }) async {
     final image = state.pickedImage;
     if (image == null) {
@@ -88,6 +89,7 @@ class AddItemController extends Notifier<AddItemState> {
         colours: colours,
         brand: brand,
         imageKey: ticket.objectKey,
+        acquiredAt: acquiredAt,
       );
       if (!ref.mounted) {
         return item;

@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_spacing.dart';
 import '../../domain/item.dart';
+import '../../domain/item_acquired_at.dart';
 import '../../domain/item_list_filters.dart';
 import '../../domain/item_taxonomy.dart';
+import 'item_acquired_at_field.dart';
 
 /// Category / colour / subcategory chips that map to WARDROBE-21 query params.
 class ItemFilterBar extends StatelessWidget {
@@ -16,6 +18,11 @@ class ItemFilterBar extends StatelessWidget {
   static const categoryRowKey = Key('item_filter_category');
   static const colourRowKey = Key('item_filter_colour');
   static const subcategoryRowKey = Key('item_filter_subcategory');
+  static const acquiredAfterRowKey = Key('item_filter_acquired_after');
+  static const acquiredAfterButtonKey = Key(
+    'item_filter_acquired_after_button',
+  );
+  static const acquiredAfterClearKey = Key('item_filter_acquired_after_clear');
   static const clearButtonKey = Key('item_filter_clear');
 
   static Key categoryChipKey(ItemCategory category) =>
@@ -104,6 +111,18 @@ class ItemFilterBar extends StatelessWidget {
             ],
           ),
         ],
+        const SizedBox(height: AppSpacing.sm),
+        _AcquiredAfterFilter(
+          value: filters.acquiredAfter,
+          onChanged: (date) {
+            onChanged(
+              filters.copyWith(
+                acquiredAfter: date,
+                clearAcquiredAfter: date == null,
+              ),
+            );
+          },
+        ),
         if (!filters.isEmpty)
           Align(
             alignment: Alignment.centerLeft,
@@ -113,6 +132,71 @@ class ItemFilterBar extends StatelessWidget {
               child: const Text('Clear filters'),
             ),
           ),
+      ],
+    );
+  }
+}
+
+class _AcquiredAfterFilter extends StatelessWidget {
+  const _AcquiredAfterFilter({required this.value, required this.onChanged});
+
+  final DateTime? value;
+  final ValueChanged<DateTime?> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final acquired = ItemAcquiredAt.dateOnlyOrNull(value);
+    final selected = acquired != null;
+
+    return Column(
+      key: ItemFilterBar.acquiredAfterRowKey,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Hide older than', style: theme.textTheme.labelLarge),
+        const SizedBox(height: AppSpacing.sm),
+        Row(
+          children: [
+            Flexible(
+              child: OutlinedButton.icon(
+                key: ItemFilterBar.acquiredAfterButtonKey,
+                onPressed: () async {
+                  final picked = await showItemAcquiredDatePicker(
+                    context,
+                    initial: acquired,
+                  );
+                  if (picked != null) {
+                    onChanged(ItemAcquiredAt.dateOnly(picked));
+                  }
+                },
+                icon: Icon(
+                  Icons.event_outlined,
+                  color: selected ? scheme.primary : scheme.onSurfaceVariant,
+                ),
+                label: Text(
+                  acquired == null
+                      ? 'Choose date'
+                      : ItemAcquiredAt.formatDisplay(acquired),
+                ),
+              ),
+            ),
+            if (selected) ...[
+              const SizedBox(width: AppSpacing.sm),
+              IconButton(
+                key: ItemFilterBar.acquiredAfterClearKey,
+                tooltip: 'Show all dates',
+                onPressed: () => onChanged(null),
+                icon: Icon(Icons.close, color: scheme.primary),
+              ),
+            ],
+          ],
+        ),
+        const SizedBox(height: AppSpacing.xs),
+        Text(
+          'Items acquired before this date, and items with no acquired date, are hidden.',
+          style: theme.textTheme.bodySmall,
+        ),
       ],
     );
   }

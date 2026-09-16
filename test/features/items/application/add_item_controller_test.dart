@@ -109,6 +109,36 @@ void main() {
     expect(items.lastSubcategoryArg, isNull);
   });
 
+  test('submit omits empty acquiredAt on create', () async {
+    await container
+        .read(addItemControllerProvider('wd_abc123').notifier)
+        .pickFromGallery();
+
+    final created = await container
+        .read(addItemControllerProvider('wd_abc123').notifier)
+        .submit(name: 'Tee', category: ItemCategory.top);
+
+    expect(created?.acquiredAt, isNull);
+    expect(items.lastAcquiredAtArg, isNull);
+  });
+
+  test('submit posts acquiredAt when the form date is set', () async {
+    await container
+        .read(addItemControllerProvider('wd_abc123').notifier)
+        .pickFromGallery();
+
+    final created = await container
+        .read(addItemControllerProvider('wd_abc123').notifier)
+        .submit(
+          name: 'Tee',
+          category: ItemCategory.top,
+          acquiredAt: DateTime.utc(2024, 3, 9),
+        );
+
+    expect(created?.acquiredAt, DateTime.utc(2024, 3, 9));
+    expect(items.lastAcquiredAtArg, DateTime.utc(2024, 3, 9));
+  });
+
   test('submit without a photo records a validation message', () async {
     final created = await container
         .read(addItemControllerProvider('wd_abc123').notifier)

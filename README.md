@@ -85,6 +85,15 @@ Authenticated routes nested under a wardrobe:
   (`2cb2285913aec9d66d6e34b447d289b5eb28b6f1`): omit the field when unchanged;
   send JSON `null` (not a dummy token) to clear; send a trimmed string to set.
   Create still soft-omits empty subcategory.
+  Optional acquired / purchased date ([WARDROBE-93](https://tundetunde000.atlassian.net/browse/WARDROBE-93))
+  maps to Backend `acquiredAt` ([WARDROBE-92](https://tundetunde000.atlassian.net/browse/WARDROBE-92),
+  wardrobe-backend#45 merged main `f8f6ded`): ISO date `YYYY-MM-DD` on the
+  wire. Writes never send a datetime. Reads still accept ISO datetime and
+  keep the calendar date. Create soft-omits empty; PATCH omit / JSON `null`
+  clear matches subcategory REMOVE. Item lists send inclusive
+  `acquiredAfter` / `acquiredBefore` query params to live Backend. Items
+  with no `acquiredAt` are excluded when either bound is set. A matching
+  client-side window is an idempotent safety filter over the loaded deck.
 
 Upload flow:
 
@@ -109,7 +118,10 @@ key exists). Flutter maps those two fields first; aliases such as
 `rawImageUrl` / `imageUrl` remain as fallbacks.
 An empty wardrobe keeps the existing empty state. Category / colour /
 subcategory chips still send WARDROBE-21 query params to
-`GET /wardrobes/{wardrobeId}/items` and filter the card deck. The client
+`GET /wardrobes/{wardrobeId}/items`. Hide-older-than sends live WARDROBE-92
+(`f8f6ded`) `acquiredAfter` (and optional `acquiredBefore`) and applies
+the same inclusive window to the loaded card deck as an idempotent safety
+filter. The client
 refetches on pull-to-refresh, app resume, and route re-entry (no websockets).
 Camera/gallery is abstracted as `ItemImagePicker` so unit tests never need a
 device. On Android, gallery uses the system Photo Picker (no

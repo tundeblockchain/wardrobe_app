@@ -10,9 +10,11 @@ import '../application/edit_item_controller.dart';
 import '../application/item_detail_controller.dart';
 import '../application/item_scope.dart';
 import '../domain/item.dart';
+import '../domain/item_acquired_at_patch.dart';
 import '../domain/item_subcategory_patch.dart';
 import '../domain/item_taxonomy.dart';
 import '../domain/item_validators.dart';
+import 'widgets/item_acquired_at_field.dart';
 import 'widgets/item_subcategory_field.dart';
 
 /// Edit clothing metadata and optionally replace the photo.
@@ -29,6 +31,7 @@ class EditItemScreen extends ConsumerStatefulWidget {
   static const nameFieldKey = Key('edit_item_name');
   static const submitButtonKey = Key('edit_item_submit');
   static const subcategoryFieldKey = ItemSubcategoryField.fieldKey;
+  static const acquiredAtFieldKey = ItemAcquiredAtField.fieldKey;
 
   @override
   ConsumerState<EditItemScreen> createState() => _EditItemScreenState();
@@ -42,6 +45,8 @@ class _EditItemScreenState extends ConsumerState<EditItemScreen> {
   ItemCategory? _category;
   String? _subcategory;
   String? _originalSubcategory;
+  DateTime? _acquiredAt;
+  DateTime? _originalAcquiredAt;
   var _didPrefill = false;
 
   ItemScope get _scope =>
@@ -63,6 +68,8 @@ class _EditItemScreenState extends ConsumerState<EditItemScreen> {
     _nameController.text = item.name;
     _subcategory = ItemSubcategoryPatch.normalize(item.subcategory);
     _originalSubcategory = _subcategory;
+    _acquiredAt = item.acquiredAt;
+    _originalAcquiredAt = _acquiredAt;
     _coloursController.text = item.colours.join(', ');
     _brandController.text = item.brand ?? '';
     _category = item.category;
@@ -98,6 +105,10 @@ class _EditItemScreenState extends ConsumerState<EditItemScreen> {
           ),
           colours: ItemValidators.parseColours(_coloursController.text),
           brand: _brandController.text,
+          acquiredAt: ItemAcquiredAtPatch.fromEdit(
+            original: _originalAcquiredAt,
+            edited: _acquiredAt,
+          ),
         );
     if (updated != null && mounted) {
       context.go(AppRoutes.itemDetail(widget.wardrobeId, updated.id));
@@ -210,6 +221,13 @@ class _EditItemScreenState extends ConsumerState<EditItemScreen> {
                             enabled: !busy,
                             onChanged: (value) =>
                                 setState(() => _subcategory = value),
+                          ),
+                          const SizedBox(height: 16),
+                          ItemAcquiredAtField(
+                            value: _acquiredAt,
+                            enabled: !busy,
+                            onChanged: (value) =>
+                                setState(() => _acquiredAt = value),
                           ),
                           const SizedBox(height: 16),
                           TextFormField(

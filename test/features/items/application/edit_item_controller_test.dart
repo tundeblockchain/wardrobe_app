@@ -9,6 +9,7 @@ import 'package:wardrobe_app/features/items/data/dio_item_repository.dart';
 import 'package:wardrobe_app/features/items/data/dio_upload_repository.dart';
 import 'package:wardrobe_app/features/items/data/image_picker_item_image_picker.dart';
 import 'package:wardrobe_app/features/items/domain/item.dart';
+import 'package:wardrobe_app/features/items/domain/item_acquired_at_patch.dart';
 import 'package:wardrobe_app/features/items/domain/item_subcategory_patch.dart';
 
 import '../../../helpers/fake_item_image_picker.dart';
@@ -118,6 +119,72 @@ void main() {
 
     expect(items.lastSubcategoryPatch, const ItemSubcategoryPatch.set('SHIRT'));
     expect(updated?.subcategory, 'SHIRT');
+  });
+
+  test('submit omits acquiredAt when the form date is unchanged', () async {
+    items.items[0] = testItem(acquiredAt: DateTime.utc(2024, 3, 9));
+    container.read(itemsControllerProvider('wd_abc123'));
+    container.read(itemDetailControllerProvider(scope));
+    await settle();
+
+    await container
+        .read(editItemControllerProvider(scope).notifier)
+        .submit(
+          name: 'Navy Tee',
+          category: ItemCategory.top,
+          acquiredAt: ItemAcquiredAtPatch.fromEdit(
+            original: DateTime.utc(2024, 3, 9),
+            edited: DateTime.utc(2024, 3, 9),
+          ),
+        );
+
+    expect(items.lastAcquiredAtPatch.isOmit, isTrue);
+    expect(items.items.single.acquiredAt, DateTime.utc(2024, 3, 9));
+  });
+
+  test('submit PATCHes JSON-null clear when acquiredAt is emptied', () async {
+    items.items[0] = testItem(acquiredAt: DateTime.utc(2024, 3, 9));
+    container.read(itemsControllerProvider('wd_abc123'));
+    container.read(itemDetailControllerProvider(scope));
+    await settle();
+
+    final updated = await container
+        .read(editItemControllerProvider(scope).notifier)
+        .submit(
+          name: 'Navy Tee',
+          category: ItemCategory.top,
+          acquiredAt: ItemAcquiredAtPatch.fromEdit(
+            original: DateTime.utc(2024, 3, 9),
+            edited: null,
+          ),
+        );
+
+    expect(items.lastAcquiredAtPatch, const ItemAcquiredAtPatch.clear());
+    expect(items.lastAcquiredAtPatch.toJson(), {'acquiredAt': null});
+    expect(updated?.acquiredAt, isNull);
+  });
+
+  test('submit PATCHes a calendar acquiredAt', () async {
+    container.read(itemsControllerProvider('wd_abc123'));
+    container.read(itemDetailControllerProvider(scope));
+    await settle();
+
+    final updated = await container
+        .read(editItemControllerProvider(scope).notifier)
+        .submit(
+          name: 'Navy Tee',
+          category: ItemCategory.top,
+          acquiredAt: ItemAcquiredAtPatch.fromEdit(
+            original: null,
+            edited: DateTime.utc(2024, 3, 9),
+          ),
+        );
+
+    expect(
+      items.lastAcquiredAtPatch,
+      ItemAcquiredAtPatch.set(DateTime.utc(2024, 3, 9)),
+    );
+    expect(updated?.acquiredAt, DateTime.utc(2024, 3, 9));
   });
 
   test('submit uploads a replacement photo when one is picked', () async {

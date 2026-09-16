@@ -1,4 +1,5 @@
 import 'item.dart';
+import 'item_acquired_at_patch.dart';
 import 'item_list_filters.dart';
 import 'item_subcategory_patch.dart';
 
@@ -19,6 +20,7 @@ abstract interface class ItemRepository {
     List<String>? colours,
     String? brand,
     required String imageKey,
+    DateTime? acquiredAt,
   });
 
   Future<Item> updateItem({
@@ -30,6 +32,7 @@ abstract interface class ItemRepository {
     List<String>? colours,
     String? brand,
     String? imageKey,
+    ItemAcquiredAtPatch acquiredAt = const ItemAcquiredAtPatch.omit(),
   });
 
   Future<void> deleteItem({required String wardrobeId, required String itemId});

@@ -59,6 +59,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byKey(EditItemScreen.subcategoryFieldKey), findsOneWidget);
+    expect(find.byKey(EditItemScreen.acquiredAtFieldKey), findsOneWidget);
 
     await tester.tap(find.byKey(ItemSubcategoryField.fieldKey));
     await tester.pumpAndSettle();

@@ -42,7 +42,10 @@ class ItemsController extends Notifier<ItemsState> {
       if (!ref.mounted) {
         return;
       }
-      state = state.copyWith(isLoading: false, items: items);
+      state = state.copyWith(
+        isLoading: false,
+        items: state.filters.applyLoadedFallback(items),
+      );
     } on ApiException catch (error) {
       if (!ref.mounted) {
         return;

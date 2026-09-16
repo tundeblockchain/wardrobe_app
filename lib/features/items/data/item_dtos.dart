@@ -2,6 +2,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 
 import '../../../core/network/api_exception.dart';
 import '../domain/item.dart';
+import '../domain/item_acquired_at.dart';
 import 'item_image_urls.dart';
 
 part 'item_dtos.freezed.dart';
@@ -67,6 +68,8 @@ abstract class ItemResponse with _$ItemResponse {
     String? failureReason,
     String? errorMessage,
     ItemAiResponse? ai,
+    @JsonKey(fromJson: ItemAcquiredAt.tryParse, toJson: ItemAcquiredAt.toWire)
+    DateTime? acquiredAt,
     required DateTime createdAt,
     required DateTime updatedAt,
   }) = _ItemResponse;
@@ -102,6 +105,7 @@ abstract class ItemResponse with _$ItemResponse {
         processingError ?? failureReason ?? errorMessage,
       ),
       ai: ai?.toDomain(),
+      acquiredAt: acquiredAt,
       createdAt: createdAt,
       updatedAt: updatedAt,
     );
@@ -140,6 +144,12 @@ abstract class CreateItemRequest with _$CreateItemRequest {
     @JsonKey(includeIfNull: false) List<String>? colours,
     @JsonKey(includeIfNull: false) String? brand,
     required String imageKey,
+    @JsonKey(
+      includeIfNull: false,
+      fromJson: ItemAcquiredAt.tryParse,
+      toJson: ItemAcquiredAt.toWire,
+    )
+    DateTime? acquiredAt,
   }) = _CreateItemRequest;
 
   factory CreateItemRequest.fromJson(Map<String, dynamic> json) =>
