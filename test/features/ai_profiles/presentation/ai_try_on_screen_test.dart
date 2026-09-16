@@ -13,10 +13,12 @@ import 'package:wardrobe_app/features/ai_profiles/presentation/widgets/ai_profil
 import 'package:wardrobe_app/features/ai_profiles/presentation/widgets/ai_profile_picker_image.dart';
 import 'package:wardrobe_app/features/ai_profiles/presentation/widgets/generic_model_card.dart';
 import 'package:wardrobe_app/features/ai_profiles/presentation/widgets/personal_ai_profile_card.dart';
+import 'package:wardrobe_app/features/entitlements/domain/entitlement.dart';
 import 'package:wardrobe_app/features/items/data/image_picker_item_image_picker.dart';
 
 import '../../../helpers/date_stamp_matchers.dart';
 import '../../../helpers/fake_ai_profile_repository.dart';
+import '../../../helpers/fake_entitlements.dart';
 import '../../../helpers/fake_item_image_picker.dart';
 import '../../../helpers/test_app.dart';
 
@@ -29,7 +31,11 @@ void main() {
     picker = FakeItemImagePicker(image: FakeItemImagePicker.sample());
   });
 
-  Future<ProviderContainer> pumpScreen(WidgetTester tester) async {
+  Future<ProviderContainer> pumpScreen(
+    WidgetTester tester, {
+    Entitlement? entitlement,
+    FakePaywallGateway? paywall,
+  }) async {
     tester.view.physicalSize = const Size(800, 1600);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
@@ -53,11 +59,12 @@ void main() {
         ),
       ],
     );
+    final gateway = paywall ?? FakePaywallGateway();
     final container = ProviderContainer(
       overrides: [
         aiProfileRepositoryProvider.overrideWithValue(repository),
         itemImagePickerProvider.overrideWithValue(picker),
-        ...entitlementTestOverrides(),
+        ...entitlementTestOverrides(entitlement: entitlement, paywall: gateway),
       ],
     );
     addTearDown(container.dispose);
@@ -89,6 +96,23 @@ void main() {
       findsOneWidget,
     );
     expect(find.text('Ready'), findsWidgets);
+  });
+
+  testWidgets('Free can create a PERSONAL profile without Superwall', (
+    tester,
+  ) async {
+    final paywall = FakePaywallGateway();
+    await pumpScreen(tester, entitlement: Entitlement.free, paywall: paywall);
+
+    await tester.tap(find.byKey(AiTryOnScreen.createButtonKey));
+    await tester.pumpAndSettle();
+
+    expect(paywall.presented, isEmpty);
+    expect(repository.createCalls, 1);
+    expect(
+      find.byKey(PersonalAiProfileCard.cardKey('profile_1')),
+      findsOneWidget,
+    );
   });
 
   testWidgets('shows PROCESSING status on a personal profile', (tester) async {

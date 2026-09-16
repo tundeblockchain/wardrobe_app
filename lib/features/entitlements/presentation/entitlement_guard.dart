@@ -11,6 +11,9 @@ import '../domain/entitlement_action.dart';
 
 /// Soft-gate: present Superwall when the current entitlement blocks [action].
 ///
+/// Source of truth is `GET /me` (wardrobe-backend#46 `a837463`). Creating a
+/// PERSONAL AI profile is not gated; using it for try-on is.
+///
 /// Returns `true` when the user may continue (already entitled, or entitled
 /// after purchase/restore).
 Future<bool> ensureEntitled(

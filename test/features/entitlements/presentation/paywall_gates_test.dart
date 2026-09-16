@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wardrobe_app/core/theme/app_theme.dart';
 import 'package:wardrobe_app/core/widgets/app_fade_in.dart';
+import 'package:wardrobe_app/features/ai_profiles/presentation/ai_try_on_screen.dart';
 import 'package:wardrobe_app/features/entitlements/domain/entitlement.dart';
 import 'package:wardrobe_app/features/entitlements/domain/paywall_placement.dart';
 import 'package:wardrobe_app/features/entitlements/presentation/paywall_sheet.dart';
 import 'package:wardrobe_app/features/profile/presentation/profile_screen.dart';
 import 'package:wardrobe_app/features/wardrobes/presentation/create_wardrobe_screen.dart';
+import 'package:wardrobe_app/features/wardrobes/presentation/wardrobe_detail_screen.dart';
 import 'package:wardrobe_app/features/wardrobes/presentation/wardrobes_screen.dart';
 
 import '../../../helpers/fake_wardrobe_repository.dart';
@@ -96,7 +98,7 @@ void main() {
     expect(harness.entitlements.fetchCount, greaterThan(1));
   });
 
-  testWidgets('Free AI try-on on Account presents Superwall toward Premium', (
+  testWidgets('Free Account AI try-on opens profile setup without Superwall', (
     tester,
   ) async {
     final harness = TestAppHarness(entitlement: Entitlement.free);
@@ -111,6 +113,27 @@ void main() {
       80,
     );
     await tester.tap(find.byKey(ProfileScreen.aiTryOnTileKey));
+    await tester.pumpAndSettle();
+
+    expect(harness.paywall.presented, isEmpty);
+    expect(find.byType(AiTryOnScreen), findsOneWidget);
+  });
+
+  testWidgets('Free dressing room presents Superwall toward Premium', (
+    tester,
+  ) async {
+    final harness = TestAppHarness(entitlement: Entitlement.free);
+    addTearDown(harness.dispose);
+
+    await tester.pumpWidget(harness.app());
+    await tester.pumpAndSettle();
+    await tapHomeWardrobeCard(tester);
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(
+      find.byKey(WardrobeDetailScreen.dressingRoomButtonKey),
+      80,
+    );
+    await tester.tap(find.byKey(WardrobeDetailScreen.dressingRoomButtonKey));
     await tester.pumpAndSettle();
 
     expect(harness.paywall.presented, [PaywallPlacement.aiTryOn]);

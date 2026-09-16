@@ -11,10 +11,8 @@ import '../../account/application/account_controller.dart';
 import '../../auth/application/auth_controller.dart';
 import '../../auth/domain/app_user.dart';
 import '../../entitlements/application/entitlements_controller.dart';
-import '../../entitlements/domain/entitlement_action.dart';
 import '../../entitlements/domain/paywall_placement.dart';
 import '../../entitlements/domain/subscription_tier.dart';
-import '../../entitlements/presentation/entitlement_guard.dart';
 import '../../entitlements/data/paywall_gateway_provider.dart';
 import '../application/rate_app_controller.dart';
 
@@ -148,12 +146,7 @@ class ProfileScreen extends ConsumerWidget {
             title: const Text('AI try-on'),
             subtitle: const Text('Your photos and model looks'),
             trailing: const Icon(Icons.chevron_right),
-            onTap: () => pushIfEntitled(
-              context,
-              ref,
-              EntitlementAction.aiTryOn,
-              AppRoutes.aiTryOn,
-            ),
+            onTap: () => context.push(AppRoutes.aiTryOn),
           ),
           ListTile(
             key: rateTileKey,

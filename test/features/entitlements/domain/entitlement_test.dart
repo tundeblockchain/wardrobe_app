@@ -110,6 +110,48 @@ void main() {
       expect(premium.usage.items, 10);
     });
 
+    test('ignores Dynamo PK/SK/lastEventId if present', () {
+      final parsed = Entitlement.fromJson({
+        'userId': 'firebase-uid',
+        'tier': 'BASIC',
+        'status': 'ACTIVE',
+        'features': {
+          'unlimitedCatalog': true,
+          'aiTryOn': false,
+          'otherAi': false,
+        },
+        'limits': null,
+        'usage': {'wardrobes': 1, 'items': 1, 'outfits': 0},
+        'PK': 'USER#firebase-uid',
+        'SK': 'ENTITLEMENT',
+        'lastEventId': 'evt_should_not_leak',
+      });
+      expect(parsed.tier, SubscriptionTier.basic);
+      expect(parsed.toJson().containsKey('PK'), isFalse);
+      expect(parsed.toJson().containsKey('SK'), isFalse);
+      expect(parsed.toJson().containsKey('lastEventId'), isFalse);
+    });
+
+    test('CANCELED Premium still has AI until GET /me reports FREE', () {
+      final parsed = Entitlement.fromJson({
+        'userId': 'uid-1',
+        'tier': 'PREMIUM',
+        'status': 'CANCELED',
+        'features': {
+          'unlimitedCatalog': true,
+          'aiTryOn': true,
+          'otherAi': true,
+        },
+        'limits': null,
+        'usage': {'wardrobes': 1, 'items': 1, 'outfits': 0},
+        'expiresAt': '2026-10-16T12:00:00.000Z',
+      });
+      expect(parsed.status, EntitlementStatus.canceled);
+      expect(parsed.canUseAiTryOn, isTrue);
+      expect(parsed.canUseOtherAi, isTrue);
+      expect(parsed.limits, isNull);
+    });
+
     test('unknown tier becomes FREE; omitted limits use catalog for Free', () {
       final parsed = Entitlement.fromJson({'tier': 'GOLD'});
       expect(parsed.tier, SubscriptionTier.free);

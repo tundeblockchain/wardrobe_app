@@ -160,7 +160,8 @@ class EntitlementUsage {
 }
 
 /// Flutter mirror of `GET /me` (wardrobe-backend#46 `a837463`). Dynamo via
-/// Backend is the source of truth — no Firebase custom claims.
+/// Backend is the source of truth — no Firebase custom claims. Never maps
+/// Dynamo `PK` / `SK` / `lastEventId`.
 class Entitlement {
   const Entitlement({
     this.userId,

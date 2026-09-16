@@ -2,6 +2,9 @@ import 'entitlement.dart';
 import 'paywall_placement.dart';
 
 /// Soft-gate actions the UI checks before mutating or opening AI flows.
+///
+/// Creating a PERSONAL AI profile is **not** gated (wardrobe-backend#46
+/// `a837463`). [aiTryOn] is for using a profile on outfit `/render`.
 enum EntitlementAction {
   createWardrobe,
   createItem,
