@@ -177,10 +177,10 @@ Home and item detail show a **Related shopping links** section. Available on
 OpenAI or Bright Data keys; those stay on Backend
 ([WARDROBE-96](https://tundetunde000.atlassian.net/browse/WARDROBE-96)).
 
-Locked contract (wardrobe-backend#47 proposed SHA **`86c5d6a`** /
-`86c5d6ae767d22051d2b2c66a05fd0326b087ba7`). Harden
-`ShoppingLinksContract.liveEnabled` to `true` when that SHA (or a later
-merge) lands on Backend main:
+Locked contract (wardrobe-backend#47 SHA **`86c5d6a`** /
+`86c5d6ae767d22051d2b2c66a05fd0326b087ba7` on `features/WARDROBE-96`).
+`ShoppingLinksContract.liveEnabled` is `true` — Home and item detail call
+those paths through `DioShoppingLinksRepository`:
 
 ```http
 GET /wardrobes/{wardrobeId}/items/{itemId}/shopping-links
@@ -211,11 +211,10 @@ and optional `warning.code=SHOPPING_UPSTREAM_UNAVAILABLE`. Missing item or
 wardrobe is **404** (`ITEM_NOT_FOUND` / `WARDROBE_NOT_FOUND`) — the shopping
 section treats that as empty and never blocks wardrobe UX.
 
-`shoppingLinksRepositoryProvider` currently returns
-`StubShoppingLinksRepository` because `ShoppingLinksContract.liveEnabled`
-is `false`. Flip that flag (or override the provider) to
-`DioShoppingLinksRepository` when Backend main has `86c5d6a`. Product taps
-use `url_launcher` via `ShoppingLinkOpener`.
+`shoppingLinksRepositoryProvider` returns `DioShoppingLinksRepository`
+(Firebase ID-token interceptor; no OpenAI or Bright Data keys in the app).
+Widget tests override the provider with `FakeShoppingLinksRepository`.
+Product taps use `url_launcher` via `ShoppingLinkOpener`.
 
 ## AI profiles (WARDROBE-50)
 

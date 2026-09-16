@@ -64,7 +64,7 @@ class DioShoppingLinksRepository implements ShoppingLinksRepository {
   }
 }
 
-/// Defaults to the empty stub. Point at Dio when Backend main has `86c5d6a`.
+/// Live Dio against wardrobe-backend#47 `86c5d6a`. Override in tests.
 final shoppingLinksRepositoryProvider = Provider<ShoppingLinksRepository>((
   ref,
 ) {

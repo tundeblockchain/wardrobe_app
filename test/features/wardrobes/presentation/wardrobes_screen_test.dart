@@ -47,6 +47,7 @@ void main() {
             FakeItemRepository(seed: [testItem()]),
           ),
           homeClothingCarouselAutoScrollProvider.overrideWithValue(false),
+          ...shoppingLinksTestOverrides(),
         ],
         child: const MaterialApp(home: WardrobesScreen()),
       ),

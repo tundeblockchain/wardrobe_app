@@ -1,9 +1,9 @@
 /// Locked WARDROBE-96 HTTP contract (wardrobe-backend#47 `86c5d6a`).
 ///
-/// Flip [liveEnabled] when that SHA (or a later merge) lands on Backend main.
+/// Live Dio is on: Backend CI is green at that SHA on `features/WARDROBE-96`.
 abstract final class ShoppingLinksContract {
-  /// `false` until Backend posts the live SHA. Stub stays empty until then.
-  static const liveEnabled = false;
+  /// Production shopping-links repository uses Dio when this is true.
+  static const liveEnabled = true;
 
   static const homePath = '/shopping-links';
 

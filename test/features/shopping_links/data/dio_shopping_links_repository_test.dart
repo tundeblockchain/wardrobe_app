@@ -1,3 +1,4 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wardrobe_app/core/network/api_exception.dart';
 import 'package:wardrobe_app/core/network/dio_client.dart';
@@ -163,8 +164,26 @@ void main() {
     );
   });
 
-  test('liveEnabled stays off until Backend SHA lands on main', () {
-    expect(ShoppingLinksContract.liveEnabled, isFalse);
+  test('liveEnabled is on for wardrobe-backend#47 86c5d6a', () {
+    expect(ShoppingLinksContract.liveEnabled, isTrue);
+  });
+
+  test('shoppingLinksRepositoryProvider serves DioShoppingLinksRepository', () {
+    final container = ProviderContainer(
+      overrides: [
+        dioProvider.overrideWithValue(
+          createDioClient(
+            baseUrl: 'https://api.example.com',
+            tokenSource: _TokenSource(),
+          ),
+        ),
+      ],
+    );
+    addTearDown(container.dispose);
+    expect(
+      container.read(shoppingLinksRepositoryProvider),
+      isA<DioShoppingLinksRepository>(),
+    );
   });
 
   test('stub repository returns empty envelopes', () async {

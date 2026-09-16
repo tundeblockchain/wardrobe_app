@@ -40,6 +40,21 @@ import 'fake_upload_repository.dart';
 import 'fake_wardrobe_repository.dart';
 import 'item_processing_poll_overrides.dart';
 
+/// Empty shopping-links so Home / item detail never hit live Dio in tests.
+List<Override> shoppingLinksTestOverrides({
+  FakeShoppingLinksRepository? repository,
+  FakeShoppingLinkOpener? opener,
+}) {
+  return [
+    shoppingLinksRepositoryProvider.overrideWithValue(
+      repository ?? FakeShoppingLinksRepository(),
+    ),
+    shoppingLinkOpenerProvider.overrideWithValue(
+      opener ?? FakeShoppingLinkOpener(),
+    ),
+  ];
+}
+
 /// Premium entitlements + fake Superwall so existing flows stay unlocked.
 List<Override> entitlementTestOverrides({
   Entitlement? entitlement,
@@ -108,8 +123,10 @@ class TestAppHarness {
         itemRepositoryProvider.overrideWithValue(items),
         outfitRepositoryProvider.overrideWithValue(outfits),
         recommendationRepositoryProvider.overrideWithValue(recommendations),
-        shoppingLinksRepositoryProvider.overrideWithValue(shoppingLinks),
-        shoppingLinkOpenerProvider.overrideWithValue(shoppingOpener),
+        ...shoppingLinksTestOverrides(
+          repository: shoppingLinks,
+          opener: shoppingOpener,
+        ),
         uploadRepositoryProvider.overrideWithValue(uploads),
         itemImagePickerProvider.overrideWithValue(picker),
         accountRepositoryProvider.overrideWithValue(account),
