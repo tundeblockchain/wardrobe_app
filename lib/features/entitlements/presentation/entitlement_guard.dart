@@ -60,21 +60,33 @@ int entitlementCountFor(
   EntitlementAction action, {
   String? wardrobeId,
 }) {
+  final usage = ref.read(entitlementsControllerProvider).current.usage;
   switch (action) {
     case EntitlementAction.createWardrobe:
-      return ref.read(wardrobesControllerProvider).wardrobes.length;
+      return _max(
+        ref.read(wardrobesControllerProvider).wardrobes.length,
+        usage.wardrobes,
+      );
     case EntitlementAction.createItem:
       if (wardrobeId == null) {
-        return 0;
+        return usage.items;
       }
-      return ref.read(itemsControllerProvider(wardrobeId)).items.length;
+      return _max(
+        ref.read(itemsControllerProvider(wardrobeId)).items.length,
+        usage.items,
+      );
     case EntitlementAction.createOutfit:
       if (wardrobeId == null) {
-        return 0;
+        return usage.outfits;
       }
-      return ref.read(outfitsControllerProvider(wardrobeId)).outfits.length;
+      return _max(
+        ref.read(outfitsControllerProvider(wardrobeId)).outfits.length,
+        usage.outfits,
+      );
     case EntitlementAction.aiTryOn:
     case EntitlementAction.otherAi:
       return 0;
   }
 }
+
+int _max(int a, int b) => a > b ? a : b;

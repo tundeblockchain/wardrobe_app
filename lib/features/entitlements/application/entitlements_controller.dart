@@ -165,7 +165,7 @@ class EntitlementsController extends Notifier<EntitlementsState> {
     }
   }
 
-  /// After a Superwall purchase, re-read Backend (or catalog stub).
+  /// After a Superwall purchase, re-read `GET /me`.
   Future<void> onPurchaseCompleted() => refresh();
 }
 
@@ -174,7 +174,7 @@ final entitlementsControllerProvider =
       EntitlementsController.new,
     );
 
-/// Queues a paywall from 402/403 API failures so the app binder can present it.
+/// Queues a paywall from 403 API failures so the app binder can present it.
 void queueEntitlementPaywall(
   Ref ref,
   ApiException error, {

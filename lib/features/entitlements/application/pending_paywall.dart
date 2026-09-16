@@ -2,7 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../domain/paywall_placement.dart';
 
-/// One-shot Superwall request from a Backend 402/403 entitlement error.
+/// One-shot Superwall request from a Backend 403 entitlement error.
 class PendingPaywall extends Notifier<PaywallPlacement?> {
   @override
   PaywallPlacement? build() => null;

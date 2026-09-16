@@ -3,7 +3,6 @@ import 'package:wardrobe_app/core/network/api_exception.dart';
 import 'package:wardrobe_app/core/network/dio_client.dart';
 import 'package:wardrobe_app/core/network/id_token_source.dart';
 import 'package:wardrobe_app/features/entitlements/data/dio_entitlement_repository.dart';
-import 'package:wardrobe_app/features/entitlements/domain/entitlement.dart';
 import 'package:wardrobe_app/features/entitlements/domain/entitlement_wire.dart';
 import 'package:wardrobe_app/features/entitlements/domain/subscription_tier.dart';
 
@@ -27,51 +26,82 @@ void main() {
     return DioEntitlementRepository(dio);
   }
 
-  test('GET /me maps the Backend entitlement snapshot', () async {
+  test('GET /me maps Free catalog caps and no AI', () async {
+    final repository = buildRepository([
+      const HttpScript(
+        statusCode: 200,
+        body: {
+          'userId': 'uid-free',
+          'tier': 'FREE',
+          'status': 'NONE',
+          'features': {
+            'unlimitedCatalog': false,
+            'aiTryOn': false,
+            'otherAi': false,
+          },
+          'limits': {'wardrobes': 1, 'items': 5, 'outfits': 5},
+          'usage': {'wardrobes': 1, 'items': 5, 'outfits': 0},
+        },
+      ),
+    ]);
+
+    final entitlement = await repository.fetchEntitlements();
+    expect(entitlement.userId, 'uid-free');
+    expect(entitlement.tier, SubscriptionTier.free);
+    expect(entitlement.status, EntitlementStatus.none);
+    expect(entitlement.limits?.items, 5);
+    expect(entitlement.canCreateItem(5), isFalse);
+    expect(entitlement.canUseAiTryOn, isFalse);
+    expect(adapter.requests.single.path, EntitlementWire.mePath);
+  });
+
+  test('GET /me maps the locked Backend entitlement DTO', () async {
     final repository = buildRepository([
       const HttpScript(
         statusCode: 200,
         body: {
           'userId': 'uid-1',
           'tier': 'PREMIUM',
+          'status': 'ACTIVE',
           'features': {
             'unlimitedCatalog': true,
             'aiTryOn': true,
             'otherAi': true,
           },
           'limits': null,
+          'usage': {'wardrobes': 1, 'items': 2, 'outfits': 0},
+          'updatedAt': '2026-09-16T12:00:00.000Z',
         },
       ),
     ]);
 
     final entitlement = await repository.fetchEntitlements();
+    expect(entitlement.userId, 'uid-1');
     expect(entitlement.tier, SubscriptionTier.premium);
+    expect(entitlement.status, EntitlementStatus.active);
     expect(entitlement.canUseAiTryOn, isTrue);
+    expect(entitlement.limits, isNull);
+    expect(entitlement.usage.items, 2);
     expect(adapter.requests.single.path, EntitlementWire.mePath);
   });
 
-  test('GET /me/entitlement is used when GET /me is 404', () async {
+  test('GET /me 404 is an API error, not a local stub', () async {
     final repository = buildRepository([
       const HttpScript(
         statusCode: 404,
-        body: {'code': 'NOT_FOUND', 'message': 'missing'},
-      ),
-      const HttpScript(
-        statusCode: 200,
         body: {
-          'tier': 'BASIC',
-          'features': {'aiEnabled': false, 'tryOn': false},
-          'limits': null,
+          'error': {'code': 'NOT_FOUND', 'message': 'missing'},
         },
       ),
     ]);
 
-    final entitlement = await repository.fetchEntitlements();
-    expect(entitlement, Entitlement.basic);
-    expect(adapter.requests.map((request) => request.path), [
-      EntitlementWire.mePath,
-      EntitlementWire.entitlementPath,
-    ]);
+    expect(
+      () => repository.fetchEntitlements(),
+      throwsA(
+        isA<ApiException>().having((error) => error.statusCode, 'status', 404),
+      ),
+    );
+    expect(adapter.requests.single.path, EntitlementWire.mePath);
   });
 
   test('non-map payload becomes INVALID_RESPONSE', () async {
@@ -89,38 +119,5 @@ void main() {
         ),
       ),
     );
-  });
-
-  test(
-    'Switching repository falls back on 404 until Backend is live',
-    () async {
-      final remote = buildRepository([
-        const HttpScript(
-          statusCode: 404,
-          body: {'code': 'NOT_FOUND', 'message': 'missing'},
-        ),
-        const HttpScript(
-          statusCode: 404,
-          body: {'code': 'NOT_FOUND', 'message': 'missing'},
-        ),
-      ]);
-      final switching = SwitchingEntitlementRepository(
-        remote: remote,
-        fallback: const CatalogEntitlementRepository(),
-      );
-
-      final entitlement = await switching.fetchEntitlements();
-      expect(entitlement, Entitlement.free);
-    },
-  );
-
-  test('Switching repository skips remote when useRemote is false', () async {
-    final switching = SwitchingEntitlementRepository(
-      remote: buildRepository(const []),
-      fallback: CatalogEntitlementRepository(seed: Entitlement.basic),
-      useRemote: false,
-    );
-
-    expect(await switching.fetchEntitlements(), Entitlement.basic);
   });
 }

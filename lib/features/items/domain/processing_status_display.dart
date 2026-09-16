@@ -42,7 +42,7 @@ class ProcessingStatusDisplay {
           status: ItemProcessingStatus.ready,
           label: 'Ready',
           tone: ProcessingStatusTone.ready,
-          detailMessage: 'Processing complete.',
+          detailMessage: 'This item is ready to use.',
         );
       case ItemProcessingStatus.failed:
         return ProcessingStatusDisplay(

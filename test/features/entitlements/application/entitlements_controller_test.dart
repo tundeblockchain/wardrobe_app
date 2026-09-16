@@ -114,7 +114,24 @@ void main() {
     expect(repository.fetchCount, greaterThan(before));
   });
 
-  test('402/403 codes can be queued as a pending Superwall placement', () {
+  test('onPurchaseCompleted re-reads GET /me', () async {
+    container.read(entitlementsControllerProvider);
+    await settle();
+    final before = repository.fetchCount;
+    repository.current = Entitlement.premium;
+
+    await container
+        .read(entitlementsControllerProvider.notifier)
+        .onPurchaseCompleted();
+
+    expect(repository.fetchCount, greaterThan(before));
+    expect(
+      container.read(entitlementsControllerProvider).current.tier,
+      SubscriptionTier.premium,
+    );
+  });
+
+  test('403 codes can be queued as a pending Superwall placement', () {
     final placement = PaywallPlacement.fromApiException(
       const ApiException(
         message: 'Item limit',

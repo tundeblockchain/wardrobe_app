@@ -2,8 +2,7 @@ import '../../../core/network/api_exception.dart';
 import 'entitlement_error_codes.dart';
 import 'subscription_tier.dart';
 
-/// Superwall placement IDs. Dashboard campaigns should match these hooks;
-/// product IDs stay operator-owned.
+/// Superwall placement IDs. Dashboard campaigns should match these hooks.
 enum PaywallPlacement {
   wardrobeLimit(
     'wardrobe_limit',
@@ -20,61 +19,60 @@ enum PaywallPlacement {
     SubscriptionTier.basic,
     EntitlementErrorCodes.outfitLimit,
   ),
-  aiTryOn('ai_try_on', SubscriptionTier.premium, EntitlementErrorCodes.aiTryOn),
-  otherAi('other_ai', SubscriptionTier.premium, EntitlementErrorCodes.otherAi),
+  aiTryOn(
+    'ai_try_on',
+    SubscriptionTier.premium,
+    EntitlementErrorCodes.aiRequired,
+  ),
+  otherAi(
+    'other_ai',
+    SubscriptionTier.premium,
+    EntitlementErrorCodes.aiRequired,
+  ),
   upgradeBasic(
     'upgrade_basic',
     SubscriptionTier.basic,
-    EntitlementErrorCodes.paymentRequired,
+    EntitlementErrorCodes.wardrobeLimit,
   ),
   upgradePremium(
     'upgrade_premium',
     SubscriptionTier.premium,
-    EntitlementErrorCodes.paymentRequired,
+    EntitlementErrorCodes.aiRequired,
   );
 
   const PaywallPlacement(this.id, this.targetTier, this.errorCode);
 
-  /// Superwall dashboard placement name.
   final String id;
-
-  /// Tier the paywall should sell toward.
   final SubscriptionTier targetTier;
-
-  /// Provisional Backend error code this placement maps from.
   final String errorCode;
 
-  static PaywallPlacement? fromErrorCode(String? code) {
-    if (code == null || code.isEmpty) {
-      return null;
-    }
-    final normalized = code.trim().toUpperCase();
-    if (normalized == EntitlementErrorCodes.aiRequired) {
-      // Generic AI deny — caller fallback picks try-on vs other AI.
-      return null;
-    }
-    for (final placement in PaywallPlacement.values) {
-      if (placement.errorCode == normalized) {
-        return placement;
-      }
-    }
-    return null;
-  }
+  bool get isPremiumTarget => targetTier == SubscriptionTier.premium;
 
-  /// Maps Backend `{ code, message }` entitlement failures to Superwall.
+  /// Maps Backend 403 `{ code, message }` onto Superwall.
+  ///
+  /// Catalog limits → Basic. `ENTITLEMENT_AI_REQUIRED` → Premium (try-on /
+  /// recommendations / item-processing via [fallback] when it is Premium).
   static PaywallPlacement? fromApiException(
     ApiException error, {
     PaywallPlacement? fallback,
   }) {
-    final fromCode = fromErrorCode(error.code);
-    if (fromCode != null) {
-      return fromCode;
+    final code = error.code?.trim().toUpperCase();
+    if (code == EntitlementErrorCodes.wardrobeLimit) {
+      return PaywallPlacement.wardrobeLimit;
     }
-    if (EntitlementErrorCodes.isAiRequired(error.code)) {
-      return fallback ?? PaywallPlacement.otherAi;
+    if (code == EntitlementErrorCodes.itemLimit) {
+      return PaywallPlacement.itemLimit;
     }
-    if (EntitlementErrorCodes.isEntitlementCode(error.code) ||
-        EntitlementErrorCodes.isEntitlementStatus(error.statusCode)) {
+    if (code == EntitlementErrorCodes.outfitLimit) {
+      return PaywallPlacement.outfitLimit;
+    }
+    if (code == EntitlementErrorCodes.aiRequired) {
+      if (fallback != null && fallback.isPremiumTarget) {
+        return fallback;
+      }
+      return PaywallPlacement.otherAi;
+    }
+    if (EntitlementErrorCodes.isEntitlementStatus(error.statusCode)) {
       return fallback;
     }
     return null;

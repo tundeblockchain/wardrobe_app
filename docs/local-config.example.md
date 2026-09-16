@@ -75,7 +75,11 @@ Placement hooks the app registers: `wardrobe_limit`, `item_limit`,
 `outfit_limit` (Basic), `ai_try_on`, `other_ai` (Premium), plus
 `upgrade_basic` / `upgrade_premium` from Account.
 
-Entitlements are read from `GET /me` (fallback `GET /me/entitlement`) when
-Backend WARDROBE-91 is live. `tier` is `FREE` | `BASIC` | `PREMIUM`. Until
-then the client uses the same catalog shape. Denial `code` + `message` map
-to Superwall (`ENTITLEMENT_*_LIMIT`, `ENTITLEMENT_AI_REQUIRED`).
+Entitlements are read from `GET /me` only (wardrobe-backend#46, merged
+`a837463`). Dynamo via Backend is the source of truth — no Firebase custom
+claims. Superwall `identify` uses the Firebase UID. The Superwall webhook
+is Backend-side.
+
+`tier` is `FREE` | `BASIC` | `PREMIUM`. Denial `code` + `message` on 403
+map to Superwall (`ENTITLEMENT_WARDROBE_LIMIT` / `ENTITLEMENT_ITEM_LIMIT` /
+`ENTITLEMENT_OUTFIT_LIMIT` → Basic; `ENTITLEMENT_AI_REQUIRED` → Premium).

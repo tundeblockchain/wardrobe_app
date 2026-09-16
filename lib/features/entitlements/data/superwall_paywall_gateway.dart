@@ -41,9 +41,11 @@ class SuperwallPaywallGateway implements PaywallGateway {
       return;
     }
     try {
+      // Backend webhook maps originalAppUserId / userAttributes.firebaseUid
+      // onto USER#{firebaseUid}. Never use Superwall aliases here.
       await identifySuperwallUser(userId);
     } catch (_) {
-      // Identity is best-effort; entitlements still refresh from Backend.
+      // Identity is best-effort; entitlements still refresh from GET /me.
     }
   }
 

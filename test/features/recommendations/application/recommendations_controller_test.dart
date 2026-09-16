@@ -1,6 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wardrobe_app/core/network/api_exception.dart';
+import 'package:wardrobe_app/features/entitlements/application/pending_paywall.dart';
+import 'package:wardrobe_app/features/entitlements/domain/entitlement_error_codes.dart';
+import 'package:wardrobe_app/features/entitlements/domain/paywall_placement.dart';
 import 'package:wardrobe_app/features/recommendations/application/recommendations_controller.dart';
 import 'package:wardrobe_app/features/recommendations/data/dio_recommendation_repository.dart';
 
@@ -59,6 +62,28 @@ void main() {
       expect(state.errorMessage, contains('connection'));
       expect(state.isUnavailable, isTrue);
       expect(state.recommendations, isEmpty);
+    },
+  );
+
+  test(
+    'ENTITLEMENT_AI_REQUIRED queues Superwall toward Premium other AI',
+    () async {
+      repository.nextFailure = const ApiException(
+        message: 'AI requires Premium',
+        code: EntitlementErrorCodes.aiRequired,
+        statusCode: 403,
+      );
+
+      container.read(recommendationsControllerProvider('wd_abc123'));
+      await settle();
+
+      expect(container.read(pendingPaywallProvider), PaywallPlacement.otherAi);
+      expect(
+        container
+            .read(recommendationsControllerProvider('wd_abc123'))
+            .errorMessage,
+        'AI requires Premium',
+      );
     },
   );
 

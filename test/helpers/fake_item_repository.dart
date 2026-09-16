@@ -23,6 +23,7 @@ class FakeItemRepository implements ItemRepository {
   DateTime? lastAcquiredAtArg;
   ItemAcquiredAtPatch lastAcquiredAtPatch = const ItemAcquiredAtPatch.omit();
   ItemListFilters lastListFilters = const ItemListFilters();
+  ItemProcessingStatus createStatus = ItemProcessingStatus.pending;
 
   /// When false (default), acquired query params are recorded but not applied
   /// so tests cover the client-side [ItemListFilters.applyLoadedFallback]
@@ -87,7 +88,7 @@ class FakeItemRepository implements ItemRepository {
       colours: [...?colours],
       brand: brand,
       originalImageKey: imageKey,
-      processingStatus: ItemProcessingStatus.pending,
+      processingStatus: createStatus,
       acquiredAt: lastAcquiredAtArg,
       createdAt: now,
       updatedAt: now,

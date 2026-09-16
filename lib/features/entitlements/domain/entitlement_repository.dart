@@ -1,9 +1,6 @@
 import 'entitlement.dart';
 
-/// Reads the current user's entitlement snapshot.
-///
-/// Production talks to `GET /me` (WARDROBE-91), then `GET /me/entitlement` if
-/// `/me` is 404. Tests override [entitlementRepositoryProvider].
+/// Reads `GET /me` (WARDROBE-91 / wardrobe-backend#46 `a837463`). Tests override.
 abstract class EntitlementRepository {
   Future<Entitlement> fetchEntitlements();
 }

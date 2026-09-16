@@ -24,7 +24,7 @@ void main() {
       final display = ProcessingStatusDisplay.of(ItemProcessingStatus.ready);
       expect(display.label, 'Ready');
       expect(display.tone, ProcessingStatusTone.ready);
-      expect(display.detailMessage, 'Processing complete.');
+      expect(display.detailMessage, 'This item is ready to use.');
     });
 
     test('maps FAILED to a default message when none is provided', () {

@@ -8,7 +8,7 @@ import '../application/pending_paywall.dart';
 import '../data/paywall_gateway_provider.dart';
 import '../domain/paywall_placement.dart';
 
-/// Presents Superwall when a mutation returns a Backend 402/403 entitlement
+/// Presents Superwall when a mutation returns a Backend 403 entitlement
 /// error. Sits under [MaterialApp] so a navigator overlay is available.
 class EntitlementPaywallBinder extends ConsumerWidget {
   const EntitlementPaywallBinder({super.key, required this.child});

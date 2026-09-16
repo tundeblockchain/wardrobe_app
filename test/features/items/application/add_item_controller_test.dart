@@ -80,6 +80,8 @@ void main() {
       isFalse,
     );
     expect(created?.processingStatus, ItemProcessingStatus.pending);
+    expect(created?.processingStatus.isInProgress, isTrue);
+    expect(created?.processingStatus.isTerminal, isFalse);
     expect(
       container.read(itemLocalPreviewCacheProvider)[created!.id],
       picker.image!.bytes,
@@ -95,6 +97,34 @@ void main() {
     expect(detail.item?.category, ItemCategory.top);
     expect(detail.item?.originalImageKey, 'users/uid/uploads/uuid.jpg');
   });
+
+  test(
+    'Free/Basic create maps READY without treating the item as in-progress',
+    () async {
+      items.createStatus = ItemProcessingStatus.ready;
+      container.read(itemsControllerProvider('wd_abc123'));
+      await settle();
+      await container
+          .read(addItemControllerProvider('wd_abc123').notifier)
+          .pickFromGallery();
+
+      final created = await container
+          .read(addItemControllerProvider('wd_abc123').notifier)
+          .submit(name: 'Ready Tee', category: ItemCategory.top);
+
+      expect(created?.processingStatus, ItemProcessingStatus.ready);
+      expect(created?.processingStatus.isTerminal, isTrue);
+      expect(created?.processingStatus.isInProgress, isFalse);
+      expect(
+        container
+            .read(itemsControllerProvider('wd_abc123'))
+            .items
+            .single
+            .processingStatus,
+        ItemProcessingStatus.ready,
+      );
+    },
+  );
 
   test('submit omits empty subcategory on create', () async {
     await container

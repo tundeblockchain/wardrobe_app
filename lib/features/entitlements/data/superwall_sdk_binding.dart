@@ -20,7 +20,14 @@ void bindProductionSuperwallSdk() {
         'product_premium_yearly': productIds['premium_yearly'] ?? '',
       });
     },
-    identify: (userId) => Superwall.shared.identify(userId),
+    identify: (userId) async {
+      // Firebase UID only — Backend webhook maps originalAppUserId and
+      // userAttributes.firebaseUid onto USER#{uid}. No Superwall aliases.
+      await Superwall.shared.identify(userId);
+      await Superwall.shared.setUserAttributes(<String, Object>{
+        'firebaseUid': userId,
+      });
+    },
     reset: Superwall.shared.reset,
     registerPlacement: (placement, {params}) {
       return Superwall.shared.registerPlacement(placement, params: params);
