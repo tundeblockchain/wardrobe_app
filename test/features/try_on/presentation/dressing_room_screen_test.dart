@@ -12,6 +12,7 @@ import '../../../helpers/date_stamp_matchers.dart';
 import '../../../helpers/fake_ai_profile_repository.dart';
 import '../../../helpers/fake_item_repository.dart';
 import '../../../helpers/fake_outfit_repository.dart';
+import '../../../helpers/test_app.dart';
 
 void main() {
   late FakeOutfitRepository outfits;
@@ -52,6 +53,7 @@ void main() {
       overrides: [
         outfitRepositoryProvider.overrideWithValue(outfits),
         itemRepositoryProvider.overrideWithValue(FakeItemRepository()),
+        ...entitlementTestOverrides(),
       ],
     );
     addTearDown(container.dispose);

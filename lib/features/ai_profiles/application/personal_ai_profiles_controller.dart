@@ -2,6 +2,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/network/api_exception.dart';
 import '../../../core/session/session_gate.dart';
+import '../../entitlements/application/entitlements_controller.dart';
+import '../../entitlements/domain/paywall_placement.dart';
 import '../../items/data/image_picker_item_image_picker.dart';
 import '../../items/domain/item_image_picker.dart';
 import '../../items/domain/picked_image.dart';
@@ -64,6 +66,7 @@ class PersonalAiProfilesController extends Notifier<PersonalAiProfilesState> {
       state = state.copyWith(isCreating: false);
       return profile;
     } on ApiException catch (error) {
+      queueEntitlementPaywall(ref, error, fallback: PaywallPlacement.aiTryOn);
       return _failCreate(error.message);
     } catch (_) {
       return _failCreate('Something went wrong. Please try again.');

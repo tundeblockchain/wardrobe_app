@@ -10,6 +10,12 @@ import '../../../core/widgets/type_to_confirm_dialog.dart';
 import '../../account/application/account_controller.dart';
 import '../../auth/application/auth_controller.dart';
 import '../../auth/domain/app_user.dart';
+import '../../entitlements/application/entitlements_controller.dart';
+import '../../entitlements/domain/entitlement_action.dart';
+import '../../entitlements/domain/paywall_placement.dart';
+import '../../entitlements/domain/subscription_tier.dart';
+import '../../entitlements/presentation/entitlement_guard.dart';
+import '../../entitlements/data/paywall_gateway_provider.dart';
 import '../application/rate_app_controller.dart';
 
 /// Account info plus Rate / Contact us / Report a bug / destructive wipes.
@@ -20,6 +26,8 @@ class ProfileScreen extends ConsumerWidget {
   static const themeToggleKey = Key('profile_theme_toggle');
   static const rateTileKey = Key('profile_rate_app');
   static const aiTryOnTileKey = Key('profile_ai_try_on');
+  static const planTileKey = Key('profile_plan');
+  static const restorePurchasesTileKey = Key('profile_restore_purchases');
   static const contactTileKey = Key('profile_contact_us');
   static const reportBugTileKey = Key('profile_report_bug');
   static const signOutButtonKey = Key('profile_sign_out');
@@ -36,9 +44,11 @@ class ProfileScreen extends ConsumerWidget {
     final auth = ref.watch(authControllerProvider);
     final rate = ref.watch(rateAppControllerProvider);
     final account = ref.watch(accountControllerProvider);
+    final entitlements = ref.watch(entitlementsControllerProvider);
     final themeMode = ref.watch(themeControllerProvider);
     final user = auth.user;
     final busy = auth.isBusy || account.isBusy || rate.isBusy;
+    final plan = entitlements.current;
     final isDark = themeModeIsDark(
       themeMode,
       MediaQuery.platformBrightnessOf(context),
@@ -72,13 +82,90 @@ class ProfileScreen extends ConsumerWidget {
             },
           ),
           ListTile(
+            key: ProfileScreen.planTileKey,
+            contentPadding: EdgeInsets.zero,
+            leading: const Icon(Icons.workspace_premium_outlined),
+            title: const Text('Plan'),
+            subtitle: Text(
+              '${plan.tier.label} · ${plan.tier == SubscriptionTier.premium
+                  ? 'AI included'
+                  : plan.tier == SubscriptionTier.basic
+                  ? 'Unlimited wardrobes'
+                  : '1 wardrobe, 5 items, 5 outfits'}',
+            ),
+            trailing: entitlements.isLoading || entitlements.isRestoring
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : Text(
+                    plan.tier == SubscriptionTier.premium
+                        ? 'Manage'
+                        : 'Upgrade',
+                  ),
+            onTap: entitlements.isLoading
+                ? null
+                : () async {
+                    final placement = plan.tier == SubscriptionTier.premium
+                        ? PaywallPlacement.upgradePremium
+                        : plan.tier == SubscriptionTier.basic
+                        ? PaywallPlacement.upgradePremium
+                        : PaywallPlacement.upgradeBasic;
+                    await ref
+                        .read(paywallGatewayProvider)
+                        .present(placement: placement, context: context);
+                    if (!context.mounted) {
+                      return;
+                    }
+                    await ref
+                        .read(entitlementsControllerProvider.notifier)
+                        .refresh();
+                  },
+          ),
+          ListTile(
+            key: ProfileScreen.restorePurchasesTileKey,
+            contentPadding: EdgeInsets.zero,
+            leading: const Icon(Icons.restore),
+            title: const Text('Restore purchases'),
+            subtitle: const Text('Refresh subscription status from the store'),
+            trailing: entitlements.isRestoring
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(Icons.chevron_right),
+            onTap: entitlements.isRestoring
+                ? null
+                : () => ref
+                      .read(entitlementsControllerProvider.notifier)
+                      .restorePurchases(),
+          ),
+          if (entitlements.infoMessage != null) ...[
+            const SizedBox(height: 8),
+            Text(entitlements.infoMessage!),
+          ],
+          if (entitlements.errorMessage != null) ...[
+            const SizedBox(height: 8),
+            Text(
+              entitlements.errorMessage!,
+              style: TextStyle(color: Theme.of(context).colorScheme.error),
+            ),
+          ],
+          ListTile(
             key: aiTryOnTileKey,
             contentPadding: EdgeInsets.zero,
             leading: const Icon(Icons.checkroom_outlined),
             title: const Text('AI try-on'),
             subtitle: const Text('Your photos and model looks'),
             trailing: const Icon(Icons.chevron_right),
-            onTap: () => context.push(AppRoutes.aiTryOn),
+            onTap: () => pushIfEntitled(
+              context,
+              ref,
+              EntitlementAction.aiTryOn,
+              AppRoutes.aiTryOn,
+            ),
           ),
           ListTile(
             key: rateTileKey,

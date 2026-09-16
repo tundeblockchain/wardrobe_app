@@ -6,6 +6,8 @@ import '../../../core/router/app_routes.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/app_empty_state.dart';
 import '../../../core/widgets/destructive_confirm_dialog.dart';
+import '../../entitlements/domain/entitlement_action.dart';
+import '../../entitlements/presentation/entitlement_guard.dart';
 import '../application/generic_models_controller.dart';
 import '../application/generic_models_state.dart';
 import '../application/personal_ai_profiles_controller.dart';
@@ -196,7 +198,19 @@ class _PersonalSection extends ConsumerWidget {
           ],
         FilledButton.icon(
           key: AiTryOnScreen.createButtonKey,
-          onPressed: personal.isBusy ? null : controller.createPersonal,
+          onPressed: personal.isBusy
+              ? null
+              : () async {
+                  final allowed = await ensureEntitled(
+                    context,
+                    ref,
+                    EntitlementAction.aiTryOn,
+                  );
+                  if (!allowed || !context.mounted) {
+                    return;
+                  }
+                  await controller.createPersonal();
+                },
           icon: personal.isCreating
               ? const SizedBox(
                   width: 16,

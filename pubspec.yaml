@@ -50,6 +50,7 @@ dependencies:
   sign_in_with_apple: ^8.2.0
   crypto: ^3.0.7
   shared_preferences: ^2.5.5
+  superwallkit_flutter: ^2.4.12
 
 dev_dependencies:
   flutter_test:

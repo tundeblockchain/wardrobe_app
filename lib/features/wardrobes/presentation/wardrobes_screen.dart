@@ -7,6 +7,8 @@ import '../../../core/router/app_routes.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/app_empty_state.dart';
 import '../../../core/widgets/app_fade_in.dart';
+import '../../entitlements/domain/entitlement_action.dart';
+import '../../entitlements/presentation/entitlement_guard.dart';
 import '../../search/presentation/app_search_gloss_bar.dart';
 import '../application/wardrobe_cover_provider.dart';
 import '../application/wardrobe_items_provider.dart';
@@ -90,7 +92,12 @@ class _WardrobesScreenState extends ConsumerState<WardrobesScreen>
       ),
       floatingActionButton: FloatingActionButton(
         key: WardrobesScreen.createButtonKey,
-        onPressed: () => context.push(AppRoutes.createWardrobe),
+        onPressed: () => pushIfEntitled(
+          context,
+          ref,
+          EntitlementAction.createWardrobe,
+          AppRoutes.createWardrobe,
+        ),
         tooltip: 'Create wardrobe',
         child: const Icon(Icons.add),
       ),
@@ -118,7 +125,12 @@ class _WardrobesScreenState extends ConsumerState<WardrobesScreen>
                 title: 'No wardrobes yet',
                 message: 'Create a wardrobe to get started.',
                 actionLabel: 'Create wardrobe',
-                onAction: () => context.push(AppRoutes.createWardrobe),
+                onAction: () => pushIfEntitled(
+                  context,
+                  ref,
+                  EntitlementAction.createWardrobe,
+                  AppRoutes.createWardrobe,
+                ),
               )
             else ...[
               if (clothingItems.isNotEmpty) ...[

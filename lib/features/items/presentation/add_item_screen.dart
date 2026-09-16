@@ -5,6 +5,8 @@ import 'package:go_router/go_router.dart';
 import '../../../core/router/app_routes.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/app_empty_state.dart';
+import '../../entitlements/domain/entitlement_action.dart';
+import '../../entitlements/presentation/entitlement_guard.dart';
 import '../../search/presentation/app_search_gloss_bar.dart';
 import '../application/add_item_controller.dart';
 import '../domain/item.dart';
@@ -65,6 +67,15 @@ class _AddItemScreenState extends ConsumerState<AddItemScreen> {
 
   Future<void> _submit() async {
     if (!(_formKey.currentState?.validate() ?? false)) {
+      return;
+    }
+    final allowed = await ensureEntitled(
+      context,
+      ref,
+      EntitlementAction.createItem,
+      wardrobeId: widget.wardrobeId,
+    );
+    if (!allowed || !mounted) {
       return;
     }
     final created = await ref

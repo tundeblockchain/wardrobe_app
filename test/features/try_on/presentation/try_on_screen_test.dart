@@ -17,6 +17,7 @@ import 'package:wardrobe_app/features/try_on/presentation/widgets/try_on_status_
 import '../../../helpers/date_stamp_matchers.dart';
 import '../../../helpers/fake_ai_profile_repository.dart';
 import '../../../helpers/fake_outfit_repository.dart';
+import '../../../helpers/test_app.dart';
 
 void main() {
   late FakeOutfitRepository outfits;
@@ -60,6 +61,7 @@ void main() {
           ),
         ),
         tryOnDelayProvider.overrideWithValue((_) async {}),
+        ...entitlementTestOverrides(),
       ],
     );
     addTearDown(container.dispose);

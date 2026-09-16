@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../../core/router/app_routes.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/app_empty_state.dart';
 import '../../ai_profiles/application/selected_ai_profile.dart';
 import '../../ai_profiles/presentation/widgets/ai_profile_picker_image.dart';
+import '../../entitlements/domain/entitlement_action.dart';
+import '../../entitlements/presentation/entitlement_guard.dart';
 import '../../items/application/items_controller.dart';
 import '../../items/domain/item.dart';
 import '../../outfits/application/outfits_controller.dart';
@@ -55,7 +56,12 @@ class DressingRoomScreen extends ConsumerWidget {
                   subtitle: const Text('Choose a personal look or a model.'),
                   trailing: TextButton(
                     key: chooseProfileButtonKey,
-                    onPressed: () => context.push(AppRoutes.aiTryOn),
+                    onPressed: () => pushIfEntitled(
+                      context,
+                      ref,
+                      EntitlementAction.aiTryOn,
+                      AppRoutes.aiTryOn,
+                    ),
                     child: const Text('Choose'),
                   ),
                 ),
@@ -78,7 +84,12 @@ class DressingRoomScreen extends ConsumerWidget {
                   ),
                   trailing: TextButton(
                     key: chooseProfileButtonKey,
-                    onPressed: () => context.push(AppRoutes.aiTryOn),
+                    onPressed: () => pushIfEntitled(
+                      context,
+                      ref,
+                      EntitlementAction.aiTryOn,
+                      AppRoutes.aiTryOn,
+                    ),
                     child: const Text('Change'),
                   ),
                 ),
@@ -107,8 +118,13 @@ class DressingRoomScreen extends ConsumerWidget {
                 message: 'Build a look first, then come back to try it on.',
                 actionLabel: 'Create outfit',
                 actionKey: createOutfitButtonKey,
-                onAction: () =>
-                    context.push(AppRoutes.createOutfit(wardrobeId)),
+                onAction: () => pushIfEntitled(
+                  context,
+                  ref,
+                  EntitlementAction.createOutfit,
+                  AppRoutes.createOutfit(wardrobeId),
+                  wardrobeId: wardrobeId,
+                ),
               )
             else ...[
               if (state.errorMessage != null)
@@ -135,7 +151,7 @@ class DressingRoomScreen extends ConsumerWidget {
   }
 }
 
-class _DressingRoomOutfitTile extends StatelessWidget {
+class _DressingRoomOutfitTile extends ConsumerWidget {
   const _DressingRoomOutfitTile({
     required this.wardrobeId,
     required this.outfit,
@@ -147,7 +163,7 @@ class _DressingRoomOutfitTile extends StatelessWidget {
   final List<Item> wardrobeItems;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final count = outfit.items.length;
     return Card(
       child: ListTile(
@@ -160,7 +176,12 @@ class _DressingRoomOutfitTile extends StatelessWidget {
         title: Text(outfit.name),
         subtitle: Text(count == 1 ? '1 item' : '$count items'),
         trailing: const Icon(Icons.chevron_right),
-        onTap: () => context.push(AppRoutes.tryOn(wardrobeId, outfit.id)),
+        onTap: () => pushIfEntitled(
+          context,
+          ref,
+          EntitlementAction.aiTryOn,
+          AppRoutes.tryOn(wardrobeId, outfit.id),
+        ),
       ),
     );
   }

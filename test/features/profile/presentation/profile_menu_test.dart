@@ -28,6 +28,7 @@ import '../../../helpers/fake_auth_repository.dart';
 import '../../../helpers/fake_device_context.dart';
 import '../../../helpers/fake_item_image_picker.dart';
 import '../../../helpers/fake_support_repository.dart';
+import '../../../helpers/test_app.dart';
 
 void main() {
   late FakeAuthRepository auth;
@@ -89,6 +90,7 @@ void main() {
           ),
           itemImagePickerProvider.overrideWithValue(FakeItemImagePicker()),
           deviceContextProvider.overrideWithValue(const FakeDeviceContext()),
+          ...entitlementTestOverrides(),
           if (themePreferences != null)
             themePreferencesProvider.overrideWithValue(themePreferences),
         ],
@@ -117,6 +119,8 @@ void main() {
     expect(find.byKey(ProfileScreen.themeToggleKey), findsOneWidget);
     expect(find.text('Dark theme'), findsOneWidget);
     expect(find.byKey(ProfileScreen.aiTryOnTileKey), findsOneWidget);
+    expect(find.byKey(ProfileScreen.planTileKey), findsOneWidget);
+    expect(find.byKey(ProfileScreen.restorePurchasesTileKey), findsOneWidget);
     expectNoCreatedUpdatedDateStamps();
     expect(find.byKey(ProfileScreen.rateTileKey), findsOneWidget);
     expect(find.byKey(ProfileScreen.contactTileKey), findsOneWidget);

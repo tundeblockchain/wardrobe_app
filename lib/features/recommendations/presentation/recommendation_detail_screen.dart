@@ -5,6 +5,8 @@ import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/app_empty_state.dart';
 import '../../../core/router/app_routes.dart';
+import '../../entitlements/domain/entitlement_action.dart';
+import '../../entitlements/presentation/entitlement_guard.dart';
 import '../../items/application/items_controller.dart';
 import '../../items/domain/item.dart';
 import '../../outfits/presentation/widgets/outfit_item_slider.dart';
@@ -119,11 +121,22 @@ class RecommendationDetailScreen extends ConsumerWidget {
           key: saveButtonKey,
           onPressed: state.isSaving
               ? null
-              : () => ref
-                    .read(
-                      recommendationDetailControllerProvider(_scope).notifier,
-                    )
-                    .save(),
+              : () async {
+                  final allowed = await ensureEntitled(
+                    context,
+                    ref,
+                    EntitlementAction.createOutfit,
+                    wardrobeId: wardrobeId,
+                  );
+                  if (!allowed || !context.mounted) {
+                    return;
+                  }
+                  await ref
+                      .read(
+                        recommendationDetailControllerProvider(_scope).notifier,
+                      )
+                      .save();
+                },
           child: state.isSaving
               ? const AppButtonSpinner()
               : const Text('Save outfit'),

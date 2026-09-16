@@ -18,6 +18,7 @@ import 'package:wardrobe_app/features/items/data/image_picker_item_image_picker.
 import '../../../helpers/date_stamp_matchers.dart';
 import '../../../helpers/fake_ai_profile_repository.dart';
 import '../../../helpers/fake_item_image_picker.dart';
+import '../../../helpers/test_app.dart';
 
 void main() {
   late FakeAiProfileRepository repository;
@@ -56,6 +57,7 @@ void main() {
       overrides: [
         aiProfileRepositoryProvider.overrideWithValue(repository),
         itemImagePickerProvider.overrideWithValue(picker),
+        ...entitlementTestOverrides(),
       ],
     );
     addTearDown(container.dispose);

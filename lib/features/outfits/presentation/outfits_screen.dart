@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../../core/router/app_routes.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/app_empty_state.dart';
 import '../../../core/widgets/app_fade_in.dart';
 import '../../../core/widgets/entity_delete.dart';
+import '../../entitlements/domain/entitlement_action.dart';
+import '../../entitlements/presentation/entitlement_guard.dart';
 import '../../items/application/items_controller.dart';
 import '../application/outfits_controller.dart';
 import '../domain/outfit.dart';
@@ -38,14 +39,23 @@ class OutfitsScreen extends ConsumerWidget {
           IconButton(
             key: dressingRoomButtonKey,
             tooltip: 'Dressing room',
-            onPressed: () => context.push(AppRoutes.dressingRoom(wardrobeId)),
+            onPressed: () => pushIfEntitled(
+              context,
+              ref,
+              EntitlementAction.aiTryOn,
+              AppRoutes.dressingRoom(wardrobeId),
+            ),
             icon: const Icon(Icons.face_retouching_natural_outlined),
           ),
           IconButton(
             key: recommendationsButtonKey,
             tooltip: 'Suggested outfits',
-            onPressed: () =>
-                context.push(AppRoutes.recommendations(wardrobeId)),
+            onPressed: () => pushIfEntitled(
+              context,
+              ref,
+              EntitlementAction.otherAi,
+              AppRoutes.recommendations(wardrobeId),
+            ),
             icon: const Icon(Icons.auto_awesome_outlined),
           ),
         ],
@@ -53,7 +63,13 @@ class OutfitsScreen extends ConsumerWidget {
       floatingActionButton: FloatingActionButton(
         key: createButtonKey,
         tooltip: 'Create outfit',
-        onPressed: () => context.push(AppRoutes.createOutfit(wardrobeId)),
+        onPressed: () => pushIfEntitled(
+          context,
+          ref,
+          EntitlementAction.createOutfit,
+          AppRoutes.createOutfit(wardrobeId),
+          wardrobeId: wardrobeId,
+        ),
         child: const Icon(Icons.checkroom_outlined),
       ),
       body: RefreshIndicator(
@@ -83,8 +99,13 @@ class OutfitsScreen extends ConsumerWidget {
                 title: 'No outfits yet',
                 message: 'Build a look from items in this wardrobe.',
                 actionLabel: 'Create outfit',
-                onAction: () =>
-                    context.push(AppRoutes.createOutfit(wardrobeId)),
+                onAction: () => pushIfEntitled(
+                  context,
+                  ref,
+                  EntitlementAction.createOutfit,
+                  AppRoutes.createOutfit(wardrobeId),
+                  wardrobeId: wardrobeId,
+                ),
               )
             else ...[
               if (state.errorMessage != null)

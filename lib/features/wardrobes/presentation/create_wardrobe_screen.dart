@@ -5,6 +5,8 @@ import 'package:go_router/go_router.dart';
 import '../../../core/router/app_routes.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/app_empty_state.dart';
+import '../../entitlements/domain/entitlement_action.dart';
+import '../../entitlements/presentation/entitlement_guard.dart';
 import '../application/wardrobes_controller.dart';
 import '../domain/wardrobe_validators.dart';
 import '../../search/presentation/app_search_gloss_bar.dart';
@@ -33,6 +35,14 @@ class _CreateWardrobeScreenState extends ConsumerState<CreateWardrobeScreen> {
 
   Future<void> _submit() async {
     if (!(_formKey.currentState?.validate() ?? false)) {
+      return;
+    }
+    final allowed = await ensureEntitled(
+      context,
+      ref,
+      EntitlementAction.createWardrobe,
+    );
+    if (!allowed || !mounted) {
       return;
     }
     final created = await ref

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wardrobe_app/app.dart';
 import 'package:wardrobe_app/core/session/session_local_store.dart';
@@ -7,6 +8,9 @@ import 'package:wardrobe_app/features/account/data/dio_account_repository.dart';
 import 'package:wardrobe_app/features/ai_profiles/data/dio_ai_profile_repository.dart';
 import 'package:wardrobe_app/features/auth/application/auth_controller.dart';
 import 'package:wardrobe_app/features/auth/domain/app_user.dart';
+import 'package:wardrobe_app/features/entitlements/data/dio_entitlement_repository.dart';
+import 'package:wardrobe_app/features/entitlements/data/paywall_gateway_provider.dart';
+import 'package:wardrobe_app/features/entitlements/domain/entitlement.dart';
 import 'package:wardrobe_app/features/items/data/dio_item_repository.dart';
 import 'package:wardrobe_app/features/items/data/dio_upload_repository.dart';
 import 'package:wardrobe_app/features/items/data/image_picker_item_image_picker.dart';
@@ -23,6 +27,7 @@ import 'fake_ai_profile_repository.dart';
 import 'fake_app_reviewer.dart';
 import 'fake_auth_repository.dart';
 import 'fake_device_context.dart';
+import 'fake_entitlements.dart';
 import 'fake_item_image_picker.dart';
 import 'fake_item_repository.dart';
 import 'fake_outfit_repository.dart';
@@ -32,6 +37,21 @@ import 'fake_upload_repository.dart';
 import 'fake_wardrobe_repository.dart';
 import 'item_processing_poll_overrides.dart';
 
+/// Premium entitlements + fake Superwall so existing flows stay unlocked.
+List<Override> entitlementTestOverrides({
+  Entitlement? entitlement,
+  FakeEntitlementRepository? repository,
+  FakePaywallGateway? paywall,
+}) {
+  final entitlements =
+      repository ??
+      FakeEntitlementRepository(seed: entitlement ?? Entitlement.premium);
+  return [
+    entitlementRepositoryProvider.overrideWithValue(entitlements),
+    paywallGatewayProvider.overrideWithValue(paywall ?? FakePaywallGateway()),
+  ];
+}
+
 /// Signed-in [WardrobeApp] with in-memory repositories for widget tests.
 class TestAppHarness {
   TestAppHarness({
@@ -40,6 +60,7 @@ class TestAppHarness {
     FakeItemRepository? items,
     FakeOutfitRepository? outfits,
     FakeAccountRepository? account,
+    Entitlement? entitlement,
   }) : auth =
            auth ??
            FakeAuthRepository(
@@ -51,13 +72,18 @@ class TestAppHarness {
        wardrobes = wardrobes ?? FakeWardrobeRepository(seed: [testWardrobe()]),
        items = items ?? FakeItemRepository(seed: [testItem()]),
        outfits = outfits ?? FakeOutfitRepository(),
-       account = account ?? FakeAccountRepository();
+       account = account ?? FakeAccountRepository(),
+       entitlements = FakeEntitlementRepository(
+         seed: entitlement ?? Entitlement.premium,
+       );
 
   final FakeAuthRepository auth;
   final FakeWardrobeRepository wardrobes;
   final FakeItemRepository items;
   final FakeOutfitRepository outfits;
   final FakeAccountRepository account;
+  final FakeEntitlementRepository entitlements;
+  final paywall = FakePaywallGateway();
   final sessionStore = InMemorySessionLocalStore();
   final sessionImages = RecordingSessionImageCache();
   final recommendations = FakeRecommendationRepository();
@@ -85,6 +111,8 @@ class TestAppHarness {
         sessionLocalStoreProvider.overrideWithValue(sessionStore),
         sessionImageCacheProvider.overrideWithValue(sessionImages),
         homeClothingCarouselAutoScrollProvider.overrideWithValue(false),
+        entitlementRepositoryProvider.overrideWithValue(entitlements),
+        paywallGatewayProvider.overrideWithValue(paywall),
         ...itemProcessingPollTestOverrides(),
       ],
       child: const WardrobeApp(),

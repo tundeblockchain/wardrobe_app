@@ -2,6 +2,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/network/api_exception.dart';
 import '../../../core/session/session_gate.dart';
+import '../../entitlements/application/entitlements_controller.dart';
+import '../../entitlements/domain/paywall_placement.dart';
 import '../data/dio_wardrobe_repository.dart';
 import '../domain/wardrobe.dart';
 import '../domain/wardrobe_repository.dart';
@@ -106,6 +108,11 @@ class CreateWardrobeController extends Notifier<CreateWardrobeState> {
       state = state.copyWith(isSaving: false);
       return wardrobe;
     } on ApiException catch (error) {
+      queueEntitlementPaywall(
+        ref,
+        error,
+        fallback: PaywallPlacement.wardrobeLimit,
+      );
       state = state.copyWith(isSaving: false, errorMessage: error.message);
       return null;
     } catch (_) {

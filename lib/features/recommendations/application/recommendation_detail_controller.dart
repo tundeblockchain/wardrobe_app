@@ -2,6 +2,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/network/api_exception.dart';
 import '../../../core/session/session_gate.dart';
+import '../../entitlements/application/entitlements_controller.dart';
+import '../../entitlements/domain/paywall_placement.dart';
 import '../../outfits/application/outfits_controller.dart';
 import '../../outfits/data/dio_outfit_repository.dart';
 import '../../outfits/domain/outfit.dart';
@@ -99,6 +101,11 @@ class RecommendationDetailController
       if (!ref.mounted) {
         return null;
       }
+      queueEntitlementPaywall(
+        ref,
+        error,
+        fallback: PaywallPlacement.outfitLimit,
+      );
       state = state.copyWith(isSaving: false, errorMessage: error.message);
       return null;
     } catch (_) {
