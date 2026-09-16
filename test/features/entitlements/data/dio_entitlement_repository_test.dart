@@ -95,8 +95,8 @@ void main() {
       ),
     ]);
 
-    expect(
-      () => repository.fetchEntitlements(),
+    await expectLater(
+      repository.fetchEntitlements(),
       throwsA(
         isA<ApiException>().having((error) => error.statusCode, 'status', 404),
       ),
@@ -109,8 +109,8 @@ void main() {
       const HttpScript(statusCode: 200, body: []),
     ]);
 
-    expect(
-      () => repository.fetchEntitlements(),
+    await expectLater(
+      repository.fetchEntitlements(),
       throwsA(
         isA<ApiException>().having(
           (error) => error.code,
