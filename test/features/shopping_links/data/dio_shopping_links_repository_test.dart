@@ -164,7 +164,7 @@ void main() {
     );
   });
 
-  test('liveEnabled is on for wardrobe-backend#47 86c5d6a', () {
+  test('liveEnabled is on for wardrobe-backend#47 aaf46cd on main', () {
     expect(ShoppingLinksContract.liveEnabled, isTrue);
   });
 

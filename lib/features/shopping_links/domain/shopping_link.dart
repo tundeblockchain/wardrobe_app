@@ -1,7 +1,7 @@
 /// Similar product a user can buy. Backend-owned; Flutter never scrapes SERP.
 ///
 /// Locked WARDROBE-96 contract ([wardrobe-backend#47](https://github.com/tundeblockchain/wardrobe-backend/pull/47)
-/// `86c5d6a`). Soft-omit unset optionals — never persist JSON `null`.
+/// squash `aaf46cd` on main). Soft-omit unset optionals — never persist JSON `null`.
 class ShoppingLink {
   const ShoppingLink({
     required this.title,

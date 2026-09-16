@@ -177,8 +177,8 @@ Home and item detail show a **Related shopping links** section. Available on
 OpenAI or Bright Data keys; those stay on Backend
 ([WARDROBE-96](https://tundetunde000.atlassian.net/browse/WARDROBE-96)).
 
-Locked contract (wardrobe-backend#47 SHA **`86c5d6a`** /
-`86c5d6ae767d22051d2b2c66a05fd0326b087ba7` on `features/WARDROBE-96`).
+Locked contract (wardrobe-backend#47 squash SHA **`aaf46cd`** /
+`aaf46cdef1f6f1da6e550c73ebee7c3f45729a96` on Backend **main**).
 `ShoppingLinksContract.liveEnabled` is `true` — Home and item detail call
 those paths through `DioShoppingLinksRepository`:
 

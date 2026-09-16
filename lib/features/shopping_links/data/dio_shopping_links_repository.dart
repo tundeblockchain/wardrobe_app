@@ -64,7 +64,7 @@ class DioShoppingLinksRepository implements ShoppingLinksRepository {
   }
 }
 
-/// Live Dio against wardrobe-backend#47 `86c5d6a`. Override in tests.
+/// Live Dio against wardrobe-backend#47 squash `aaf46cd` on main. Override in tests.
 final shoppingLinksRepositoryProvider = Provider<ShoppingLinksRepository>((
   ref,
 ) {

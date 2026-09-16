@@ -1,6 +1,6 @@
-/// Locked WARDROBE-96 HTTP contract (wardrobe-backend#47 `86c5d6a`).
+/// Locked WARDROBE-96 HTTP contract (wardrobe-backend#47 squash `aaf46cd` on main).
 ///
-/// Live Dio is on: Backend CI is green at that SHA on `features/WARDROBE-96`.
+/// Live Dio is on against that Backend tip.
 abstract final class ShoppingLinksContract {
   /// Production shopping-links repository uses Dio when this is true.
   static const liveEnabled = true;
