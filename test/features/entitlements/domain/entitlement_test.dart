@@ -3,11 +3,23 @@ import 'package:wardrobe_app/core/network/api_exception.dart';
 import 'package:wardrobe_app/features/entitlements/domain/entitlement.dart';
 import 'package:wardrobe_app/features/entitlements/domain/entitlement_action.dart';
 import 'package:wardrobe_app/features/entitlements/domain/entitlement_error_codes.dart';
+import 'package:wardrobe_app/features/entitlements/domain/entitlement_wire.dart';
 import 'package:wardrobe_app/features/entitlements/domain/paywall_placement.dart';
 import 'package:wardrobe_app/features/entitlements/domain/subscription_catalog.dart';
 import 'package:wardrobe_app/features/entitlements/domain/subscription_tier.dart';
 
 void main() {
+  group('SubscriptionTier', () {
+    test('parses uppercase Backend enum and lowercase aliases', () {
+      expect(SubscriptionTier.parse('FREE'), SubscriptionTier.free);
+      expect(SubscriptionTier.parse('BASIC'), SubscriptionTier.basic);
+      expect(SubscriptionTier.parse('PREMIUM'), SubscriptionTier.premium);
+      expect(SubscriptionTier.parse('premium'), SubscriptionTier.premium);
+      expect(SubscriptionTier.parse(null), SubscriptionTier.free);
+      expect(SubscriptionTier.premium.wireValue, EntitlementWire.premium);
+    });
+  });
+
   group('Entitlement.forTier', () {
     test('Free caps wardrobes, items, outfits and blocks AI', () {
       final entitlement = Entitlement.free;
@@ -45,32 +57,73 @@ void main() {
   });
 
   group('Entitlement.fromJson', () {
-    test('parses Backend snapshot and nested entitlement wrapper', () {
+    test('parses GET /me Backend snapshot', () {
       final parsed = Entitlement.fromJson({
-        'tier': 'basic',
-        'limits': {'maxWardrobes': null, 'maxItems': null, 'maxOutfits': null},
-        'flags': {'aiTryOn': false, 'otherAi': false},
+        'userId': 'firebase-uid',
+        'tier': 'FREE',
+        'status': 'NONE',
+        'features': {
+          'unlimitedCatalog': false,
+          'aiTryOn': false,
+          'otherAi': false,
+        },
+        'limits': {'wardrobes': 1, 'items': 5, 'outfits': 5},
+        'usage': {'wardrobes': 0, 'items': 0, 'outfits': 0},
       });
-      expect(parsed, Entitlement.basic);
+      expect(parsed, Entitlement.free);
 
+      final premium = Entitlement.fromJson({
+        'tier': 'PREMIUM',
+        'features': {
+          'unlimitedCatalog': true,
+          'aiTryOn': true,
+          'otherAi': true,
+        },
+        'limits': null,
+      });
+      expect(premium, Entitlement.premium);
+    });
+
+    test('accepts nested entitlement, flags, and aiEnabled/tryOn aliases', () {
       final nested = Entitlement.fromJson({
         'entitlement': {
-          'tier': 'premium',
+          'tier': 'PREMIUM',
           'flags': {'aiTryOn': true, 'otherAi': true},
         },
       });
       expect(nested.tier, SubscriptionTier.premium);
       expect(nested.canUseAiTryOn, isTrue);
+
+      final aliases = Entitlement.fromJson({
+        'tier': 'PREMIUM',
+        'features': {'aiEnabled': true, 'tryOn': true},
+      });
+      expect(aliases.canUseAiTryOn, isTrue);
+      expect(aliases.canUseOtherAi, isTrue);
     });
 
-    test('fills catalog defaults when limits/flags are omitted', () {
-      final parsed = Entitlement.fromJson({'tier': 'free'});
+    test('fills catalog defaults when limits/features are omitted', () {
+      final parsed = Entitlement.fromJson({'tier': 'FREE'});
       expect(parsed, Entitlement.free);
+    });
+
+    test('toJson emits uppercase tier, features, and limits', () {
+      expect(Entitlement.free.toJson(), {
+        'tier': 'FREE',
+        'features': {
+          'unlimitedCatalog': false,
+          'aiTryOn': false,
+          'otherAi': false,
+        },
+        'limits': {'wardrobes': 1, 'items': 5, 'outfits': 5},
+      });
+      expect(Entitlement.premium.toJson()['limits'], isNull);
+      expect(Entitlement.premium.toJson()['tier'], 'PREMIUM');
     });
   });
 
   group('PaywallPlacement', () {
-    test('maps Backend 402/403 codes to Superwall placements', () {
+    test('maps Backend 403 codes to Superwall placements', () {
       expect(
         PaywallPlacement.fromApiException(
           const ApiException(
@@ -85,11 +138,22 @@ void main() {
         PaywallPlacement.fromApiException(
           const ApiException(
             message: 'Try-on requires Premium',
-            code: EntitlementErrorCodes.aiTryOn,
-            statusCode: 402,
+            code: EntitlementErrorCodes.aiRequired,
+            statusCode: 403,
           ),
+          fallback: PaywallPlacement.aiTryOn,
         ),
         PaywallPlacement.aiTryOn,
+      );
+      expect(
+        PaywallPlacement.fromApiException(
+          const ApiException(
+            message: 'AI required',
+            code: EntitlementErrorCodes.aiRequired,
+            statusCode: 403,
+          ),
+        ),
+        PaywallPlacement.otherAi,
       );
       expect(
         PaywallPlacement.fromApiException(

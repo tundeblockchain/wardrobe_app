@@ -49,6 +49,10 @@ enum PaywallPlacement {
       return null;
     }
     final normalized = code.trim().toUpperCase();
+    if (normalized == EntitlementErrorCodes.aiRequired) {
+      // Generic AI deny — caller fallback picks try-on vs other AI.
+      return null;
+    }
     for (final placement in PaywallPlacement.values) {
       if (placement.errorCode == normalized) {
         return placement;
@@ -57,7 +61,7 @@ enum PaywallPlacement {
     return null;
   }
 
-  /// Maps Backend 402/403 entitlement failures to a Superwall placement.
+  /// Maps Backend `{ code, message }` entitlement failures to Superwall.
   static PaywallPlacement? fromApiException(
     ApiException error, {
     PaywallPlacement? fallback,
@@ -66,10 +70,14 @@ enum PaywallPlacement {
     if (fromCode != null) {
       return fromCode;
     }
-    if (!EntitlementErrorCodes.isEntitlementStatus(error.statusCode)) {
-      return null;
+    if (EntitlementErrorCodes.isAiRequired(error.code)) {
+      return fallback ?? PaywallPlacement.otherAi;
     }
-    return fallback;
+    if (EntitlementErrorCodes.isEntitlementCode(error.code) ||
+        EntitlementErrorCodes.isEntitlementStatus(error.statusCode)) {
+      return fallback;
+    }
+    return null;
   }
 
   String get headline {

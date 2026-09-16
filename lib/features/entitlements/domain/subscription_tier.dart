@@ -1,9 +1,11 @@
-/// Subscription tiers owned by Backend WARDROBE-91. Flutter mirrors the wire
-/// values `free` | `basic` | `premium`.
+import 'entitlement_wire.dart';
+
+/// Subscription tiers owned by Backend WARDROBE-91. Wire values are the
+/// uppercase string enum `FREE` | `BASIC` | `PREMIUM`.
 enum SubscriptionTier {
-  free('free', 'Free'),
-  basic('basic', 'Basic'),
-  premium('premium', 'Premium');
+  free(EntitlementWire.free, 'Free'),
+  basic(EntitlementWire.basic, 'Basic'),
+  premium(EntitlementWire.premium, 'Premium');
 
   const SubscriptionTier(this.wireValue, this.label);
 
@@ -14,7 +16,7 @@ enum SubscriptionTier {
     if (value == null || value.isEmpty) {
       return SubscriptionTier.free;
     }
-    final normalized = value.trim().toLowerCase();
+    final normalized = value.trim().toUpperCase();
     for (final tier in SubscriptionTier.values) {
       if (tier.wireValue == normalized) {
         return tier;

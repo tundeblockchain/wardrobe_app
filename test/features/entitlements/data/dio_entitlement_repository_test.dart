@@ -4,6 +4,7 @@ import 'package:wardrobe_app/core/network/dio_client.dart';
 import 'package:wardrobe_app/core/network/id_token_source.dart';
 import 'package:wardrobe_app/features/entitlements/data/dio_entitlement_repository.dart';
 import 'package:wardrobe_app/features/entitlements/domain/entitlement.dart';
+import 'package:wardrobe_app/features/entitlements/domain/entitlement_wire.dart';
 import 'package:wardrobe_app/features/entitlements/domain/subscription_tier.dart';
 
 import '../../../helpers/scripted_http_adapter.dart';
@@ -14,8 +15,10 @@ class _TokenSource implements IdTokenSource {
 }
 
 void main() {
+  late ScriptedHttpAdapter adapter;
+
   DioEntitlementRepository buildRepository(List<HttpScript> scripts) {
-    final adapter = ScriptedHttpAdapter(scripts);
+    adapter = ScriptedHttpAdapter(scripts);
     final dio = createDioClient(
       baseUrl: 'https://api.example.com',
       tokenSource: _TokenSource(),
@@ -24,18 +27,19 @@ void main() {
     return DioEntitlementRepository(dio);
   }
 
-  test('GET /me/entitlements maps the Backend snapshot', () async {
+  test('GET /me maps the Backend entitlement snapshot', () async {
     final repository = buildRepository([
       const HttpScript(
         statusCode: 200,
         body: {
-          'tier': 'premium',
-          'limits': {
-            'maxWardrobes': null,
-            'maxItems': null,
-            'maxOutfits': null,
+          'userId': 'uid-1',
+          'tier': 'PREMIUM',
+          'features': {
+            'unlimitedCatalog': true,
+            'aiTryOn': true,
+            'otherAi': true,
           },
-          'flags': {'aiTryOn': true, 'otherAi': true},
+          'limits': null,
         },
       ),
     ]);
@@ -43,6 +47,31 @@ void main() {
     final entitlement = await repository.fetchEntitlements();
     expect(entitlement.tier, SubscriptionTier.premium);
     expect(entitlement.canUseAiTryOn, isTrue);
+    expect(adapter.requests.single.path, EntitlementWire.mePath);
+  });
+
+  test('GET /me/entitlement is used when GET /me is 404', () async {
+    final repository = buildRepository([
+      const HttpScript(
+        statusCode: 404,
+        body: {'code': 'NOT_FOUND', 'message': 'missing'},
+      ),
+      const HttpScript(
+        statusCode: 200,
+        body: {
+          'tier': 'BASIC',
+          'features': {'aiEnabled': false, 'tryOn': false},
+          'limits': null,
+        },
+      ),
+    ]);
+
+    final entitlement = await repository.fetchEntitlements();
+    expect(entitlement, Entitlement.basic);
+    expect(adapter.requests.map((request) => request.path), [
+      EntitlementWire.mePath,
+      EntitlementWire.entitlementPath,
+    ]);
   });
 
   test('non-map payload becomes INVALID_RESPONSE', () async {
@@ -66,6 +95,10 @@ void main() {
     'Switching repository falls back on 404 until Backend is live',
     () async {
       final remote = buildRepository([
+        const HttpScript(
+          statusCode: 404,
+          body: {'code': 'NOT_FOUND', 'message': 'missing'},
+        ),
         const HttpScript(
           statusCode: 404,
           body: {'code': 'NOT_FOUND', 'message': 'missing'},

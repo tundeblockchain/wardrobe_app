@@ -75,5 +75,7 @@ Placement hooks the app registers: `wardrobe_limit`, `item_limit`,
 `outfit_limit` (Basic), `ai_try_on`, `other_ai` (Premium), plus
 `upgrade_basic` / `upgrade_premium` from Account.
 
-Entitlements are read from `GET /me/entitlements` when Backend WARDROBE-91 is
-live. Until then the client uses the same Free/Basic/Premium catalog shape.
+Entitlements are read from `GET /me` (fallback `GET /me/entitlement`) when
+Backend WARDROBE-91 is live. `tier` is `FREE` | `BASIC` | `PREMIUM`. Until
+then the client uses the same catalog shape. Denial `code` + `message` map
+to Superwall (`ENTITLEMENT_*_LIMIT`, `ENTITLEMENT_AI_REQUIRED`).

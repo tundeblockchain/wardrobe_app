@@ -1,7 +1,8 @@
+import 'entitlement_wire.dart';
 import 'subscription_catalog.dart';
 import 'subscription_tier.dart';
 
-/// Count caps from Backend. `null` means unlimited.
+/// Count caps from Backend. `null` means unlimited (`limits: null` on paid).
 class EntitlementLimits {
   const EntitlementLimits({this.maxWardrobes, this.maxItems, this.maxOutfits});
 
@@ -20,22 +21,30 @@ class EntitlementLimits {
   bool get hasItemCap => maxItems != null;
   bool get hasOutfitCap => maxOutfits != null;
 
+  bool get isUnlimited => !hasWardrobeCap && !hasItemCap && !hasOutfitCap;
+
   factory EntitlementLimits.fromJson(Map<String, dynamic>? json) {
     if (json == null) {
       return const EntitlementLimits();
     }
     return EntitlementLimits(
-      maxWardrobes: _asNullableInt(json['maxWardrobes']),
-      maxItems: _asNullableInt(json['maxItems']),
-      maxOutfits: _asNullableInt(json['maxOutfits']),
+      maxWardrobes: _asNullableInt(
+        json[EntitlementWire.wardrobes] ?? json[EntitlementWire.maxWardrobes],
+      ),
+      maxItems: _asNullableInt(
+        json[EntitlementWire.items] ?? json[EntitlementWire.maxItems],
+      ),
+      maxOutfits: _asNullableInt(
+        json[EntitlementWire.outfits] ?? json[EntitlementWire.maxOutfits],
+      ),
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'maxWardrobes': maxWardrobes,
-      'maxItems': maxItems,
-      'maxOutfits': maxOutfits,
+      EntitlementWire.wardrobes: maxWardrobes,
+      EntitlementWire.items: maxItems,
+      EntitlementWire.outfits: maxOutfits,
     };
   }
 
@@ -52,26 +61,43 @@ class EntitlementLimits {
   int get hashCode => Object.hash(maxWardrobes, maxItems, maxOutfits);
 }
 
-/// Feature flags from Backend. `aiTryOn` is virtual try-on; `otherAi` covers
-/// classify / recommendations / similar AI routes.
+/// Feature flags from Backend `features` (aliases: `flags`, `aiEnabled`, `tryOn`).
 class EntitlementFlags {
   const EntitlementFlags({required this.aiTryOn, required this.otherAi});
 
   final bool aiTryOn;
   final bool otherAi;
 
-  factory EntitlementFlags.fromJson(Map<String, dynamic>? json) {
+  factory EntitlementFlags.fromJson(
+    Map<String, dynamic>? json, {
+    EntitlementFlags fallback = const EntitlementFlags(
+      aiTryOn: false,
+      otherAi: false,
+    ),
+  }) {
     if (json == null) {
-      return const EntitlementFlags(aiTryOn: false, otherAi: false);
+      return fallback;
     }
+    final aiEnabled = _asBool(json[EntitlementWire.aiEnabled]);
     return EntitlementFlags(
-      aiTryOn: json['aiTryOn'] == true,
-      otherAi: json['otherAi'] == true,
+      aiTryOn:
+          _asBool(json[EntitlementWire.aiTryOn]) ??
+          _asBool(json[EntitlementWire.tryOn]) ??
+          aiEnabled ??
+          fallback.aiTryOn,
+      otherAi:
+          _asBool(json[EntitlementWire.otherAi]) ??
+          aiEnabled ??
+          fallback.otherAi,
     );
   }
 
-  Map<String, dynamic> toJson() {
-    return {'aiTryOn': aiTryOn, 'otherAi': otherAi};
+  Map<String, dynamic> toJson({required bool unlimitedCatalog}) {
+    return {
+      EntitlementWire.unlimitedCatalog: unlimitedCatalog,
+      EntitlementWire.aiTryOn: aiTryOn,
+      EntitlementWire.otherAi: otherAi,
+    };
   }
 
   @override
@@ -86,8 +112,8 @@ class EntitlementFlags {
   int get hashCode => Object.hash(aiTryOn, otherAi);
 }
 
-/// Soft-gate snapshot. Backend WARDROBE-91 owns the wire contract; this shape
-/// is the Flutter mirror (`GET /me/entitlements`).
+/// Soft-gate snapshot. Backend WARDROBE-91 owns the wire contract; this is the
+/// Flutter mirror of `GET /me` (`GET /me/entitlement` as fallback).
 class Entitlement {
   const Entitlement({
     required this.tier,
@@ -99,7 +125,7 @@ class Entitlement {
   final EntitlementLimits limits;
   final EntitlementFlags flags;
 
-  /// Catalog defaults for a tier when Backend omits limits/flags.
+  /// Catalog defaults for a tier when Backend omits limits/features.
   factory Entitlement.forTier(SubscriptionTier tier) {
     switch (tier) {
       case SubscriptionTier.free:
@@ -132,28 +158,40 @@ class Entitlement {
   static final premium = Entitlement.forTier(SubscriptionTier.premium);
 
   factory Entitlement.fromJson(Map<String, dynamic> json) {
-    final nested = json['entitlement'];
+    final nested = json[EntitlementWire.entitlement];
     final map = nested is Map ? Map<String, dynamic>.from(nested) : json;
-    final tier = SubscriptionTier.parse(map['tier'] as String?);
+    final tier = SubscriptionTier.parse(map[EntitlementWire.tier] as String?);
     final catalog = Entitlement.forTier(tier);
-    final limitsJson = map['limits'];
-    final flagsJson = map['flags'];
+    final featuresJson = _asMap(
+      map[EntitlementWire.features] ?? map[EntitlementWire.flags],
+    );
+    final limitsRaw = map[EntitlementWire.limits];
+    final unlimitedCatalog =
+        _asBool(featuresJson?[EntitlementWire.unlimitedCatalog]) ?? tier.isPaid;
+
+    final EntitlementLimits limits;
+    if (limitsRaw == null) {
+      limits = unlimitedCatalog ? const EntitlementLimits() : catalog.limits;
+    } else if (limitsRaw is Map) {
+      limits = EntitlementLimits.fromJson(Map<String, dynamic>.from(limitsRaw));
+    } else {
+      limits = catalog.limits;
+    }
+
     return Entitlement(
       tier: tier,
-      limits: limitsJson is Map
-          ? EntitlementLimits.fromJson(Map<String, dynamic>.from(limitsJson))
-          : catalog.limits,
-      flags: flagsJson is Map
-          ? EntitlementFlags.fromJson(Map<String, dynamic>.from(flagsJson))
-          : catalog.flags,
+      limits: limits,
+      flags: EntitlementFlags.fromJson(featuresJson, fallback: catalog.flags),
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'tier': tier.wireValue,
-      'limits': limits.toJson(),
-      'flags': flags.toJson(),
+      EntitlementWire.tier: tier.wireValue,
+      EntitlementWire.features: flags.toJson(
+        unlimitedCatalog: limits.isUnlimited,
+      ),
+      EntitlementWire.limits: limits.isUnlimited ? null : limits.toJson(),
     };
   }
 
@@ -181,6 +219,20 @@ class Entitlement {
 
   @override
   int get hashCode => Object.hash(tier, limits, flags);
+}
+
+Map<String, dynamic>? _asMap(Object? value) {
+  if (value is Map) {
+    return Map<String, dynamic>.from(value);
+  }
+  return null;
+}
+
+bool? _asBool(Object? value) {
+  if (value is bool) {
+    return value;
+  }
+  return null;
 }
 
 int? _asNullableInt(Object? value) {

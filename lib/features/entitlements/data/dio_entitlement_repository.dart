@@ -6,10 +6,11 @@ import '../../../core/network/api_exception.dart';
 import '../../../core/network/dio_client.dart';
 import '../domain/entitlement.dart';
 import '../domain/entitlement_repository.dart';
+import '../domain/entitlement_wire.dart';
 
 /// Catalog snapshot used until Backend WARDROBE-91 is reachable.
 ///
-/// Same [Entitlement] shape as `GET /me/entitlements` — not a separate protocol.
+/// Same [Entitlement] shape as `GET /me` — not a separate protocol.
 class CatalogEntitlementRepository implements EntitlementRepository {
   const CatalogEntitlementRepository({this.seed});
 
@@ -21,27 +22,55 @@ class CatalogEntitlementRepository implements EntitlementRepository {
   }
 }
 
-/// `GET /me/entitlements` — provisional Flutter read owned by Backend.
+/// `GET /me` (then `GET /me/entitlement`) — Flutter read owned by Backend.
 class DioEntitlementRepository implements EntitlementRepository {
   DioEntitlementRepository(this._dio);
 
   final Dio _dio;
 
-  static const path = '/me/entitlements';
+  static const path = EntitlementWire.mePath;
+  static const fallbackPath = EntitlementWire.entitlementPath;
 
   @override
   Future<Entitlement> fetchEntitlements() {
     return _guard(() async {
-      final response = await _dio.get<dynamic>(path);
-      final data = response.data;
-      if (data is Map) {
-        return Entitlement.fromJson(Map<String, dynamic>.from(data));
-      }
-      throw const ApiException(
-        message: 'Unexpected entitlement response.',
-        code: 'INVALID_RESPONSE',
-      );
+      final data = await _getJson();
+      return Entitlement.fromJson(data);
     });
+  }
+
+  Future<Map<String, dynamic>> _getJson() async {
+    Object? lastError;
+    for (var i = 0; i < EntitlementWire.readPaths.length; i++) {
+      final path = EntitlementWire.readPaths[i];
+      try {
+        final response = await _dio.get<dynamic>(path);
+        final data = response.data;
+        if (data is Map) {
+          return Map<String, dynamic>.from(data);
+        }
+        throw const ApiException(
+          message: 'Unexpected entitlement response.',
+          code: 'INVALID_RESPONSE',
+        );
+      } on DioException catch (error) {
+        lastError = error;
+        final status = error.response?.statusCode;
+        final canTryNext =
+            status == 404 && i < EntitlementWire.readPaths.length - 1;
+        if (canTryNext) {
+          continue;
+        }
+        rethrow;
+      }
+    }
+    if (lastError is DioException) {
+      throw lastError;
+    }
+    throw const ApiException(
+      message: 'Unexpected entitlement response.',
+      code: 'INVALID_RESPONSE',
+    );
   }
 
   Future<T> _guard<T>(Future<T> Function() action) async {
@@ -55,8 +84,8 @@ class DioEntitlementRepository implements EntitlementRepository {
 
 /// Prefers Backend when Firebase is configured; otherwise the catalog stub.
 ///
-/// 404 / 501 / network failures fall back to Free so CI and pre-WARDROBE-91
-/// builds stay usable without inventing a second entitlement API.
+/// 404 / 501 / network failures fall back to Free so CI and pre-deploy builds
+/// stay usable without inventing a second entitlement API.
 class SwitchingEntitlementRepository implements EntitlementRepository {
   SwitchingEntitlementRepository({
     required this.remote,
