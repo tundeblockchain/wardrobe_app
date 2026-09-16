@@ -1,6 +1,17 @@
 import '../domain/shopping_link.dart';
 
-/// Normalizes Backend `price` which may be a string, number, or null.
+String? _optionalString(Object? value) {
+  if (value == null) {
+    return null;
+  }
+  if (value is String) {
+    final trimmed = value.trim();
+    return trimmed.isEmpty ? null : trimmed;
+  }
+  return null;
+}
+
+/// Wire `price` is a string; numbers are stringified as a safety net.
 String? shoppingPriceFromJson(Object? value) {
   if (value == null) {
     return null;
@@ -15,32 +26,29 @@ String? shoppingPriceFromJson(Object? value) {
     }
     return value.toString();
   }
-  final fallback = value.toString().trim();
-  return fallback.isEmpty ? null : fallback;
+  return _optionalString(value.toString());
 }
 
-String? _optionalString(Object? value) {
-  if (value is! String) {
-    return null;
+List<String> _stringList(Object? value) {
+  if (value is! List) {
+    return const [];
   }
-  final trimmed = value.trim();
-  return trimmed.isEmpty ? null : trimmed;
-}
-
-String? _firstString(Map<String, dynamic> json, List<String> keys) {
-  for (final key in keys) {
-    final value = _optionalString(json[key]);
-    if (value != null) {
-      return value;
+  final out = <String>[];
+  for (final entry in value) {
+    final text = _optionalString(entry is String ? entry : null);
+    if (text != null) {
+      out.add(text);
     }
   }
-  return null;
+  return out;
 }
 
-/// Maps one link object. Invalid title/url entries return null (soft-skip).
+bool _cachedFromJson(Object? value) => value == true;
+
+/// Maps one locked Link object. Invalid title/url entries return null.
 ShoppingLink? shoppingLinkFromJson(Map<String, dynamic> json) {
-  final title = _firstString(json, const ['title', 'name']);
-  final url = _firstString(json, const ['url', 'link', 'href']);
+  final title = _optionalString(json['title']);
+  final url = _optionalString(json['url']);
   if (title == null || url == null) {
     return null;
   }
@@ -48,61 +56,21 @@ ShoppingLink? shoppingLinkFromJson(Map<String, dynamic> json) {
   if (parsedUrl == null) {
     return null;
   }
-  final rawImage = _firstString(json, const [
-    'imageUrl',
-    'image_url',
-    'image',
-    'thumbnail',
-  ]);
-  final imageUri = tryParseShoppingUrl(rawImage);
+  final imageUri = tryParseShoppingUrl(_optionalString(json['imageUrl']));
   return ShoppingLink(
     title: title,
     url: parsedUrl.toString(),
+    merchant: _optionalString(json['merchant']),
     price: shoppingPriceFromJson(json['price']),
-    merchant: _firstString(json, const ['merchant', 'store', 'seller']),
+    currency: _optionalString(json['currency']),
     imageUrl: imageUri?.toString(),
   );
 }
 
-List<dynamic>? _listFromEnvelope(Map<String, dynamic> json) {
-  for (final key in const [
-    'links',
-    'shoppingLinks',
-    'shopping_links',
-    'results',
-    'items',
-  ]) {
-    final value = json[key];
-    if (value is List) {
-      return value;
-    }
-  }
-  return null;
-}
-
-/// Parses `{ "links": [...] }`, aliases, a bare array, or null → empty.
-///
-/// Unusable payloads become an empty list so Home / item detail never crash.
-List<ShoppingLink> parseShoppingLinkList(dynamic data) {
-  if (data == null) {
+List<ShoppingLink> parseShoppingLinkList(Object? raw) {
+  if (raw is! List) {
     return const [];
   }
-  if (data is List) {
-    return _mapLinkList(data);
-  }
-  if (data is Map) {
-    final json = Map<String, dynamic>.from(data);
-    final nested = _listFromEnvelope(json);
-    if (nested != null) {
-      return _mapLinkList(nested);
-    }
-    final single = shoppingLinkFromJson(json);
-    return single == null ? const [] : [single];
-  }
-  return const [];
-}
-
-List<ShoppingLink> _mapLinkList(List<dynamic> raw) {
   final links = <ShoppingLink>[];
   for (final entry in raw) {
     if (entry is! Map) {
@@ -114,4 +82,60 @@ List<ShoppingLink> _mapLinkList(List<dynamic> raw) {
     }
   }
   return links;
+}
+
+ShoppingLinksWarning? parseShoppingLinksWarning(Object? raw) {
+  if (raw is! Map) {
+    return null;
+  }
+  final json = Map<String, dynamic>.from(raw);
+  final code = _optionalString(json['code']);
+  final message = _optionalString(json['message']);
+  if (code == null || message == null) {
+    return null;
+  }
+  return ShoppingLinksWarning(code: code, message: message);
+}
+
+/// Item 200: `{ itemId, wardrobeId, keywords[], cached, links[], warning? }`.
+ShoppingLinksItemResult parseItemShoppingLinks(
+  Object? data, {
+  String? fallbackItemId,
+  String? fallbackWardrobeId,
+}) {
+  if (data is! Map) {
+    return ShoppingLinksItemResult(
+      itemId: fallbackItemId ?? '',
+      wardrobeId: fallbackWardrobeId ?? '',
+    );
+  }
+  final json = Map<String, dynamic>.from(data);
+  return ShoppingLinksItemResult(
+    itemId: _optionalString(json['itemId']) ?? fallbackItemId ?? '',
+    wardrobeId: _optionalString(json['wardrobeId']) ?? fallbackWardrobeId ?? '',
+    keywords: _stringList(json['keywords']),
+    cached: _cachedFromJson(json['cached']),
+    links: parseShoppingLinkList(json['links']),
+    warning: parseShoppingLinksWarning(json['warning']),
+  );
+}
+
+/// Home 200: `{ items: [ ShoppingLinksItemResult... ] }`.
+HomeShoppingLinks parseHomeShoppingLinks(Object? data) {
+  if (data is! Map) {
+    return const HomeShoppingLinks();
+  }
+  final json = Map<String, dynamic>.from(data);
+  final rawItems = json['items'];
+  if (rawItems is! List) {
+    return const HomeShoppingLinks();
+  }
+  final items = <ShoppingLinksItemResult>[];
+  for (final entry in rawItems) {
+    if (entry is! Map) {
+      continue;
+    }
+    items.add(parseItemShoppingLinks(Map<String, dynamic>.from(entry)));
+  }
+  return HomeShoppingLinks(items: items);
 }

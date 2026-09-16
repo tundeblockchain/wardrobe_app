@@ -14,21 +14,34 @@ Future<void> refreshShoppingLinks({
   required Ref ref,
   required ShoppingLinksState Function() readState,
   required void Function(ShoppingLinksState next) writeState,
-  required Future<List<ShoppingLink>> Function(
+  required Future<(List<ShoppingLink>, ShoppingLinksWarning?)> Function(
     ShoppingLinksRepository repository,
   )
   load,
 }) async {
   writeState(readState().copyWith(isLoading: true, clearError: true));
   try {
-    final links = await load(ref.read(shoppingLinksRepositoryProvider));
+    final (links, warning) = await load(
+      ref.read(shoppingLinksRepositoryProvider),
+    );
     if (!ref.mounted) {
+      return;
+    }
+    if (links.isEmpty && warning != null) {
+      writeState(
+        readState().copyWith(
+          isLoading: false,
+          links: List<ShoppingLink>.unmodifiable(links),
+          errorMessage: warning.message,
+        ),
+      );
       return;
     }
     writeState(
       readState().copyWith(
         isLoading: false,
         links: List<ShoppingLink>.unmodifiable(links),
+        clearError: true,
       ),
     );
   } on ApiException catch (error) {
@@ -67,7 +80,10 @@ class HomeShoppingLinksController extends Notifier<ShoppingLinksState> {
       ref: ref,
       readState: () => state,
       writeState: (next) => state = next,
-      load: (repository) => repository.listHomeShoppingLinks(),
+      load: (repository) async {
+        final home = await repository.listHomeShoppingLinks();
+        return (home.flattenedLinks, home.upstreamWarning);
+      },
     );
   }
 }

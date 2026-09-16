@@ -4,6 +4,7 @@ import 'package:wardrobe_app/core/network/api_exception.dart';
 import 'package:wardrobe_app/core/session/session_gate.dart';
 import 'package:wardrobe_app/features/shopping_links/application/home_shopping_links_controller.dart';
 import 'package:wardrobe_app/features/shopping_links/data/dio_shopping_links_repository.dart';
+import 'package:wardrobe_app/features/shopping_links/domain/shopping_link.dart';
 
 import '../../../helpers/fake_shopping_links_repository.dart';
 
@@ -37,6 +38,23 @@ void main() {
     expect(state.links, hasLength(1));
     expect(state.links.single.title, 'Black cotton tee');
     expect(repository.homeCalls, 1);
+    expect(repository.lastLimit, 5);
+    expect(repository.lastLinksPerItem, 8);
+  });
+
+  test('upstream warning on empty home is unavailable, not a crash', () async {
+    repository.homeWarning = const ShoppingLinksWarning(
+      code: ShoppingLinksWarning.upstreamUnavailable,
+      message: 'Similar products are unavailable right now.',
+    );
+
+    container.read(homeShoppingLinksControllerProvider);
+    await settle();
+
+    final state = container.read(homeShoppingLinksControllerProvider);
+    expect(state.links, isEmpty);
+    expect(state.isUnavailable, isTrue);
+    expect(state.errorMessage, contains('unavailable'));
   });
 
   test('ApiException stays on this section as unavailable', () async {

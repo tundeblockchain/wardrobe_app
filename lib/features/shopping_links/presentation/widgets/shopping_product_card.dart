@@ -72,10 +72,10 @@ class ShoppingProductCard extends StatelessWidget {
                           ),
                         ),
                       ],
-                      if (link.price != null) ...[
+                      if (link.displayPrice != null) ...[
                         const SizedBox(height: AppSpacing.xs),
                         Text(
-                          link.price!,
+                          link.displayPrice!,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: theme.textTheme.titleSmall?.copyWith(

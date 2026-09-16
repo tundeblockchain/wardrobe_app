@@ -1,12 +1,16 @@
 import 'shopping_link.dart';
+import 'shopping_links_contract.dart';
 
-/// Related shopping links. Paths are provisional until WARDROBE-96 confirms.
+/// Related shopping links. Locked WARDROBE-96 paths; stub until Backend SHA.
 abstract interface class ShoppingLinksRepository {
-  /// Mixed recommendations from recent items across the user's wardrobes.
-  Future<List<ShoppingLink>> listHomeShoppingLinks();
+  /// Mixed recent items: `GET /shopping-links?limit=&linksPerItem=`.
+  Future<HomeShoppingLinks> listHomeShoppingLinks({
+    int limit = ShoppingLinksContract.defaultLimit,
+    int linksPerItem = ShoppingLinksContract.defaultLinksPerItem,
+  });
 
-  /// Shopping links for one clothing item.
-  Future<List<ShoppingLink>> listItemShoppingLinks({
+  /// `GET /wardrobes/{wardrobeId}/items/{itemId}/shopping-links`.
+  Future<ShoppingLinksItemResult> listItemShoppingLinks({
     required String wardrobeId,
     required String itemId,
   });

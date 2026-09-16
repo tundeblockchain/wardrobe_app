@@ -177,25 +177,45 @@ Home and item detail show a **Related shopping links** section. Available on
 OpenAI or Bright Data keys; those stay on Backend
 ([WARDROBE-96](https://tundetunde000.atlassian.net/browse/WARDROBE-96)).
 
-Provisional contract (Backend owns the final paths; Flutter leaves a hook):
+Locked contract (wardrobe-backend#47 proposed SHA **`86c5d6a`** /
+`86c5d6ae767d22051d2b2c66a05fd0326b087ba7`). Harden
+`ShoppingLinksContract.liveEnabled` to `true` when that SHA (or a later
+merge) lands on Backend main:
 
 ```http
-GET /shopping-links
 GET /wardrobes/{wardrobeId}/items/{itemId}/shopping-links
+GET /shopping-links?limit=5&linksPerItem=8
 ```
 
-Link object: `title` (string), `price` (optional string or number),
-`merchant` (optional string), `url` (http/https, opens externally),
-`imageUrl` (optional http/https). Envelopes `{ "links": [...] }` /
-`shoppingLinks` / a bare array are accepted. Invalid entries are skipped.
+Home query: `limit` default 5 max 10; `linksPerItem` default 8 max 12.
+Invalid query is Backend `400 VALIDATION_ERROR` — Flutter only sends the
+clamped defaults.
+
+Link object (soft-omit unset; never JSON `null`):
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `title` | string | Required |
+| `url` | string | Required; http(s) only; opens externally |
+| `merchant` | optional string | Soft-omit when unset |
+| `price` | optional string | Soft-omit when unset |
+| `currency` | optional string | Soft-omit when unset |
+| `imageUrl` | optional string | http(s) thumbnail |
+
+Item 200: `{ itemId, wardrobeId, keywords[], cached, links[], warning? }`.
+
+Home 200: `{ items: [ { itemId, wardrobeId, keywords[], cached, links[], warning? } ] }`.
+
+Soft-fail: upstream blips are **200** with empty `links` / empty `items`
+and optional `warning.code=SHOPPING_UPSTREAM_UNAVAILABLE`. Missing item or
+wardrobe is **404** (`ITEM_NOT_FOUND` / `WARDROBE_NOT_FOUND`) — the shopping
+section treats that as empty and never blocks wardrobe UX.
 
 `shoppingLinksRepositoryProvider` currently returns
-`StubShoppingLinksRepository` (empty list) because
-`ShoppingLinksApi.liveEnabled` is `false`. Set that flag (or override the
-provider) to `DioShoppingLinksRepository` when Backend posts the contract
-SHA. A 404 from Dio is treated as an empty list. Controller errors stay on
-this section — they never crash Home or item detail, and they never block
-wardrobe browsing. Product taps use `url_launcher` via `ShoppingLinkOpener`.
+`StubShoppingLinksRepository` because `ShoppingLinksContract.liveEnabled`
+is `false`. Flip that flag (or override the provider) to
+`DioShoppingLinksRepository` when Backend main has `86c5d6a`. Product taps
+use `url_launcher` via `ShoppingLinkOpener`.
 
 ## AI profiles (WARDROBE-50)
 

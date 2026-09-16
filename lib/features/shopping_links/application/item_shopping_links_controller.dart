@@ -25,10 +25,17 @@ class ItemShoppingLinksController extends Notifier<ShoppingLinksState> {
       ref: ref,
       readState: () => state,
       writeState: (next) => state = next,
-      load: (repository) => repository.listItemShoppingLinks(
-        wardrobeId: scope.wardrobeId,
-        itemId: scope.itemId,
-      ),
+      load: (repository) async {
+        final item = await repository.listItemShoppingLinks(
+          wardrobeId: scope.wardrobeId,
+          itemId: scope.itemId,
+        );
+        final warning =
+            item.links.isEmpty && (item.warning?.isUpstreamUnavailable ?? false)
+            ? item.warning
+            : null;
+        return (item.links, warning);
+      },
     );
   }
 }
