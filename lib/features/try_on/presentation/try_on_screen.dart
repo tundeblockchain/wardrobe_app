@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../../core/router/app_routes.dart';
 import '../../../core/theme/app_spacing.dart';
@@ -12,6 +11,8 @@ import '../../ai_profiles/application/personal_ai_profiles_controller.dart';
 import '../../ai_profiles/application/selected_ai_profile.dart';
 import '../../ai_profiles/domain/ai_profile.dart';
 import '../../ai_profiles/presentation/widgets/ai_profile_picker_image.dart';
+import '../../entitlements/domain/entitlement_action.dart';
+import '../../entitlements/presentation/entitlement_guard.dart';
 import '../../outfits/application/outfit_scope.dart';
 import '../../outfits/domain/outfit.dart';
 import '../application/try_on_controller.dart';
@@ -113,7 +114,12 @@ class TryOnScreen extends ConsumerWidget {
                 'this outfit.',
             actionLabel: 'Choose profile',
             actionKey: chooseProfileButtonKey,
-            onAction: () => context.push(AppRoutes.aiTryOn),
+            onAction: () => pushIfEntitled(
+              context,
+              ref,
+              EntitlementAction.aiTryOn,
+              AppRoutes.aiTryOn,
+            ),
           )
         else
           Card(
@@ -134,7 +140,12 @@ class TryOnScreen extends ConsumerWidget {
               ),
               trailing: TextButton(
                 key: chooseProfileButtonKey,
-                onPressed: () => context.push(AppRoutes.aiTryOn),
+                onPressed: () => pushIfEntitled(
+                  context,
+                  ref,
+                  EntitlementAction.aiTryOn,
+                  AppRoutes.aiTryOn,
+                ),
                 child: const Text('Change'),
               ),
             ),
@@ -172,8 +183,19 @@ class TryOnScreen extends ConsumerWidget {
         FilledButton.icon(
           key: submitButtonKey,
           onPressed: canSubmit
-              ? () =>
-                    ref.read(tryOnControllerProvider(_scope).notifier).submit()
+              ? () async {
+                  final allowed = await ensureEntitled(
+                    context,
+                    ref,
+                    EntitlementAction.aiTryOn,
+                  );
+                  if (!allowed || !context.mounted) {
+                    return;
+                  }
+                  await ref
+                      .read(tryOnControllerProvider(_scope).notifier)
+                      .submit();
+                }
               : null,
           icon: state.isSubmitting || state.isPolling
               ? const AppButtonSpinner()

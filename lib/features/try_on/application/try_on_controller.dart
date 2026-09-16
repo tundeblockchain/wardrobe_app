@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../core/session/session_gate.dart';
 import '../../ai_profiles/application/selected_ai_profile.dart';
+import '../../entitlements/application/entitlements_controller.dart';
+import '../../entitlements/domain/paywall_placement.dart';
 import '../../ai_profiles/domain/ai_profile.dart';
 import '../../outfits/application/outfit_detail_controller.dart';
 import '../../outfits/application/outfit_hero_selection.dart';
@@ -122,6 +124,7 @@ class TryOnController extends Notifier<TryOnState> {
       if (!ref.mounted) {
         return false;
       }
+      queueEntitlementPaywall(ref, error, fallback: PaywallPlacement.aiTryOn);
       state = state.copyWith(isSubmitting: false, errorMessage: error.message);
       return false;
     } catch (_) {

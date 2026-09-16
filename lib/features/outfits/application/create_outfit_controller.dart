@@ -2,6 +2,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/network/api_exception.dart';
 import '../../../core/session/session_gate.dart';
+import '../../entitlements/application/entitlements_controller.dart';
+import '../../entitlements/domain/paywall_placement.dart';
 import '../../items/domain/item.dart';
 import '../data/dio_outfit_repository.dart';
 import '../domain/outfit.dart';
@@ -70,6 +72,11 @@ class CreateOutfitController extends Notifier<CreateOutfitState> {
       if (!ref.mounted) {
         return null;
       }
+      queueEntitlementPaywall(
+        ref,
+        error,
+        fallback: PaywallPlacement.outfitLimit,
+      );
       state = state.copyWith(isSaving: false, errorMessage: error.message);
       return null;
     } catch (_) {

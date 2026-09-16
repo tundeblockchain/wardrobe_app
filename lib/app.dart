@@ -5,6 +5,7 @@ import 'core/lifecycle/app_lifecycle.dart';
 import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/theme_controller.dart';
+import 'features/entitlements/presentation/entitlement_paywall_binder.dart';
 
 /// Root widget. Tests can wrap this in [ProviderScope] with overrides.
 class WardrobeApp extends ConsumerWidget {
@@ -21,6 +22,11 @@ class WardrobeApp extends ConsumerWidget {
         darkTheme: AppTheme.dark(),
         themeMode: themeMode,
         routerConfig: router,
+        builder: (context, child) {
+          return EntitlementPaywallBinder(
+            child: child ?? const SizedBox.shrink(),
+          );
+        },
       ),
     );
   }

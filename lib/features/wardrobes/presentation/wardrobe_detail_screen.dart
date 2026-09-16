@@ -8,6 +8,8 @@ import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/app_empty_state.dart';
 import '../../../core/widgets/app_fade_in.dart';
 import '../../../core/widgets/app_gloss.dart';
+import '../../entitlements/domain/entitlement_action.dart';
+import '../../entitlements/presentation/entitlement_guard.dart';
 import '../../search/presentation/app_search_gloss_bar.dart';
 import '../../../core/widgets/entity_delete.dart';
 import '../../items/application/items_controller.dart';
@@ -126,7 +128,13 @@ class _WardrobeDetailScreenState extends ConsumerState<WardrobeDetailScreen>
           : FloatingActionButton(
               key: WardrobeDetailScreen.addItemButtonKey,
               tooltip: 'Add item',
-              onPressed: () => context.push(AppRoutes.createItem(wardrobeId)),
+              onPressed: () => pushIfEntitled(
+                context,
+                ref,
+                EntitlementAction.createItem,
+                AppRoutes.createItem(wardrobeId),
+                wardrobeId: wardrobeId,
+              ),
               child: const Icon(Icons.add_a_photo_outlined),
             ),
       body: SafeArea(
@@ -232,7 +240,12 @@ class _WardrobeDetailScreenState extends ConsumerState<WardrobeDetailScreen>
             title: const Text('Virtual try-on'),
             subtitle: const Text('Pick an outfit and an AI profile'),
             trailing: const Icon(Icons.chevron_right),
-            onTap: () => context.push(AppRoutes.dressingRoom(wardrobeId)),
+            onTap: () => pushIfEntitled(
+              context,
+              ref,
+              EntitlementAction.aiTryOn,
+              AppRoutes.dressingRoom(wardrobeId),
+            ),
           ),
           const SizedBox(height: 72),
         ],
@@ -343,7 +356,13 @@ class _OutfitsSection extends ConsumerWidget {
           alignment: Alignment.centerLeft,
           child: TextButton(
             key: WardrobeDetailScreen.createOutfitButtonKey,
-            onPressed: () => context.push(AppRoutes.createOutfit(wardrobeId)),
+            onPressed: () => pushIfEntitled(
+              context,
+              ref,
+              EntitlementAction.createOutfit,
+              AppRoutes.createOutfit(wardrobeId),
+              wardrobeId: wardrobeId,
+            ),
             child: const Text('Create outfit'),
           ),
         ),
@@ -370,7 +389,7 @@ class _OutfitsSection extends ConsumerWidget {
   }
 }
 
-class _RecommendationsSection extends StatelessWidget {
+class _RecommendationsSection extends ConsumerWidget {
   const _RecommendationsSection({
     required this.wardrobeId,
     required this.state,
@@ -380,7 +399,7 @@ class _RecommendationsSection extends StatelessWidget {
   final RecommendationsState state;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -401,7 +420,12 @@ class _RecommendationsSection extends StatelessWidget {
                 : '${state.recommendations.length} looks',
           ),
           trailing: const Icon(Icons.chevron_right),
-          onTap: () => context.push(AppRoutes.recommendations(wardrobeId)),
+          onTap: () => pushIfEntitled(
+            context,
+            ref,
+            EntitlementAction.otherAi,
+            AppRoutes.recommendations(wardrobeId),
+          ),
         ),
         if (!state.isEmpty)
           for (var i = 0; i < state.recommendations.take(3).length; i++)
@@ -415,7 +439,7 @@ class _RecommendationsSection extends StatelessWidget {
   }
 }
 
-class _RecommendationPreviewTile extends StatelessWidget {
+class _RecommendationPreviewTile extends ConsumerWidget {
   const _RecommendationPreviewTile({
     required this.wardrobeId,
     required this.index,
@@ -427,7 +451,7 @@ class _RecommendationPreviewTile extends StatelessWidget {
   final Recommendation recommendation;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Card(
       child: AppGloss(
         child: ListTile(
@@ -439,8 +463,12 @@ class _RecommendationPreviewTile extends StatelessWidget {
                 : '${recommendation.items.length} items',
           ),
           trailing: const Icon(Icons.chevron_right),
-          onTap: () =>
-              context.push(AppRoutes.recommendationDetail(wardrobeId, index)),
+          onTap: () => pushIfEntitled(
+            context,
+            ref,
+            EntitlementAction.otherAi,
+            AppRoutes.recommendationDetail(wardrobeId, index),
+          ),
         ),
       ),
     );
@@ -475,7 +503,13 @@ class _ItemsSection extends ConsumerWidget {
         title: 'No items yet',
         message: 'Add a photo of a clothing item.',
         actionLabel: 'Add item',
-        onAction: () => context.push(AppRoutes.createItem(wardrobeId)),
+        onAction: () => pushIfEntitled(
+          context,
+          ref,
+          EntitlementAction.createItem,
+          AppRoutes.createItem(wardrobeId),
+          wardrobeId: wardrobeId,
+        ),
       );
     }
 

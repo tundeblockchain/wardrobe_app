@@ -47,3 +47,39 @@ Apple Developer capability, Services ID, and Firebase Apple provider — see
 
 Optional `IOS_APP_STORE_ID` is used when in-app review is unavailable and the
 client opens the App Store listing. It is not a secret.
+
+## Superwall (WARDROBE-90)
+
+Public Superwall API keys and store product IDs are dart-defines — never commit
+dashboard secrets. Product IDs stay placeholders until App Store / Play
+products exist.
+
+```json
+{
+  "SUPERWALL_API_KEY": "your-superwall-public-api-key",
+  "SUPERWALL_IOS_API_KEY": "your-ios-superwall-key",
+  "SUPERWALL_ANDROID_API_KEY": "your-android-superwall-key",
+  "SUPERWALL_PRODUCT_BASIC_MONTHLY": "wardrobe_basic_monthly",
+  "SUPERWALL_PRODUCT_BASIC_YEARLY": "wardrobe_basic_yearly",
+  "SUPERWALL_PRODUCT_PREMIUM_MONTHLY": "wardrobe_premium_monthly",
+  "SUPERWALL_PRODUCT_PREMIUM_YEARLY": "wardrobe_premium_yearly"
+}
+```
+
+Target prices for dashboard offerings:
+
+- Basic: £5/month or £50/year
+- Premium: £15/month or £150/year
+
+Placement hooks the app registers: `wardrobe_limit`, `item_limit`,
+`outfit_limit` (Basic), `ai_try_on`, `other_ai` (Premium), plus
+`upgrade_basic` / `upgrade_premium` from Account.
+
+Entitlements are read from `GET /me` only (wardrobe-backend#46, merged
+`a837463`). Dynamo via Backend is the source of truth — no Firebase custom
+claims. Superwall `identify` uses the Firebase UID. The Superwall webhook
+is Backend-side.
+
+`tier` is `FREE` | `BASIC` | `PREMIUM`. Denial `code` + `message` on 403
+map to Superwall (`ENTITLEMENT_WARDROBE_LIMIT` / `ENTITLEMENT_ITEM_LIMIT` /
+`ENTITLEMENT_OUTFIT_LIMIT` → Basic; `ENTITLEMENT_AI_REQUIRED` → Premium).

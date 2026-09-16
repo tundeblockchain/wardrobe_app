@@ -196,7 +196,11 @@ class _PersonalSection extends ConsumerWidget {
           ],
         FilledButton.icon(
           key: AiTryOnScreen.createButtonKey,
-          onPressed: personal.isBusy ? null : controller.createPersonal,
+          onPressed: personal.isBusy
+              ? null
+              : () async {
+                  await controller.createPersonal();
+                },
           icon: personal.isCreating
               ? const SizedBox(
                   width: 16,

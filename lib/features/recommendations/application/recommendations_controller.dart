@@ -2,6 +2,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/network/api_exception.dart';
 import '../../../core/session/session_gate.dart';
+import '../../entitlements/application/entitlements_controller.dart';
+import '../../entitlements/domain/paywall_placement.dart';
 import '../data/dio_recommendation_repository.dart';
 import '../domain/recommendation.dart';
 import '../domain/recommendation_repository.dart';
@@ -41,6 +43,7 @@ class RecommendationsController extends Notifier<RecommendationsState> {
       if (!ref.mounted) {
         return;
       }
+      queueEntitlementPaywall(ref, error, fallback: PaywallPlacement.otherAi);
       state = state.copyWith(isLoading: false, errorMessage: error.message);
     } catch (_) {
       if (!ref.mounted) {

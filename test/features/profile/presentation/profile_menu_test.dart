@@ -28,6 +28,7 @@ import '../../../helpers/fake_auth_repository.dart';
 import '../../../helpers/fake_device_context.dart';
 import '../../../helpers/fake_item_image_picker.dart';
 import '../../../helpers/fake_support_repository.dart';
+import '../../../helpers/test_app.dart';
 
 void main() {
   late FakeAuthRepository auth;
@@ -53,6 +54,7 @@ void main() {
     WidgetTester tester, {
     ThemePreferences? themePreferences,
   }) async {
+    useTallProfileViewport(tester);
     final router = GoRouter(
       initialLocation: AppRoutes.profile,
       routes: [
@@ -89,6 +91,7 @@ void main() {
           ),
           itemImagePickerProvider.overrideWithValue(FakeItemImagePicker()),
           deviceContextProvider.overrideWithValue(const FakeDeviceContext()),
+          ...entitlementTestOverrides(),
           if (themePreferences != null)
             themePreferencesProvider.overrideWithValue(themePreferences),
         ],
@@ -117,9 +120,20 @@ void main() {
     expect(find.byKey(ProfileScreen.themeToggleKey), findsOneWidget);
     expect(find.text('Dark theme'), findsOneWidget);
     expect(find.byKey(ProfileScreen.aiTryOnTileKey), findsOneWidget);
+    expect(find.byKey(ProfileScreen.planTileKey), findsOneWidget);
+    expect(find.byKey(ProfileScreen.restorePurchasesTileKey), findsOneWidget);
     expectNoCreatedUpdatedDateStamps();
+    await tester.scrollUntilVisible(find.byKey(ProfileScreen.rateTileKey), 80);
     expect(find.byKey(ProfileScreen.rateTileKey), findsOneWidget);
+    await tester.scrollUntilVisible(
+      find.byKey(ProfileScreen.contactTileKey),
+      80,
+    );
     expect(find.byKey(ProfileScreen.contactTileKey), findsOneWidget);
+    await tester.scrollUntilVisible(
+      find.byKey(ProfileScreen.reportBugTileKey),
+      80,
+    );
     expect(find.byKey(ProfileScreen.reportBugTileKey), findsOneWidget);
     await tester.scrollUntilVisible(
       find.byKey(ProfileScreen.deleteAccountButtonKey),
@@ -137,11 +151,7 @@ void main() {
   testWidgets('Sign out from profile clears the session', (tester) async {
     await pumpMenu(tester);
 
-    await tester.scrollUntilVisible(
-      find.byKey(ProfileScreen.signOutButtonKey),
-      80,
-    );
-    await tester.tap(find.byKey(ProfileScreen.signOutButtonKey));
+    await tapInScrollView(tester, find.byKey(ProfileScreen.signOutButtonKey));
     await tester.pumpAndSettle();
 
     expect(auth.currentUser, isNull);
@@ -150,7 +160,7 @@ void main() {
   testWidgets('Rate the app calls the reviewer', (tester) async {
     await pumpMenu(tester);
 
-    await tester.tap(find.byKey(ProfileScreen.rateTileKey));
+    await tapInScrollView(tester, find.byKey(ProfileScreen.rateTileKey));
     await tester.pumpAndSettle();
 
     expect(reviewer.requestCalls, 1);
@@ -163,7 +173,7 @@ void main() {
     reviewer.nextError = Exception('unavailable');
     await pumpMenu(tester);
 
-    await tester.tap(find.byKey(ProfileScreen.rateTileKey));
+    await tapInScrollView(tester, find.byKey(ProfileScreen.rateTileKey));
     await tester.pumpAndSettle();
 
     expect(find.text('Unable to open the store right now.'), findsOneWidget);
@@ -201,7 +211,7 @@ void main() {
   testWidgets('AI try-on opens the profile setup screen', (tester) async {
     await pumpMenu(tester);
 
-    await tester.tap(find.byKey(ProfileScreen.aiTryOnTileKey));
+    await tapInScrollView(tester, find.byKey(ProfileScreen.aiTryOnTileKey));
     await tester.pumpAndSettle();
 
     expect(find.byType(AiTryOnScreen), findsOneWidget);
@@ -211,7 +221,7 @@ void main() {
   testWidgets('Contact us opens the support form', (tester) async {
     await pumpMenu(tester);
 
-    await tester.tap(find.byKey(ProfileScreen.contactTileKey));
+    await tapInScrollView(tester, find.byKey(ProfileScreen.contactTileKey));
     await tester.pumpAndSettle();
 
     expect(find.byType(ContactUsScreen), findsOneWidget);
@@ -221,7 +231,7 @@ void main() {
   testWidgets('Report a bug opens the bug form', (tester) async {
     await pumpMenu(tester);
 
-    await tester.tap(find.byKey(ProfileScreen.reportBugTileKey));
+    await tapInScrollView(tester, find.byKey(ProfileScreen.reportBugTileKey));
     await tester.pumpAndSettle();
 
     expect(find.byType(ReportBugScreen), findsOneWidget);

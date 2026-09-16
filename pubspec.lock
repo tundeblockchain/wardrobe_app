@@ -121,6 +121,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.1.3"
+  code_builder:
+    dependency: transitive
+    description:
+      name: code_builder
+      sha256: aa5932e94c6c39c2f9ec4e5e06dfdd11a9430a61f6c41b6ba75b28ce0c481baf
+      url: "https://pub.dev"
+    source: hosted
+    version: "4.12.0"
   collection:
     dependency: transitive
     description:
@@ -725,6 +733,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.3.0"
+  pigeon:
+    dependency: transitive
+    description:
+      name: pigeon
+      sha256: "04cfefc8add8b47ddf9ccac8b92bb4edeb67c87f185c623ba0db118ac99334ad"
+      url: "https://pub.dev"
+    source: hosted
+    version: "26.3.4"
   platform:
     dependency: transitive
     description:
@@ -938,6 +954,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.4.1"
+  superwallkit_flutter:
+    dependency: "direct main"
+    description:
+      name: superwallkit_flutter
+      sha256: f26eebd8ce3200592488066c8ce29f0aa115f49c830cab967dddd5dfbedc5d04
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.5.0"
   term_glyph:
     dependency: transitive
     description:

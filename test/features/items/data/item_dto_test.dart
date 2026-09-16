@@ -149,6 +149,18 @@ void main() {
       expect(errorWire.processingStatus.isTerminal, isFalse);
     });
 
+    test('maps PENDING create (Premium enqueue) as in-progress', () {
+      final domain = ItemResponse.fromJson({
+        ...json,
+        'processingStatus': 'PENDING',
+        'image': {'originalKey': 'users/uid/uploads/uuid.jpg'},
+      }).toDomain();
+
+      expect(domain.processingStatus, ItemProcessingStatus.pending);
+      expect(domain.processingStatus.isInProgress, isTrue);
+      expect(domain.processingStatus.isTerminal, isFalse);
+    });
+
     test('defaults missing processingStatus to ready', () {
       final payload = Map<String, dynamic>.from(json)
         ..remove('processingStatus');

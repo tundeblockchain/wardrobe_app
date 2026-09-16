@@ -6,6 +6,8 @@ import '../../../core/router/app_routes.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/app_empty_state.dart';
 import '../../../core/widgets/entity_delete.dart';
+import '../../entitlements/domain/entitlement_action.dart';
+import '../../entitlements/presentation/entitlement_guard.dart';
 import '../../items/application/items_controller.dart';
 import '../../items/domain/item.dart';
 import '../application/outfit_detail_controller.dart';
@@ -57,8 +59,12 @@ class OutfitDetailScreen extends ConsumerWidget {
             IconButton(
               key: tryOnAppBarKey,
               tooltip: 'Try on',
-              onPressed: () =>
-                  context.push(AppRoutes.tryOn(wardrobeId, outfitId)),
+              onPressed: () => pushIfEntitled(
+                context,
+                ref,
+                EntitlementAction.aiTryOn,
+                AppRoutes.tryOn(wardrobeId, outfitId),
+              ),
               icon: const Icon(Icons.checkroom_outlined),
             ),
             IconButton(
@@ -127,12 +133,22 @@ class OutfitDetailScreen extends ConsumerWidget {
           onSelectHero: (url) => ref
               .read(outfitHeroSelectionProvider(_scope).notifier)
               .select(url),
-          onTryOn: () => context.push(AppRoutes.tryOn(wardrobeId, outfitId)),
+          onTryOn: () => pushIfEntitled(
+            context,
+            ref,
+            EntitlementAction.aiTryOn,
+            AppRoutes.tryOn(wardrobeId, outfitId),
+          ),
         ),
         const SizedBox(height: 16),
         FilledButton.icon(
           key: tryOnButtonKey,
-          onPressed: () => context.push(AppRoutes.tryOn(wardrobeId, outfitId)),
+          onPressed: () => pushIfEntitled(
+            context,
+            ref,
+            EntitlementAction.aiTryOn,
+            AppRoutes.tryOn(wardrobeId, outfitId),
+          ),
           icon: const Icon(Icons.checkroom_outlined),
           label: const Text('Try on'),
         ),

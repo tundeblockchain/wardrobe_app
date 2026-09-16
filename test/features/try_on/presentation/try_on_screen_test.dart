@@ -9,6 +9,8 @@ import 'package:wardrobe_app/features/outfits/data/dio_outfit_repository.dart';
 import 'package:wardrobe_app/features/outfits/domain/outfit_render.dart';
 import 'package:wardrobe_app/features/try_on/application/try_on_poll.dart';
 import 'package:wardrobe_app/features/ai_profiles/presentation/widgets/ai_profile_picker_image.dart';
+import 'package:wardrobe_app/features/entitlements/domain/entitlement.dart';
+import 'package:wardrobe_app/features/entitlements/domain/paywall_placement.dart';
 import 'package:wardrobe_app/features/try_on/presentation/try_on_screen.dart';
 import 'package:wardrobe_app/features/try_on/presentation/widgets/try_on_persona_card.dart';
 import 'package:wardrobe_app/features/try_on/presentation/widgets/try_on_result_image.dart';
@@ -16,7 +18,9 @@ import 'package:wardrobe_app/features/try_on/presentation/widgets/try_on_status_
 
 import '../../../helpers/date_stamp_matchers.dart';
 import '../../../helpers/fake_ai_profile_repository.dart';
+import '../../../helpers/fake_entitlements.dart';
 import '../../../helpers/fake_outfit_repository.dart';
+import '../../../helpers/test_app.dart';
 
 void main() {
   late FakeOutfitRepository outfits;
@@ -27,7 +31,11 @@ void main() {
     profiles = FakeAiProfileRepository();
   });
 
-  Future<ProviderContainer> pumpScreen(WidgetTester tester) async {
+  Future<ProviderContainer> pumpScreen(
+    WidgetTester tester, {
+    Entitlement? entitlement,
+    FakePaywallGateway? paywall,
+  }) async {
     tester.view.physicalSize = const Size(800, 1600);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
@@ -60,6 +68,7 @@ void main() {
           ),
         ),
         tryOnDelayProvider.overrideWithValue((_) async {}),
+        ...entitlementTestOverrides(entitlement: entitlement, paywall: paywall),
       ],
     );
     addTearDown(container.dispose);
@@ -134,6 +143,27 @@ void main() {
       ),
       findsOneWidget,
     );
+  });
+
+  testWidgets('Free try-on submit presents Superwall toward Premium', (
+    tester,
+  ) async {
+    final paywall = FakePaywallGateway();
+    final container = await pumpScreen(
+      tester,
+      entitlement: Entitlement.free,
+      paywall: paywall,
+    );
+    container
+        .read(selectedAiProfileProvider.notifier)
+        .select(testGenericModel());
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(TryOnScreen.submitButtonKey));
+    await tester.pumpAndSettle();
+
+    expect(paywall.presented, [PaywallPlacement.aiTryOn]);
+    expect(outfits.requestRenderCalls, 0);
   });
 
   testWidgets('shows FAILED banner from poll error', (tester) async {

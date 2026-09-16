@@ -244,7 +244,9 @@ void main() {
 }
 
 Future<void> _ensureVisible(WidgetTester tester, Key key) async {
-  await tester.scrollUntilVisible(find.byKey(key), 80);
+  final finder = find.byKey(key);
+  await tester.scrollUntilVisible(finder, 80);
+  await tester.ensureVisible(finder);
   await tester.pumpAndSettle();
 }
 

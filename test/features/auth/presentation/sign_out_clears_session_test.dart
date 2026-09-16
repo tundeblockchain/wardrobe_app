@@ -12,6 +12,7 @@ void main() {
   testWidgets(
     'Profile sign-out then a different account shows only the new wardrobes',
     (tester) async {
+      useTallProfileViewport(tester);
       final harness = TestAppHarness(
         auth: FakeAuthRepository(),
         wardrobes: FakeWardrobeRepository(
@@ -45,11 +46,7 @@ void main() {
       await tester.tap(find.byKey(WardrobesScreen.profileButtonKey));
       await tester.pumpAndSettle();
       expect(find.byType(ProfileScreen), findsOneWidget);
-      await tester.scrollUntilVisible(
-        find.byKey(ProfileScreen.signOutButtonKey),
-        80,
-      );
-      await tester.tap(find.byKey(ProfileScreen.signOutButtonKey));
+      await tapInScrollView(tester, find.byKey(ProfileScreen.signOutButtonKey));
       await tester.pumpAndSettle();
 
       expect(find.byType(LoginScreen), findsOneWidget);

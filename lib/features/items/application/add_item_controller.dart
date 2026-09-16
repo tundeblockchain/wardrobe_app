@@ -2,6 +2,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/network/api_exception.dart';
 import '../../../core/session/session_gate.dart';
+import '../../entitlements/application/entitlements_controller.dart';
+import '../../entitlements/domain/paywall_placement.dart';
 import '../data/dio_item_repository.dart';
 import '../data/dio_upload_repository.dart';
 import '../data/image_picker_item_image_picker.dart';
@@ -111,6 +113,7 @@ class AddItemController extends Notifier<AddItemState> {
       if (!ref.mounted) {
         return null;
       }
+      queueEntitlementPaywall(ref, error, fallback: PaywallPlacement.itemLimit);
       state = state.copyWith(
         isSubmitting: false,
         phase: AddItemPhase.idle,
