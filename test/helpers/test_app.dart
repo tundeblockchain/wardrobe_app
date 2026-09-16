@@ -19,6 +19,7 @@ import 'package:wardrobe_app/features/profile/data/dio_support_repository.dart';
 import 'package:wardrobe_app/features/profile/data/in_app_reviewer.dart';
 import 'package:wardrobe_app/features/profile/data/package_info_device_context.dart';
 import 'package:wardrobe_app/features/recommendations/data/dio_recommendation_repository.dart';
+import 'package:wardrobe_app/features/shopping_links/data/dio_shopping_links_repository.dart';
 import 'package:wardrobe_app/features/wardrobes/application/wardrobe_items_provider.dart';
 import 'package:wardrobe_app/features/wardrobes/data/dio_wardrobe_repository.dart';
 
@@ -32,10 +33,27 @@ import 'fake_item_image_picker.dart';
 import 'fake_item_repository.dart';
 import 'fake_outfit_repository.dart';
 import 'fake_recommendation_repository.dart';
+import 'fake_shopping_link_opener.dart';
+import 'fake_shopping_links_repository.dart';
 import 'fake_support_repository.dart';
 import 'fake_upload_repository.dart';
 import 'fake_wardrobe_repository.dart';
 import 'item_processing_poll_overrides.dart';
+
+/// Empty shopping-links so Home / item detail never hit live Dio in tests.
+List<Override> shoppingLinksTestOverrides({
+  FakeShoppingLinksRepository? repository,
+  FakeShoppingLinkOpener? opener,
+}) {
+  return [
+    shoppingLinksRepositoryProvider.overrideWithValue(
+      repository ?? FakeShoppingLinksRepository(),
+    ),
+    shoppingLinkOpenerProvider.overrideWithValue(
+      opener ?? FakeShoppingLinkOpener(),
+    ),
+  ];
+}
 
 /// Premium entitlements + fake Superwall so existing flows stay unlocked.
 List<Override> entitlementTestOverrides({
@@ -60,6 +78,7 @@ class TestAppHarness {
     FakeItemRepository? items,
     FakeOutfitRepository? outfits,
     FakeAccountRepository? account,
+    FakeShoppingLinksRepository? shoppingLinks,
     Entitlement? entitlement,
   }) : auth =
            auth ??
@@ -73,6 +92,7 @@ class TestAppHarness {
        items = items ?? FakeItemRepository(seed: [testItem()]),
        outfits = outfits ?? FakeOutfitRepository(),
        account = account ?? FakeAccountRepository(),
+       shoppingLinks = shoppingLinks ?? FakeShoppingLinksRepository(),
        entitlements = FakeEntitlementRepository(
          seed: entitlement ?? Entitlement.premium,
        );
@@ -82,6 +102,7 @@ class TestAppHarness {
   final FakeItemRepository items;
   final FakeOutfitRepository outfits;
   final FakeAccountRepository account;
+  final FakeShoppingLinksRepository shoppingLinks;
   final FakeEntitlementRepository entitlements;
   final paywall = FakePaywallGateway();
   final sessionStore = InMemorySessionLocalStore();
@@ -92,6 +113,7 @@ class TestAppHarness {
   final reviewer = FakeAppReviewer();
   final support = FakeSupportRepository();
   final aiProfiles = FakeAiProfileRepository();
+  final shoppingOpener = FakeShoppingLinkOpener();
 
   Widget app() {
     return ProviderScope(
@@ -101,6 +123,10 @@ class TestAppHarness {
         itemRepositoryProvider.overrideWithValue(items),
         outfitRepositoryProvider.overrideWithValue(outfits),
         recommendationRepositoryProvider.overrideWithValue(recommendations),
+        ...shoppingLinksTestOverrides(
+          repository: shoppingLinks,
+          opener: shoppingOpener,
+        ),
         uploadRepositoryProvider.overrideWithValue(uploads),
         itemImagePickerProvider.overrideWithValue(picker),
         accountRepositoryProvider.overrideWithValue(account),

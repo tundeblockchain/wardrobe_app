@@ -29,10 +29,10 @@ Sign in with Apple on iOS
 
 Layers (dependencies point downward only):
 
-1. **Presentation** — screens (`login`, `signup`, `forgot-password`, splash, wardrobes list / create / detail, add item / item detail / edit item, outfits list / create / detail / edit, dressing room / try-on, profile / contact us / report a bug / AI try-on) plus header search
-2. **Controller / Provider** — Riverpod auth, wardrobe, item, outfit, try-on, recommendation, support / rate-app, account, AI-profile, and header-search controllers
-3. **Repository** — `AuthRepository`, `WardrobeRepository`, `ItemRepository`, `UploadRepository`, `OutfitRepository`, `RecommendationRepository`, `SupportRepository`, `AccountRepository`, `AiProfileRepository`
-4. **API client / Firebase** — `FirebaseAuthRepository` (email/password + Google + Apple on iOS), Dio + ID-token interceptor, wardrobe/item/upload/outfit/recommendation/support/account/AI-profile Dio repositories, `image_picker` behind `ItemImagePicker`, `in_app_review` behind `AppReviewer`
+1. **Presentation** — screens (`login`, `signup`, `forgot-password`, splash, wardrobes list / create / detail, add item / item detail / edit item, outfits list / create / detail / edit, dressing room / try-on, profile / contact us / report a bug / AI try-on) plus header search and related shopping links
+2. **Controller / Provider** — Riverpod auth, wardrobe, item, outfit, try-on, recommendation, support / rate-app, account, AI-profile, header-search, and shopping-links controllers
+3. **Repository** — `AuthRepository`, `WardrobeRepository`, `ItemRepository`, `UploadRepository`, `OutfitRepository`, `RecommendationRepository`, `SupportRepository`, `AccountRepository`, `AiProfileRepository`, `ShoppingLinksRepository`
+4. **API client / Firebase** — `FirebaseAuthRepository` (email/password + Google + Apple on iOS), Dio + ID-token interceptor, wardrobe/item/upload/outfit/recommendation/support/account/AI-profile/shopping-links Dio repositories, `image_picker` behind `ItemImagePicker`, `in_app_review` behind `AppReviewer`, `url_launcher` behind `ShoppingLinkOpener`
 
 ## Auth shell
 
@@ -60,7 +60,10 @@ Authenticated routes:
   (account icon → `/profile`). Header search
   ([WARDROBE-89](https://tundetunde000.atlassian.net/browse/WARDROBE-89))
   filters already-loaded items (name / category / subcategory), outfits
-  (name), and wardrobes (name); empty query hides the results panel
+  (name), and wardrobes (name); empty query hides the results panel.
+  Related shopping links ([WARDROBE-95](https://tundetunde000.atlassian.net/browse/WARDROBE-95))
+  sit below the clothing carousel as a non-blocking Google Shopping–style
+  strip (Free / Basic / Premium — not entitlement-gated)
 
 - `/wardrobes/create` — name form
 - `/wardrobes/:wardrobeId` — detail, rename, delete, item list, outfits entry, suggestions entry
@@ -127,6 +130,8 @@ Camera/gallery is abstracted as `ItemImagePicker` so unit tests never need a
 device. On Android, gallery uses the system Photo Picker (no
 `READ_MEDIA_IMAGES`); camera still uses `CAMERA`. See
 [docs/android-photo-picker.md](docs/android-photo-picker.md).
+Item detail also shows **Related shopping links** for that item
+([WARDROBE-95](https://tundetunde000.atlassian.net/browse/WARDROBE-95)).
 
 Backend item/upload APIs (WARDROBE-8 / WARDROBE-11) may not be live yet; the
 client is scaffolded against the contract with mocked unit tests.
@@ -164,6 +169,52 @@ Suggestions are never auto-saved. The feature is additive: if
 flows still work and the suggestions entry shows an unavailable state.
 
 Virtual try-on inference is WARDROBE-51 (outfit render API).
+
+## Related shopping links (WARDROBE-95)
+
+Home and item detail show a **Related shopping links** section. Available on
+**Free, Basic, and Premium** — not entitlement-gated. Flutter never holds
+OpenAI or Bright Data keys; those stay on Backend
+([WARDROBE-96](https://tundetunde000.atlassian.net/browse/WARDROBE-96)).
+
+Locked contract (wardrobe-backend#47 squash SHA **`aaf46cd`** /
+`aaf46cdef1f6f1da6e550c73ebee7c3f45729a96` on Backend **main**).
+`ShoppingLinksContract.liveEnabled` is `true` — Home and item detail call
+those paths through `DioShoppingLinksRepository`:
+
+```http
+GET /wardrobes/{wardrobeId}/items/{itemId}/shopping-links
+GET /shopping-links?limit=5&linksPerItem=8
+```
+
+Home query: `limit` default 5 max 10; `linksPerItem` default 8 max 12.
+Invalid query is Backend `400 VALIDATION_ERROR` — Flutter only sends the
+clamped defaults.
+
+Link object (soft-omit unset; never JSON `null`):
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `title` | string | Required |
+| `url` | string | Required; http(s) only; opens externally |
+| `merchant` | optional string | Soft-omit when unset |
+| `price` | optional string | Soft-omit when unset |
+| `currency` | optional string | Soft-omit when unset |
+| `imageUrl` | optional string | http(s) thumbnail |
+
+Item 200: `{ itemId, wardrobeId, keywords[], cached, links[], warning? }`.
+
+Home 200: `{ items: [ { itemId, wardrobeId, keywords[], cached, links[], warning? } ] }`.
+
+Soft-fail: upstream blips are **200** with empty `links` / empty `items`
+and optional `warning.code=SHOPPING_UPSTREAM_UNAVAILABLE`. Missing item or
+wardrobe is **404** (`ITEM_NOT_FOUND` / `WARDROBE_NOT_FOUND`) — the shopping
+section treats that as empty and never blocks wardrobe UX.
+
+`shoppingLinksRepositoryProvider` returns `DioShoppingLinksRepository`
+(Firebase ID-token interceptor; no OpenAI or Bright Data keys in the app).
+Widget tests override the provider with `FakeShoppingLinksRepository`.
+Product taps use `url_launcher` via `ShoppingLinkOpener`.
 
 ## AI profiles (WARDROBE-50)
 

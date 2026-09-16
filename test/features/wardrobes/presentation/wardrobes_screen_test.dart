@@ -3,8 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wardrobe_app/features/auth/application/auth_controller.dart';
 import 'package:wardrobe_app/features/auth/domain/app_user.dart';
+import 'package:wardrobe_app/features/entitlements/domain/entitlement.dart';
 import 'package:wardrobe_app/features/items/data/dio_item_repository.dart';
 import 'package:wardrobe_app/features/items/presentation/widgets/item_browse_image.dart';
+import 'package:wardrobe_app/features/shopping_links/presentation/widgets/related_shopping_links_section.dart';
+import 'package:wardrobe_app/features/shopping_links/presentation/widgets/shopping_product_card.dart';
 import 'package:wardrobe_app/features/wardrobes/application/wardrobe_items_provider.dart';
 import 'package:wardrobe_app/features/wardrobes/data/dio_wardrobe_repository.dart';
 import 'package:wardrobe_app/core/network/api_exception.dart';
@@ -17,6 +20,7 @@ import 'package:wardrobe_app/features/wardrobes/presentation/widgets/wardrobe_li
 import '../../../helpers/date_stamp_matchers.dart';
 import '../../../helpers/fake_auth_repository.dart';
 import '../../../helpers/fake_item_repository.dart';
+import '../../../helpers/fake_shopping_links_repository.dart';
 import '../../../helpers/fake_wardrobe_repository.dart';
 import '../../../helpers/test_app.dart';
 
@@ -43,6 +47,7 @@ void main() {
             FakeItemRepository(seed: [testItem()]),
           ),
           homeClothingCarouselAutoScrollProvider.overrideWithValue(false),
+          ...shoppingLinksTestOverrides(),
         ],
         child: const MaterialApp(home: WardrobesScreen()),
       ),
@@ -290,4 +295,93 @@ void main() {
       expect(find.text('Wardrobe not found.'), findsWidgets);
     },
   );
+
+  testWidgets('home shows an empty related shopping links stub', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(400, 1400);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final harness = TestAppHarness();
+    addTearDown(harness.dispose);
+
+    await tester.pumpWidget(harness.app());
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(RelatedShoppingLinksSection.sectionKey), findsOneWidget);
+    expect(find.text('Related shopping links'), findsOneWidget);
+    expect(find.text('No similar products to shop yet.'), findsOneWidget);
+    expect(find.byType(ShoppingProductCard), findsNothing);
+    expect(find.byType(WardrobeListCard), findsOneWidget);
+  });
+
+  testWidgets('home shopping cards do not block wardrobe browsing', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(400, 1600);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final link = testShoppingLink();
+    final harness = TestAppHarness(
+      shoppingLinks: FakeShoppingLinksRepository(home: [link]),
+    );
+    addTearDown(harness.dispose);
+
+    await tester.pumpWidget(harness.app());
+    await tester.pumpAndSettle();
+
+    expect(find.byType(ShoppingProductCard), findsOneWidget);
+    expect(find.text('Black cotton tee'), findsOneWidget);
+    expect(find.text('Summer Clothes'), findsOneWidget);
+
+    await tester.tap(find.byKey(ShoppingProductCard.cardKey(link.url)));
+    await tester.pump();
+    expect(harness.shoppingOpener.opened, [Uri.parse(link.url)]);
+  });
+
+  testWidgets('home shopping errors stay on the section', (tester) async {
+    tester.view.physicalSize = const Size(400, 1400);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final shopping = FakeShoppingLinksRepository()
+      ..nextFailure = const ApiException(
+        message: 'Shopping links are unavailable right now.',
+        code: 'NETWORK_ERROR',
+      );
+    final harness = TestAppHarness(shoppingLinks: shopping);
+    addTearDown(harness.dispose);
+
+    await tester.pumpWidget(harness.app());
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text('Shopping links are unavailable right now.'),
+      findsOneWidget,
+    );
+    expect(find.byKey(RelatedShoppingLinksSection.retryKey), findsOneWidget);
+    expect(find.byType(WardrobeListCard), findsOneWidget);
+    expect(find.text('Summer Clothes'), findsOneWidget);
+  });
+
+  testWidgets('Free tier still sees related shopping links', (tester) async {
+    tester.view.physicalSize = const Size(400, 1400);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final harness = TestAppHarness(entitlement: Entitlement.free);
+    addTearDown(harness.dispose);
+
+    await tester.pumpWidget(harness.app());
+    await tester.pumpAndSettle();
+
+    expect(find.text('Related shopping links'), findsOneWidget);
+    expect(find.byType(WardrobeListCard), findsOneWidget);
+  });
 }

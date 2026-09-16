@@ -51,6 +51,7 @@ dependencies:
   crypto: ^3.0.7
   shared_preferences: ^2.5.5
   superwallkit_flutter: ^2.4.12
+  url_launcher: ^6.3.2
 
 dev_dependencies:
   flutter_test:
