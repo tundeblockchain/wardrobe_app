@@ -54,6 +54,8 @@ void main() {
     expect(find.text('Subcategory'), findsOneWidget);
     expect(find.text('Colours'), findsOneWidget);
     expect(find.text('Brand'), findsOneWidget);
+    expect(find.text('Acquired'), findsOneWidget);
+    expect(find.byKey(ItemDetailMetaBlock.acquiredAtRowKey), findsOneWidget);
     expect(find.text('Top'), findsOneWidget);
     expect(find.text('T-shirt'), findsOneWidget);
     expect(find.text('Black'), findsOneWidget);
@@ -74,10 +76,11 @@ void main() {
     expect(find.byKey(ItemDetailMetaBlock.subcategoryRowKey), findsOneWidget);
     expect(find.byKey(ItemDetailMetaBlock.coloursRowKey), findsOneWidget);
     expect(find.byKey(ItemDetailMetaBlock.brandRowKey), findsOneWidget);
+    expect(find.byKey(ItemDetailMetaBlock.acquiredAtRowKey), findsOneWidget);
     expect(find.byKey(ItemDetailMetaBlock.wardrobesSectionKey), findsOneWidget);
     expect(find.byKey(ItemDetailMetaBlock.outfitsSectionKey), findsOneWidget);
     expect(find.text('Top'), findsOneWidget);
-    expect(find.text(ItemDetailMeta.emptyPlaceholder), findsNWidgets(5));
+    expect(find.text(ItemDetailMeta.emptyPlaceholder), findsNWidgets(6));
   });
 
   testWidgets('shows AI subcategory and colours when user fields are empty', (
@@ -100,7 +103,7 @@ void main() {
     expect(find.text('Hoodie'), findsOneWidget);
     expect(find.text('Grey'), findsOneWidget);
     expect(find.text('Burgundy'), findsOneWidget);
-    expect(find.text(ItemDetailMeta.emptyPlaceholder), findsNWidgets(3));
+    expect(find.text(ItemDetailMeta.emptyPlaceholder), findsNWidgets(4));
   });
 
   testWidgets('shows wardrobe and outfit chips and reports taps', (

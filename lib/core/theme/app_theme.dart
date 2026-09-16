@@ -194,6 +194,46 @@ abstract final class AppTheme {
       ),
       iconTheme: IconThemeData(color: scheme.onSurfaceVariant),
       primaryIconTheme: IconThemeData(color: scheme.onPrimary),
+      datePickerTheme: DatePickerThemeData(
+        backgroundColor: scheme.surfaceContainerHigh,
+        headerBackgroundColor: scheme.primary,
+        headerForegroundColor: scheme.onPrimary,
+        surfaceTintColor: Colors.transparent,
+        shape: const RoundedRectangleBorder(borderRadius: AppRadii.dialog),
+        dayForegroundColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.disabled)) {
+            return scheme.onSurface.withValues(alpha: 0.38);
+          }
+          if (states.contains(WidgetState.selected)) {
+            return scheme.onPrimary;
+          }
+          return scheme.onSurface;
+        }),
+        dayBackgroundColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return scheme.primary;
+          }
+          return null;
+        }),
+        todayForegroundColor: WidgetStateProperty.all(scheme.primary),
+        todayBackgroundColor: WidgetStateProperty.all(Colors.transparent),
+        todayBorder: BorderSide(color: scheme.primary),
+        yearForegroundColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return scheme.onPrimary;
+          }
+          return scheme.onSurface;
+        }),
+        yearBackgroundColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return scheme.primary;
+          }
+          return null;
+        }),
+        weekdayStyle: textTheme.labelLarge?.copyWith(
+          color: scheme.onSurfaceVariant,
+        ),
+      ),
     );
   }
 

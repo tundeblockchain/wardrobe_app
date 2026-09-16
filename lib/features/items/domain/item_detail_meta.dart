@@ -1,4 +1,5 @@
 import 'item.dart';
+import 'item_acquired_at.dart';
 import 'item_taxonomy.dart';
 
 /// Display labels for the item-details meta block.
@@ -39,6 +40,14 @@ abstract final class ItemDetailMeta {
 
   static String brandLabel(Item item) {
     return _firstNonEmpty([item.brand]) ?? emptyPlaceholder;
+  }
+
+  static String acquiredAtLabel(Item item) {
+    final acquired = item.acquiredAt;
+    if (acquired == null) {
+      return emptyPlaceholder;
+    }
+    return ItemAcquiredAt.formatDisplay(acquired);
   }
 
   static bool isPlaceholder(String value) => value == emptyPlaceholder;

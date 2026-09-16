@@ -97,6 +97,7 @@ abstract class Item with _$Item {
     @Default(ItemProcessingStatus.ready) ItemProcessingStatus processingStatus,
     String? processingError,
     ItemAiMetadata? ai,
+    DateTime? acquiredAt,
     required DateTime createdAt,
     required DateTime updatedAt,
   }) = _Item;

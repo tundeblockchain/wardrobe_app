@@ -62,6 +62,7 @@ _ItemResponse _$ItemResponseFromJson(Map<String, dynamic> json) =>
       ai: json['ai'] == null
           ? null
           : ItemAiResponse.fromJson(json['ai'] as Map<String, dynamic>),
+      acquiredAt: ItemAcquiredAt.tryParse(json['acquiredAt']),
       createdAt: DateTime.parse(json['createdAt'] as String),
       updatedAt: DateTime.parse(json['updatedAt'] as String),
     );
@@ -84,6 +85,7 @@ Map<String, dynamic> _$ItemResponseToJson(_ItemResponse instance) =>
       'failureReason': instance.failureReason,
       'errorMessage': instance.errorMessage,
       'ai': instance.ai,
+      'acquiredAt': ItemAcquiredAt.toWire(instance.acquiredAt),
       'createdAt': instance.createdAt.toIso8601String(),
       'updatedAt': instance.updatedAt.toIso8601String(),
     };
@@ -108,6 +110,7 @@ _CreateItemRequest _$CreateItemRequestFromJson(Map<String, dynamic> json) =>
           .toList(),
       brand: json['brand'] as String?,
       imageKey: json['imageKey'] as String,
+      acquiredAt: ItemAcquiredAt.tryParse(json['acquiredAt']),
     );
 
 Map<String, dynamic> _$CreateItemRequestToJson(_CreateItemRequest instance) =>
@@ -118,6 +121,7 @@ Map<String, dynamic> _$CreateItemRequestToJson(_CreateItemRequest instance) =>
       'colours': ?instance.colours,
       'brand': ?instance.brand,
       'imageKey': instance.imageKey,
+      'acquiredAt': ?ItemAcquiredAt.toWire(instance.acquiredAt),
     };
 
 _UpdateItemRequest _$UpdateItemRequestFromJson(Map<String, dynamic> json) =>

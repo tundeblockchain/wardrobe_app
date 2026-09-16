@@ -10,6 +10,7 @@ import '../application/add_item_controller.dart';
 import '../domain/item.dart';
 import '../domain/item_taxonomy.dart';
 import '../domain/item_validators.dart';
+import 'widgets/item_acquired_at_field.dart';
 import 'widgets/item_subcategory_field.dart';
 
 /// Camera / gallery pick, then metadata form that uploads and creates the item.
@@ -24,6 +25,7 @@ class AddItemScreen extends ConsumerStatefulWidget {
   static const categoryFieldKey = Key('add_item_category');
   static const submitButtonKey = Key('add_item_submit');
   static const subcategoryFieldKey = ItemSubcategoryField.fieldKey;
+  static const acquiredAtFieldKey = ItemAcquiredAtField.fieldKey;
 
   @override
   ConsumerState<AddItemScreen> createState() => _AddItemScreenState();
@@ -36,6 +38,7 @@ class _AddItemScreenState extends ConsumerState<AddItemScreen> {
   final _brandController = TextEditingController();
   ItemCategory? _category;
   String? _subcategory;
+  DateTime? _acquiredAt;
 
   @override
   void dispose() {
@@ -72,6 +75,7 @@ class _AddItemScreenState extends ConsumerState<AddItemScreen> {
           subcategory: _subcategory,
           colours: ItemValidators.parseColours(_coloursController.text),
           brand: _brandController.text,
+          acquiredAt: _acquiredAt,
         );
     if (created != null && mounted) {
       context.go(AppRoutes.itemDetail(widget.wardrobeId, created.id));
@@ -195,6 +199,12 @@ class _AddItemScreenState extends ConsumerState<AddItemScreen> {
                       enabled: !busy,
                       onChanged: (value) =>
                           setState(() => _subcategory = value),
+                    ),
+                    const SizedBox(height: 16),
+                    ItemAcquiredAtField(
+                      value: _acquiredAt,
+                      enabled: !busy,
+                      onChanged: (value) => setState(() => _acquiredAt = value),
                     ),
                     const SizedBox(height: 16),
                     TextFormField(

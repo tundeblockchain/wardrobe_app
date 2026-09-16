@@ -41,6 +41,7 @@ void main() {
       expect(domain.processingStatus, ItemProcessingStatus.ready);
       expect(domain.processingError, isNull);
       expect(domain.ai, isNull);
+      expect(domain.acquiredAt, isNull);
       expect(domain.toString(), isNot(contains('itemId')));
     });
 
@@ -167,6 +168,40 @@ void main() {
         ),
       );
     });
+
+    test('maps acquiredAt ISO date and datetime without breaking omit', () {
+      final dated = ItemResponse.fromJson({...json, 'acquiredAt': '2024-03-09'})
+          .toDomain();
+      expect(dated.acquiredAt, DateTime.utc(2024, 3, 9));
+
+      final timestamped = ItemResponse.fromJson({
+        ...json,
+        'acquiredAt': '2024-03-09T18:45:00Z',
+      }).toDomain();
+      expect(timestamped.acquiredAt, DateTime.utc(2024, 3, 9));
+    });
+
+    test('treats missing, null, blank, and invalid acquiredAt as unset', () {
+      expect(ItemResponse.fromJson(json).toDomain().acquiredAt, isNull);
+      expect(
+        ItemResponse.fromJson({...json, 'acquiredAt': null})
+            .toDomain()
+            .acquiredAt,
+        isNull,
+      );
+      expect(
+        ItemResponse.fromJson({...json, 'acquiredAt': '  '})
+            .toDomain()
+            .acquiredAt,
+        isNull,
+      );
+      expect(
+        ItemResponse.fromJson({...json, 'acquiredAt': 'not-a-date'})
+            .toDomain()
+            .acquiredAt,
+        isNull,
+      );
+    });
   });
 
   group('ItemListResponse', () {
@@ -198,13 +233,14 @@ void main() {
 
     test('create includes optional metadata when present', () {
       expect(
-        const CreateItemRequest(
+        CreateItemRequest(
           name: 'Black T-Shirt',
           category: 'TOP',
           subcategory: 'TSHIRT',
           colours: ['BLACK'],
           brand: 'Nike',
           imageKey: 'users/uid/uploads/uuid.jpg',
+          acquiredAt: DateTime.utc(2024, 3, 9),
         ).toJson(),
         {
           'name': 'Black T-Shirt',
@@ -213,7 +249,19 @@ void main() {
           'colours': ['BLACK'],
           'brand': 'Nike',
           'imageKey': 'users/uid/uploads/uuid.jpg',
+          'acquiredAt': '2024-03-09',
         },
+      );
+    });
+
+    test('create omits acquiredAt when null', () {
+      expect(
+        const CreateItemRequest(
+          name: 'Black T-Shirt',
+          category: 'TOP',
+          imageKey: 'users/uid/uploads/uuid.jpg',
+        ).toJson().containsKey('acquiredAt'),
+        isFalse,
       );
     });
 
