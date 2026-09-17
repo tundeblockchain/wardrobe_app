@@ -6,9 +6,10 @@ import '../domain/app_search.dart';
 
 /// Leading thumbnail for a header-search hit (WARDROBE-97).
 ///
-/// Clothing items use the list DTO http(s) photo. Outfits use a cover already
-/// on the model. Missing or failed images soft-fail to a kind icon so the row
-/// never breaks. [AppMotion.reduce] skips the loading spinner.
+/// Clothing items use list/get `processedImageUrl`, else `originalImageUrl`.
+/// Outfits use a cover already on the model. Missing or failed images
+/// soft-fail to a kind icon so the row never breaks. [AppMotion.reduce]
+/// skips the loading spinner.
 class AppSearchHitThumbnail extends StatelessWidget {
   const AppSearchHitThumbnail({super.key, required this.hit});
 

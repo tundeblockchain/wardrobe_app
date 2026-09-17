@@ -70,17 +70,22 @@ void main() {
     expect(results.wardrobes, isEmpty);
   });
 
-  test('item results carry list-DTO thumbnail URLs', () async {
+  test('item results prefer processedImageUrl from the loaded list', () async {
     items.items
       ..clear()
-      ..add(testItem(originalImageUrl: 'https://cdn.example.com/original.jpg'));
+      ..add(
+        testItem(
+          originalImageUrl: 'https://cdn.example.com/original.jpg',
+          processedImageUrl: 'https://cdn.example.com/processed.png',
+        ),
+      );
     await settleLists();
     container.read(appSearchQueryProvider.notifier).setQuery('Nike');
 
     final results = container.read(appSearchResultsProvider);
     expect(
       results.items.single.imageUrl,
-      'https://cdn.example.com/original.jpg',
+      'https://cdn.example.com/processed.png',
     );
   });
 

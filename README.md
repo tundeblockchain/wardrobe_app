@@ -62,9 +62,9 @@ Authenticated routes:
   thumbnails [WARDROBE-97](https://tundetunde000.atlassian.net/browse/WARDROBE-97))
   filters already-loaded items (name / category / subcategory), outfits
   (name), and wardrobes (name); empty query hides the results panel.
-  Item hits show the processed/original list-DTO photo; outfits show a
-  cover already on the model. Missing or failed images fall back to a
-  kind icon so the row stays tappable.
+  Item hits prefer list/get `processedImageUrl`, else `originalImageUrl`
+  (no Backend search API). Outfits show a cover already on the model.
+  Missing or failed images fall back to a kind icon so the row stays tappable.
   Related shopping links ([WARDROBE-95](https://tundetunde000.atlassian.net/browse/WARDROBE-95))
   sit below the clothing carousel as a non-blocking Google Shopping–style
   strip (Free / Basic / Premium — not entitlement-gated)

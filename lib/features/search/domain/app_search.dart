@@ -26,7 +26,10 @@ class AppSearchHit {
   final String title;
   final String? subtitle;
 
-  /// Presigned http(s) thumbnail already on the list DTO. Null when missing.
+  /// Presigned http(s) thumbnail from the already-loaded list/get DTO.
+  ///
+  /// Items prefer `processedImageUrl`, else `originalImageUrl`. Null when
+  /// missing — the row still renders a placeholder.
   final String? imageUrl;
 
   /// Route for the matched entity. Backend `q=` can keep this mapping.
@@ -189,9 +192,10 @@ AppSearchResults loadedListAppSearch({
   );
 }
 
-/// Processed, then original, http(s) photo from the already-loaded item.
+/// Item-list/get thumbnail. No Backend search API.
 ///
-/// S3 object keys are ignored — they cannot be displayed without a GET URL.
+/// Prefers wire `processedImageUrl` when it is http(s), else
+/// `originalImageUrl`. Storage keys on `image` are not displayable.
 String? itemSearchThumbnailUrl(Item item) {
   return ItemImageSource.fromItem(item).networkUrl;
 }

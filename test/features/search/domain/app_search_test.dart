@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wardrobe_app/core/router/app_routes.dart';
+import 'package:wardrobe_app/features/items/data/dio_item_repository.dart';
 import 'package:wardrobe_app/features/items/domain/item.dart';
 import 'package:wardrobe_app/features/search/domain/app_search.dart';
 
@@ -168,8 +169,62 @@ void main() {
   });
 
   group('itemSearchThumbnailUrl', () {
+    test('prefers processedImageUrl over originalImageUrl', () {
+      expect(
+        itemSearchThumbnailUrl(
+          testItem(
+            originalImageUrl: 'https://cdn.example.com/original.jpg',
+            processedImageUrl: 'https://cdn.example.com/processed.png',
+          ),
+        ),
+        'https://cdn.example.com/processed.png',
+      );
+    });
+
+    test('uses originalImageUrl when processedImageUrl is absent', () {
+      expect(
+        itemSearchThumbnailUrl(
+          testItem(originalImageUrl: 'https://cdn.example.com/original.jpg'),
+        ),
+        'https://cdn.example.com/original.jpg',
+      );
+    });
+
+    test('soft-fails when only storage keys are present', () {
+      expect(itemSearchThumbnailUrl(testItem()), isNull);
+    });
+
     test('returns null for empty or whitespace URLs', () {
       expect(itemSearchThumbnailUrl(testItem(originalImageUrl: '   ')), isNull);
+    });
+
+    test('reads list/get URLs through parseItem, ignoring keys', () {
+      final item = parseItem({
+        'itemId': 'item_xyz123',
+        'wardrobeId': 'wd_abc123',
+        'name': 'Black Nike T-Shirt',
+        'category': 'TOP',
+        'image': {
+          'originalKey': 'users/uid/uploads/uuid.jpg',
+          'processedKey': 'users/uid/items/item_xyz123/processed.png',
+        },
+        'originalImageUrl': 'https://cdn.example.com/original.jpg',
+        'processedImageUrl': 'https://cdn.example.com/processed.png',
+        'processingStatus': 'READY',
+        'createdAt': '2026-09-03T18:45:00Z',
+        'updatedAt': '2026-09-03T18:45:00Z',
+      });
+      expect(
+        itemSearchThumbnailUrl(item),
+        'https://cdn.example.com/processed.png',
+      );
+      expect(
+        loadedListAppSearch(
+          query: 'nike',
+          catalog: AppSearchCatalog(items: [item]),
+        ).items.single.imageUrl,
+        'https://cdn.example.com/processed.png',
+      );
     });
   });
 }
