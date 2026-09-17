@@ -99,5 +99,77 @@ void main() {
       expect(results.items, isEmpty);
       expect(results.outfits, isEmpty);
     });
+
+    test('item hits prefer processed then original http(s) photos', () {
+      final results = loadedListAppSearch(
+        query: 'coat',
+        catalog: AppSearchCatalog(
+          items: [
+            testItem(
+              id: 'item_coat',
+              name: 'Wool coat',
+              originalImageUrl: 'https://cdn.example.com/original.jpg',
+              processedImageUrl: 'https://cdn.example.com/processed.png',
+            ),
+          ],
+        ),
+      );
+      expect(
+        results.items.single.imageUrl,
+        'https://cdn.example.com/processed.png',
+      );
+    });
+
+    test('item hits keep original URL when processed is only an S3 key', () {
+      final results = loadedListAppSearch(
+        query: 'nike',
+        catalog: AppSearchCatalog(
+          items: [
+            testItem(
+              originalImageUrl: 'https://cdn.example.com/original.jpg',
+              processedImageKey: 'users/uid/processed.png',
+            ),
+          ],
+        ),
+      );
+      expect(
+        results.items.single.imageUrl,
+        'https://cdn.example.com/original.jpg',
+      );
+    });
+
+    test('item hits omit S3 keys so missing photos stay null', () {
+      final results = loadedListAppSearch(query: 'nike', catalog: catalog);
+      expect(results.items.single.imageUrl, isNull);
+    });
+
+    test('outfit hits use a cover URL already on the model', () {
+      final results = loadedListAppSearch(
+        query: 'friday',
+        catalog: AppSearchCatalog(
+          outfits: [testOutfit(render: testOutfitRender())],
+        ),
+      );
+      expect(
+        results.outfits.single.imageUrl,
+        'https://cdn.example.com/try-on/outfit_123.png',
+      );
+    });
+
+    test('outfit hits stay text-only when there is no cover URL', () {
+      final results = loadedListAppSearch(query: 'friday', catalog: catalog);
+      expect(results.outfits.single.imageUrl, isNull);
+    });
+
+    test('wardrobe hits have no cover image on the model', () {
+      final results = loadedListAppSearch(query: 'summer', catalog: catalog);
+      expect(results.wardrobes.single.imageUrl, isNull);
+    });
+  });
+
+  group('itemSearchThumbnailUrl', () {
+    test('returns null for empty or whitespace URLs', () {
+      expect(itemSearchThumbnailUrl(testItem(originalImageUrl: '   ')), isNull);
+    });
   });
 }

@@ -70,6 +70,20 @@ void main() {
     expect(results.wardrobes, isEmpty);
   });
 
+  test('item results carry list-DTO thumbnail URLs', () async {
+    items.items
+      ..clear()
+      ..add(testItem(originalImageUrl: 'https://cdn.example.com/original.jpg'));
+    await settleLists();
+    container.read(appSearchQueryProvider.notifier).setQuery('Nike');
+
+    final results = container.read(appSearchResultsProvider);
+    expect(
+      results.items.single.imageUrl,
+      'https://cdn.example.com/original.jpg',
+    );
+  });
+
   test('engine provider defaults to loadedListAppSearch', () {
     expect(container.read(appSearchEngineProvider), same(loadedListAppSearch));
   });
