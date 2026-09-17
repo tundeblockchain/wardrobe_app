@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wardrobe_app/core/router/app_routes.dart';
+import 'package:wardrobe_app/features/items/data/dio_item_repository.dart';
 import 'package:wardrobe_app/features/items/domain/item.dart';
 import 'package:wardrobe_app/features/search/domain/app_search.dart';
 
@@ -98,6 +99,132 @@ void main() {
       expect(results.wardrobes.single.id, 'wd_winter');
       expect(results.items, isEmpty);
       expect(results.outfits, isEmpty);
+    });
+
+    test('item hits prefer processed then original http(s) photos', () {
+      final results = loadedListAppSearch(
+        query: 'coat',
+        catalog: AppSearchCatalog(
+          items: [
+            testItem(
+              id: 'item_coat',
+              name: 'Wool coat',
+              originalImageUrl: 'https://cdn.example.com/original.jpg',
+              processedImageUrl: 'https://cdn.example.com/processed.png',
+            ),
+          ],
+        ),
+      );
+      expect(
+        results.items.single.imageUrl,
+        'https://cdn.example.com/processed.png',
+      );
+    });
+
+    test('item hits keep original URL when processed is only an S3 key', () {
+      final results = loadedListAppSearch(
+        query: 'nike',
+        catalog: AppSearchCatalog(
+          items: [
+            testItem(
+              originalImageUrl: 'https://cdn.example.com/original.jpg',
+              processedImageKey: 'users/uid/processed.png',
+            ),
+          ],
+        ),
+      );
+      expect(
+        results.items.single.imageUrl,
+        'https://cdn.example.com/original.jpg',
+      );
+    });
+
+    test('item hits omit S3 keys so missing photos stay null', () {
+      final results = loadedListAppSearch(query: 'nike', catalog: catalog);
+      expect(results.items.single.imageUrl, isNull);
+    });
+
+    test('outfit hits use a cover URL already on the model', () {
+      final results = loadedListAppSearch(
+        query: 'friday',
+        catalog: AppSearchCatalog(
+          outfits: [testOutfit(render: testOutfitRender())],
+        ),
+      );
+      expect(
+        results.outfits.single.imageUrl,
+        'https://cdn.example.com/try-on/outfit_123.png',
+      );
+    });
+
+    test('outfit hits stay text-only when there is no cover URL', () {
+      final results = loadedListAppSearch(query: 'friday', catalog: catalog);
+      expect(results.outfits.single.imageUrl, isNull);
+    });
+
+    test('wardrobe hits have no cover image on the model', () {
+      final results = loadedListAppSearch(query: 'summer', catalog: catalog);
+      expect(results.wardrobes.single.imageUrl, isNull);
+    });
+  });
+
+  group('itemSearchThumbnailUrl', () {
+    test('prefers processedImageUrl over originalImageUrl', () {
+      expect(
+        itemSearchThumbnailUrl(
+          testItem(
+            originalImageUrl: 'https://cdn.example.com/original.jpg',
+            processedImageUrl: 'https://cdn.example.com/processed.png',
+          ),
+        ),
+        'https://cdn.example.com/processed.png',
+      );
+    });
+
+    test('uses originalImageUrl when processedImageUrl is absent', () {
+      expect(
+        itemSearchThumbnailUrl(
+          testItem(originalImageUrl: 'https://cdn.example.com/original.jpg'),
+        ),
+        'https://cdn.example.com/original.jpg',
+      );
+    });
+
+    test('soft-fails when only storage keys are present', () {
+      expect(itemSearchThumbnailUrl(testItem()), isNull);
+    });
+
+    test('returns null for empty or whitespace URLs', () {
+      expect(itemSearchThumbnailUrl(testItem(originalImageUrl: '   ')), isNull);
+    });
+
+    test('reads list/get URLs through parseItem, ignoring keys', () {
+      final item = parseItem({
+        'itemId': 'item_xyz123',
+        'wardrobeId': 'wd_abc123',
+        'name': 'Black Nike T-Shirt',
+        'category': 'TOP',
+        'image': {
+          'originalKey': 'users/uid/uploads/uuid.jpg',
+          'processedKey': 'users/uid/items/item_xyz123/processed.png',
+        },
+        'originalImageUrl': 'https://cdn.example.com/original.jpg',
+        'processedImageUrl': 'https://cdn.example.com/processed.png',
+        'processingStatus': 'READY',
+        'createdAt': '2026-09-03T18:45:00Z',
+        'updatedAt': '2026-09-03T18:45:00Z',
+      });
+      expect(
+        itemSearchThumbnailUrl(item),
+        'https://cdn.example.com/processed.png',
+      );
+      expect(
+        loadedListAppSearch(
+          query: 'nike',
+          catalog: AppSearchCatalog(items: [item]),
+        ).items.single.imageUrl,
+        'https://cdn.example.com/processed.png',
+      );
     });
   });
 }

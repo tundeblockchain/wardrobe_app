@@ -5,6 +5,7 @@ import 'package:wardrobe_app/features/items/presentation/item_detail_screen.dart
 import 'package:wardrobe_app/features/outfits/presentation/outfit_detail_screen.dart';
 import 'package:wardrobe_app/features/search/domain/app_search.dart';
 import 'package:wardrobe_app/features/search/presentation/app_search_gloss_bar.dart';
+import 'package:wardrobe_app/features/search/presentation/app_search_hit_thumbnail.dart';
 import 'package:wardrobe_app/features/search/presentation/app_search_results.dart';
 import 'package:wardrobe_app/features/wardrobes/presentation/wardrobe_detail_screen.dart';
 import 'package:wardrobe_app/features/wardrobes/presentation/wardrobes_screen.dart';
@@ -71,6 +72,15 @@ void main() {
     expect(
       find.byKey(
         AppSearchResultsPanel.tileKey(AppSearchHitKind.item, 'item_xyz123'),
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(
+        AppSearchHitThumbnail.placeholderKey(
+          AppSearchHitKind.item,
+          'item_xyz123',
+        ),
       ),
       findsOneWidget,
     );

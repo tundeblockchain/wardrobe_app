@@ -70,6 +70,25 @@ void main() {
     expect(results.wardrobes, isEmpty);
   });
 
+  test('item results prefer processedImageUrl from the loaded list', () async {
+    items.items
+      ..clear()
+      ..add(
+        testItem(
+          originalImageUrl: 'https://cdn.example.com/original.jpg',
+          processedImageUrl: 'https://cdn.example.com/processed.png',
+        ),
+      );
+    await settleLists();
+    container.read(appSearchQueryProvider.notifier).setQuery('Nike');
+
+    final results = container.read(appSearchResultsProvider);
+    expect(
+      results.items.single.imageUrl,
+      'https://cdn.example.com/processed.png',
+    );
+  });
+
   test('engine provider defaults to loadedListAppSearch', () {
     expect(container.read(appSearchEngineProvider), same(loadedListAppSearch));
   });

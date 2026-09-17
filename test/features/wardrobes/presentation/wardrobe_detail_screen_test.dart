@@ -184,16 +184,14 @@ void main() {
   testWidgets('hide-older-than filter drops clothes acquired before the date', (
     tester,
   ) async {
+    final now = DateTime.now();
+    final today = DateTime.utc(now.year, now.month, now.day);
     final older = testItem(
       id: 'item_old',
       name: 'Vintage coat',
       acquiredAt: DateTime.utc(2020, 1, 1),
     );
-    final newer = testItem(
-      id: 'item_new',
-      name: 'New tee',
-      acquiredAt: DateTime.utc(2026, 9, 16),
-    );
+    final newer = testItem(id: 'item_new', name: 'New tee', acquiredAt: today);
     final unknown = testItem(id: 'item_unknown', name: 'No date shirt');
     await pumpDetail(tester, items: [older, newer, unknown]);
 

@@ -1,7 +1,9 @@
 import '../../../core/router/app_routes.dart';
 import '../../items/domain/item.dart';
+import '../../items/domain/item_image_source.dart';
 import '../../items/domain/item_taxonomy.dart';
 import '../../outfits/domain/outfit.dart';
+import '../../outfits/domain/outfit_cover.dart';
 import '../../wardrobes/domain/wardrobe.dart';
 
 /// Kind of entity a header-search hit points at (WARDROBE-89).
@@ -15,6 +17,7 @@ class AppSearchHit {
     required this.wardrobeId,
     required this.title,
     this.subtitle,
+    this.imageUrl,
   });
 
   final AppSearchHitKind kind;
@@ -22,6 +25,12 @@ class AppSearchHit {
   final String wardrobeId;
   final String title;
   final String? subtitle;
+
+  /// Presigned http(s) thumbnail from the already-loaded list/get DTO.
+  ///
+  /// Items prefer `processedImageUrl`, else `originalImageUrl`. Null when
+  /// missing — the row still renders a placeholder.
+  final String? imageUrl;
 
   /// Route for the matched entity. Backend `q=` can keep this mapping.
   String get location {
@@ -40,11 +49,13 @@ class AppSearchHit {
             id == other.id &&
             wardrobeId == other.wardrobeId &&
             title == other.title &&
-            subtitle == other.subtitle;
+            subtitle == other.subtitle &&
+            imageUrl == other.imageUrl;
   }
 
   @override
-  int get hashCode => Object.hash(kind, id, wardrobeId, title, subtitle);
+  int get hashCode =>
+      Object.hash(kind, id, wardrobeId, title, subtitle, imageUrl);
 }
 
 /// Already-loaded (or list-API) snapshot used by MVP search.
@@ -126,6 +137,7 @@ AppSearchResults loadedListAppSearch({
         wardrobeId: item.wardrobeId,
         title: item.name,
         subtitle: _itemSubtitle(item, wardrobeNames[item.wardrobeId]),
+        imageUrl: itemSearchThumbnailUrl(item),
       ),
     );
     if (items.length >= _maxHitsPerKind) {
@@ -145,6 +157,7 @@ AppSearchResults loadedListAppSearch({
         wardrobeId: outfit.wardrobeId,
         title: outfit.name,
         subtitle: _joinSubtitle(['Outfit', wardrobeNames[outfit.wardrobeId]]),
+        imageUrl: outfitSearchThumbnailUrl(outfit),
       ),
     );
     if (outfits.length >= _maxHitsPerKind) {
@@ -177,6 +190,19 @@ AppSearchResults loadedListAppSearch({
     wardrobes: wardrobes,
     isLoading: catalog.isLoading,
   );
+}
+
+/// Item-list/get thumbnail. No Backend search API.
+///
+/// Prefers wire `processedImageUrl` when it is http(s), else
+/// `originalImageUrl`. Storage keys on `image` are not displayable.
+String? itemSearchThumbnailUrl(Item item) {
+  return ItemImageSource.fromItem(item).networkUrl;
+}
+
+/// Cover/hero try-on URL already on the outfit model, if any.
+String? outfitSearchThumbnailUrl(Outfit outfit) {
+  return latestOutfitTryOnUrl(outfit);
 }
 
 bool _itemMatches(Item item, String needle) {

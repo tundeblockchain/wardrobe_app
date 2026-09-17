@@ -7,6 +7,7 @@ import '../../../core/widgets/app_fade_in.dart';
 import '../../../core/widgets/app_gloss.dart';
 import '../application/app_search_providers.dart';
 import '../domain/app_search.dart';
+import 'app_search_hit_thumbnail.dart';
 
 /// Dropdown panel of header-search hits. Hidden by the caller when the query
 /// is empty.
@@ -124,7 +125,8 @@ class _HitTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       key: AppSearchResultsPanel.tileKey(hit.kind, hit.id),
-      leading: Icon(_iconFor(hit.kind)),
+      leading: AppSearchHitThumbnail(hit: hit),
+      minLeadingWidth: AppSearchHitThumbnail.size,
       title: Text(hit.title),
       subtitle: hit.subtitle == null ? null : Text(hit.subtitle!),
       onTap: () {
@@ -134,12 +136,4 @@ class _HitTile extends StatelessWidget {
       },
     );
   }
-}
-
-IconData _iconFor(AppSearchHitKind kind) {
-  return switch (kind) {
-    AppSearchHitKind.item => Icons.checkroom_outlined,
-    AppSearchHitKind.outfit => Icons.layers_outlined,
-    AppSearchHitKind.wardrobe => Icons.door_sliding_outlined,
-  };
 }
