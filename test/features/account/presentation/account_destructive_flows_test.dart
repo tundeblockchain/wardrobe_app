@@ -367,7 +367,11 @@ void main() {
         find.byKey(SubscriptionCancelFollowUpDialog.dialogKey),
         findsOneWidget,
       );
-      expect(find.textContaining('current period'), findsOneWidget);
+      expect(
+        find.byKey(SubscriptionCancelFollowUpDialog.messageKey),
+        findsOneWidget,
+      );
+      expect(find.textContaining('current period'), findsWidgets);
       expect(
         find.byKey(SubscriptionCancelFollowUpDialog.retryButtonKey),
         findsNothing,
