@@ -3,6 +3,7 @@ import 'package:wardrobe_app/core/network/api_exception.dart';
 import 'package:wardrobe_app/core/network/dio_client.dart';
 import 'package:wardrobe_app/core/network/id_token_source.dart';
 import 'package:wardrobe_app/features/account/data/dio_account_repository.dart';
+import 'package:wardrobe_app/features/account/domain/subscription_cancel_info.dart';
 
 import '../../../helpers/scripted_http_adapter.dart';
 
@@ -56,8 +57,37 @@ void main() {
     final result = await repository.deleteAccount();
 
     expect(result.keepAccount, isFalse);
+    expect(result.subscription.isFailed, isFalse);
     expect(adapter.requests.single.method, 'DELETE');
     expect(adapter.requests.single.path, '/me');
+  });
+
+  test('deleteAccount maps optional subscription cancel fields', () async {
+    repository = buildRepository([
+      HttpScript(
+        statusCode: 200,
+        body: {
+          ...summary,
+          'keepAccount': false,
+          'deleted': true,
+          'entitlementRevoked': true,
+          'subscription': {
+            'status': 'CANCEL_FAILED',
+            'retryInStore': true,
+            'code': 'SUBSCRIPTION_CANCEL_FAILED',
+            'message': 'Store cancel failed.',
+          },
+        },
+      ),
+    ]);
+
+    final result = await repository.deleteAccount();
+
+    expect(result.isAccountDeleted, isTrue);
+    expect(result.entitlementRevoked, isTrue);
+    expect(result.subscription.status, SubscriptionCancelStatus.cancelFailed);
+    expect(result.subscription.retryInStore, isTrue);
+    expect(result.subscription.message, 'Store cancel failed.');
   });
 
   test('empty account still returns 200 zeros', () async {

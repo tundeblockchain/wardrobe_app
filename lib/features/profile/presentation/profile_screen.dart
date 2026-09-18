@@ -10,6 +10,8 @@ import '../../coaches/presentation/screen_coach_host.dart';
 import '../../search/presentation/app_search_gloss_bar.dart';
 import '../../../core/widgets/type_to_confirm_dialog.dart';
 import '../../account/application/account_controller.dart';
+import '../../account/domain/account_subscription_copy.dart';
+import '../../account/presentation/subscription_cancel_follow_up_dialog.dart';
 import '../../auth/application/auth_controller.dart';
 import '../../auth/domain/app_user.dart';
 import '../../entitlements/application/entitlements_controller.dart';
@@ -57,6 +59,12 @@ class ProfileScreen extends ConsumerWidget {
     ref.listen(accountControllerProvider, (previous, next) {
       if (next.isAccountDeleted && context.mounted) {
         context.go(AppRoutes.login);
+        return;
+      }
+      if (next.needsSubscriptionFollowUp &&
+          previous?.subscriptionFollowUp != next.subscriptionFollowUp &&
+          context.mounted) {
+        SubscriptionCancelFollowUpDialog.show(context);
       }
     });
 
@@ -284,9 +292,7 @@ class ProfileScreen extends ConsumerWidget {
     final confirmed = await TypeToConfirmDialog.show(
       context,
       title: 'Delete your account?',
-      message:
-          'This permanently deletes every wardrobe, item, outfit, and photo, '
-          'then removes your sign-in. This cannot be undone.',
+      message: AccountSubscriptionCopy.deleteConfirmMessage,
       phrase: deletePhrase,
       confirmLabel: 'Delete account',
     );

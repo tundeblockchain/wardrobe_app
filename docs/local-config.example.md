@@ -83,3 +83,8 @@ is Backend-side.
 `tier` is `FREE` | `BASIC` | `PREMIUM`. Denial `code` + `message` on 403
 map to Superwall (`ENTITLEMENT_WARDROBE_LIMIT` / `ENTITLEMENT_ITEM_LIMIT` /
 `ENTITLEMENT_OUTFIT_LIMIT` → Basic; `ENTITLEMENT_AI_REQUIRED` → Premium).
+
+Account delete also calls Superwall cancel when the SDK exposes it
+([WARDROBE-102](https://tundetunde000.atlassian.net/browse/WARDROBE-102)).
+Today the Flutter SDK has no store-cancel API, so the client hook returns
+skipped and Backend `DELETE /me` (WARDROBE-103) owns cancel/revoke.

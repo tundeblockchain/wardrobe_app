@@ -336,9 +336,22 @@ Rate the app uses `in_app_review` and falls back to the platform store listing
 Clear all and Delete account live on `/profile` (WARDROBE-34 menu).
 
 - **Clear all content** — type `CLEAR`, then `DELETE /me/content`. Session stays.
-- **Delete account** — type `DELETE`, then `DELETE /me`, then Firebase
+- **Delete account** — type `DELETE`, then client Superwall cancel (no-op when
+  the SDK has no store-cancel API), then `DELETE /me`, then Firebase
   `deleteUser` (Google disconnect when needed). Failures are shown; the app
   never pretends the account is gone.
+- **Subscription cancel (WARDROBE-102)** — Backend
+  [WARDROBE-103](https://tundetunde000.atlassian.net/browse/WARDROBE-103)
+  is the source of truth for store cancel + entitlement revoke. Flutter
+  soft-parses optional `deleted`, `entitlementRevoked`, and
+  `subscription` / `subscriptionCancel` (`NONE` | `CANCELED` |
+  `CANCEL_AT_PERIOD_END` | `CANCEL_FAILED`, plus sketch aliases
+  `SUCCEEDED` / `SKIPPED` / `FAILED`). Missing fields do not fail compile
+  or parse. `CANCEL_FAILED` (or a client Superwall throw) shows Retry vs
+  Continue with store-manage copy. `CANCEL_AT_PERIOD_END` shows period-end
+  copy; Continue still deletes Firebase Auth when `deleted` is true (or
+  when `keepAccount` is false on a legacy body). Server revoke remains the
+  API gate. Harden when Backend posts the locked DTO + SHA.
 
 Identity is the Firebase ID token only. An empty account still returns `200`.
 Wardrobe and item deletes use the existing `DELETE` APIs behind a confirm

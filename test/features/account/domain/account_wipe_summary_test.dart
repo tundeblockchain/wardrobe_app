@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wardrobe_app/features/account/domain/account_wipe_summary.dart';
+import 'package:wardrobe_app/features/account/domain/subscription_cancel_info.dart';
 
 void main() {
   test('fromJson maps the WARDROBE-36 summary shape', () {
@@ -63,5 +64,48 @@ void main() {
       summary.feedbackMessage,
       contains('Some photos could not be removed'),
     );
+  });
+
+  test('fromJson soft-omits WARDROBE-103 subscription fields', () {
+    final summary = AccountWipeSummary.fromJson(const {
+      'keepAccount': false,
+      'deletedWardrobes': 0,
+      'deletedItems': 0,
+      'deletedOutfits': 0,
+      'deletedS3Objects': 0,
+      's3Failures': 0,
+    });
+
+    expect(summary.deleted, isNull);
+    expect(summary.entitlementRevoked, isNull);
+    expect(summary.subscription, SubscriptionCancelInfo.absent);
+    expect(summary.isAccountDeleted, isTrue);
+  });
+
+  test('fromJson maps deleted, entitlementRevoked, and CANCEL_FAILED', () {
+    final summary = AccountWipeSummary.fromJson(const {
+      'keepAccount': false,
+      'deleted': true,
+      'entitlementRevoked': true,
+      'subscription': {
+        'status': 'CANCEL_FAILED',
+        'retryInStore': true,
+        'code': 'SUBSCRIPTION_CANCEL_FAILED',
+      },
+    });
+
+    expect(summary.deleted, isTrue);
+    expect(summary.entitlementRevoked, isTrue);
+    expect(summary.isAccountDeleted, isTrue);
+    expect(summary.subscription.isFailed, isTrue);
+    expect(summary.subscription.retryInStore, isTrue);
+  });
+
+  test('isAccountDeleted is false when deleted is explicitly false', () {
+    final summary = AccountWipeSummary.fromJson(const {
+      'keepAccount': false,
+      'deleted': false,
+    });
+    expect(summary.isAccountDeleted, isFalse);
   });
 }

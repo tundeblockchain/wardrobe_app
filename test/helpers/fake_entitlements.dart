@@ -14,7 +14,10 @@ class FakePaywallGateway implements PaywallGateway {
   int configureCount = 0;
   int resetCount = 0;
   int restoreCount = 0;
+  int cancelCount = 0;
   RestorePurchasesResult restoreResult = RestorePurchasesResult.restored;
+  CancelSubscriptionResult cancelResult = CancelSubscriptionResult.skipped;
+  Object? cancelError;
 
   @override
   Future<void> configure() async {
@@ -44,6 +47,17 @@ class FakePaywallGateway implements PaywallGateway {
   Future<RestorePurchasesResult> restorePurchases() async {
     restoreCount++;
     return restoreResult;
+  }
+
+  @override
+  Future<CancelSubscriptionResult> cancelSubscription() async {
+    cancelCount++;
+    final thrown = cancelError;
+    if (thrown != null) {
+      cancelError = null;
+      throw thrown;
+    }
+    return cancelResult;
   }
 }
 

@@ -5,6 +5,7 @@ abstract interface class AccountRepository {
   /// `DELETE /me/content` — wipe wardrobes/items/outfits; keep the Firebase user.
   Future<AccountWipeSummary> clearContent();
 
-  /// `DELETE /me` — same wipe (plus PROFILE). Firebase Auth delete is client-side.
+  /// `DELETE /me` — wipe + subscription cancel/revoke (WARDROBE-103).
+  /// Firebase Auth delete stays client-side after a successful wipe.
   Future<AccountWipeSummary> deleteAccount();
 }
