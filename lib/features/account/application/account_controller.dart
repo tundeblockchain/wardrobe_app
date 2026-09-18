@@ -49,12 +49,13 @@ class AccountController extends Notifier<AccountState> {
     }
   }
 
-  /// Client Superwall cancel, then `DELETE /me`, then Firebase Auth delete.
+  /// Client Superwall cancel, then `DELETE /me` (merge SHA `3f9b38a`),
+  /// then Firebase Auth delete.
   ///
   /// Backend `subscription.status` is the source of truth. `CANCEL_FAILED`
-  /// / `retryInStore` shows manage-subscription copy before Firebase delete
-  /// so billing is never implied to be cleared. `500 INTERNAL_ERROR` retries
-  /// `DELETE /me`.
+  /// / `retryInStore` shows App Store / Play subscription-settings copy
+  /// before Firebase delete so billing is never implied to be cleared.
+  /// `500 INTERNAL_ERROR` retries `DELETE /me`.
   Future<AccountWipeSummary?> deleteAccount() async {
     state = state.copyWith(
       isBusy: true,

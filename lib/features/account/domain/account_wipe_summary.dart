@@ -3,9 +3,10 @@ import 'subscription_cancel_info.dart';
 
 /// Success body from `DELETE /me/content` and `DELETE /me` (WARDROBE-36).
 ///
-/// WARDROBE-103 (wardrobe-backend#49 `3f9b38a`) adds optional `deleted`,
-/// `entitlementRevoked`, and `subscription` on `DELETE /me`. Missing keys
-/// still parse so a legacy wipe body works until that deploy is live.
+/// Production `DELETE /me` is locked to wardrobe-backend#49 merge SHA
+/// `3f9b38a`: `deleted`, `keepAccount`, `entitlementRevoked`, and
+/// `subscription`. `DELETE /me/content` stays the content-wipe body without
+/// those keys.
 class AccountWipeSummary {
   const AccountWipeSummary({
     required this.keepAccount,
@@ -28,14 +29,34 @@ class AccountWipeSummary {
   final int deletedS3Objects;
   final int s3Failures;
 
-  /// WARDROBE-103: Firebase Auth delete when `true`. Null on legacy bodies.
+  /// WARDROBE-103: Firebase Auth delete when `true`. Null on `/me/content`.
   final bool? deleted;
 
-  /// Server-side entitlement revoke result. Null when the field is absent.
+  /// Server-side entitlement revoke result. Null on `/me/content`.
   final bool? entitlementRevoked;
 
-  /// Store cancel outcome. Absent on `DELETE /me/content` and legacy `/me`.
+  /// Store cancel outcome. Absent on `DELETE /me/content`.
   final SubscriptionCancelInfo subscription;
+
+  /// Locked AccountDeleteResult (`3f9b38a`) — required on `DELETE /me`.
+  static bool hasLockedDeleteEnvelope(Map<String, dynamic> json) {
+    if (json[AccountDeleteWire.deleted] != true) {
+      return false;
+    }
+    if (json[AccountDeleteWire.keepAccount] != false) {
+      return false;
+    }
+    if (json[AccountDeleteWire.entitlementRevoked] != true) {
+      return false;
+    }
+    final nested = json[AccountDeleteWire.subscription];
+    if (nested is! Map) {
+      return false;
+    }
+    final status = nested[AccountDeleteWire.status];
+    return SubscriptionCancelStatus.parse(status is String ? status : null) !=
+        SubscriptionCancelStatus.unknown;
+  }
 
   bool get hadS3Failures => s3Failures > 0;
 

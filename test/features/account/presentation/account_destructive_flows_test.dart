@@ -256,27 +256,6 @@ void main() {
     expect(find.byType(LoginScreen), findsOneWidget);
   });
 
-  testWidgets('delete account still succeeds when Backend omits subscription', (
-    tester,
-  ) async {
-    final harness = TestAppHarness();
-    addTearDown(harness.dispose);
-
-    await tester.pumpWidget(harness.app());
-    await tester.pumpAndSettle();
-    await tester.tap(find.byKey(WardrobesScreen.profileButtonKey));
-    await tester.pumpAndSettle();
-    await _confirmDeleteAccount(tester);
-
-    expect(harness.account.deleteCalls, 1);
-    expect(harness.auth.deleteUserCalls, 1);
-    expect(
-      find.byKey(SubscriptionCancelFollowUpDialog.dialogKey),
-      findsNothing,
-    );
-    expect(find.byType(LoginScreen), findsOneWidget);
-  });
-
   testWidgets('delete account surfaces Firebase failure and stays signed in', (
     tester,
   ) async {
@@ -344,7 +323,10 @@ void main() {
         findsOneWidget,
       );
       expect(find.textContaining('orphaned billing'), findsWidgets);
-      expect(find.textContaining('App Store → Subscriptions'), findsWidgets);
+      expect(
+        find.textContaining('App Store subscription settings'),
+        findsWidgets,
+      );
       expect(
         find.byKey(SubscriptionCancelFollowUpDialog.retryButtonKey),
         findsOneWidget,

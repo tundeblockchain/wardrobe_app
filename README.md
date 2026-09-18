@@ -348,13 +348,14 @@ Clear all and Delete account live on `/profile` (WARDROBE-34 menu).
   `{ deleted, keepAccount, entitlementRevoked, subscription }`.
   `subscription.status` is `NONE` | `CANCELED` | `CANCEL_AT_PERIOD_END` |
   `CANCEL_FAILED`. Unset optionals (`cancelMode`, `store`, `expiresAt`,
-  `retryInStore`) are omitted. `CANCEL_FAILED` / `retryInStore: true` shows
-  App Store or Play manage-subscription copy plus Retry/Continue — the
-  account is already deleted and Premium revoked, but billing may still be
-  active. `CANCEL_AT_PERIOD_END` shows period-end copy (Premium already
+  `retryInStore`) are omitted. Production is locked to merge SHA `3f9b38a`
+  (not the pre-merge `e312d55` tip): a `DELETE /me` body without that
+  envelope is `INVALID_RESPONSE`. `CANCEL_FAILED` / `retryInStore: true`
+  shows App Store or Play subscription-settings copy plus Retry/Continue —
+  the account is already deleted and Premium revoked, but billing may still
+  be active. `CANCEL_AT_PERIOD_END` shows period-end copy (Premium already
   revoked). Hard AWS wipe fail is `500 INTERNAL_ERROR` and retries
-  `DELETE /me`. Then the client deletes Firebase Auth. A live tip without
-  `subscription` still parses (soft-omit).
+  `DELETE /me`. Then the client deletes Firebase Auth.
 
 Identity is the Firebase ID token only. An empty account still returns `200`.
 Wardrobe and item deletes use the existing `DELETE` APIs behind a confirm

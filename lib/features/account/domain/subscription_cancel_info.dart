@@ -3,8 +3,9 @@ import 'account_delete_wire.dart';
 
 /// `NONE` | `CANCELED` | `CANCEL_AT_PERIOD_END` | `CANCEL_FAILED`.
 ///
-/// Locked WARDROBE-103 (wardrobe-backend#49 `3f9b38a`). Missing / unknown
-/// → [unknown] so a legacy wipe body is a no-op follow-up.
+/// Locked WARDROBE-103 (wardrobe-backend#49 merge SHA `3f9b38a`).
+/// [unknown] is only for `DELETE /me/content` (no `subscription`) or a
+/// defensive client Superwall fail when the nested object is missing.
 enum SubscriptionCancelStatus {
   none(AccountDeleteWire.statusNone),
   canceled(AccountDeleteWire.statusCanceled),
@@ -90,11 +91,7 @@ class SubscriptionCancelInfo {
 
   bool get shouldManageInStore => retryInStore || isFailed || isPeriodEnd;
 
-  factory SubscriptionCancelInfo.fromDeleteJson(Map<String, dynamic> json) {
-    final nested = _asMap(json[AccountDeleteWire.subscription]);
-    if (nested == null) {
-      return SubscriptionCancelInfo.absent;
-    }
+  factory SubscriptionCancelInfo.fromNested(Map<String, dynamic> nested) {
     return SubscriptionCancelInfo(
       status: SubscriptionCancelStatus.parse(
         _asString(nested[AccountDeleteWire.status]),
@@ -108,6 +105,15 @@ class SubscriptionCancelInfo {
       expiresAt: _asDate(nested[AccountDeleteWire.expiresAt]),
       retryInStore: nested[AccountDeleteWire.retryInStore] == true,
     );
+  }
+
+  /// Reads `subscription` from a wipe body. Absent on `DELETE /me/content`.
+  factory SubscriptionCancelInfo.fromDeleteJson(Map<String, dynamic> json) {
+    final nested = _asMap(json[AccountDeleteWire.subscription]);
+    if (nested == null) {
+      return SubscriptionCancelInfo.absent;
+    }
+    return SubscriptionCancelInfo.fromNested(nested);
   }
 
   @override

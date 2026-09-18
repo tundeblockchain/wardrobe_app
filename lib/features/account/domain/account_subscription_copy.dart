@@ -15,21 +15,21 @@ abstract final class AccountSubscriptionCopy {
   static const cancelFailedMessage =
       'Your Wardrobe account was deleted and paid features were revoked, '
       'but the store subscription could not be canceled. Open App Store or '
-      'Google Play → Subscriptions to stop billing, or retry. Continuing '
-      'leaves a risk of orphaned billing.';
+      'Google Play subscription settings to stop billing, or retry. '
+      'Continuing leaves a risk of orphaned billing.';
 
   static const cancelAtPeriodEndTitle = 'Subscription ends with this period';
 
   static const cancelAtPeriodEndMessage =
       'Your Wardrobe account was deleted and Premium is already revoked. '
       'The store subscription is set to end when the current period '
-      'finishes. Manage it in App Store or Google Play if you need it to '
-      'stop sooner.';
+      'finishes. Manage it in App Store or Google Play subscription '
+      'settings if you need it to stop sooner.';
 
   static const clientCancelFailedMessage =
       'Your Wardrobe data was deleted, but the store subscription may still '
-      'be billing. Open App Store or Google Play → Subscriptions to cancel, '
-      'or retry.';
+      'be billing. Open App Store or Google Play subscription settings to '
+      'cancel, or retry.';
 
   static const wipeFailedMessage =
       'Account delete failed on the server. Retry now. Your sign-in is '
@@ -40,14 +40,14 @@ abstract final class AccountSubscriptionCopy {
   static const retryWipeLabel = 'Retry delete';
 
   static const storeManageHint =
-      'Open App Store or Google Play → Subscriptions to cancel billing.';
+      'Open App Store or Google Play subscription settings to cancel billing.';
 
   static String storeManageHintFor(SubscriptionCancelInfo info) {
     switch (info.store) {
       case EntitlementStore.appStore:
-        return 'Open App Store → Subscriptions to cancel billing.';
+        return 'Open App Store subscription settings to cancel billing.';
       case EntitlementStore.playStore:
-        return 'Open Google Play → Subscriptions to cancel billing.';
+        return 'Open Google Play subscription settings to cancel billing.';
       case EntitlementStore.stripe:
       case EntitlementStore.unknown:
       case null:

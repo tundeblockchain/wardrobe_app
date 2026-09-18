@@ -49,17 +49,21 @@ void main() {
     expect(adapter.requests.single.path, '/me/content');
   });
 
-  test('deleteAccount deletes /me with keepAccount false', () async {
+  test('deleteAccount requires the locked 3f9b38a envelope', () async {
     repository = buildRepository([
       HttpScript(statusCode: 200, body: {...summary, 'keepAccount': false}),
     ]);
 
-    final result = await repository.deleteAccount();
-
-    expect(result.keepAccount, isFalse);
-    expect(result.subscription.isFailed, isFalse);
-    expect(adapter.requests.single.method, 'DELETE');
-    expect(adapter.requests.single.path, '/me');
+    expect(
+      () => repository.deleteAccount(),
+      throwsA(
+        isA<ApiException>().having(
+          (error) => error.code,
+          'code',
+          'INVALID_RESPONSE',
+        ),
+      ),
+    );
   });
 
   test('deleteAccount maps the locked WARDROBE-103 200 body', () async {
@@ -87,6 +91,8 @@ void main() {
     expect(result.subscription.status, SubscriptionCancelStatus.canceled);
     expect(result.subscription.retryInStore, isFalse);
     expect(adapter.requests.single.data, isNull);
+    expect(adapter.requests.single.method, 'DELETE');
+    expect(adapter.requests.single.path, '/me');
   });
 
   test(
@@ -152,7 +158,25 @@ void main() {
     expect(result.deletedItems, 0);
   });
 
-  test('maps UNAUTHENTICATED to ApiException', () async {
+  test('maps UNAUTHENTICATED on DELETE /me', () async {
+    repository = buildRepository([
+      const HttpScript(
+        statusCode: 401,
+        body: {'code': 'UNAUTHENTICATED', 'message': 'Missing token.'},
+      ),
+    ]);
+
+    expect(
+      () => repository.deleteAccount(),
+      throwsA(
+        isA<ApiException>()
+            .having((error) => error.code, 'code', 'UNAUTHENTICATED')
+            .having((error) => error.statusCode, 'statusCode', 401),
+      ),
+    );
+  });
+
+  test('maps UNAUTHENTICATED on DELETE /me/content', () async {
     repository = buildRepository([
       const HttpScript(
         statusCode: 401,

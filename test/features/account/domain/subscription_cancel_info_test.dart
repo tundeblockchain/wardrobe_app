@@ -60,7 +60,7 @@ void main() {
   });
 
   group('SubscriptionCancelInfo.fromDeleteJson', () {
-    test('soft-omits when subscription is absent', () {
+    test('content wipe without subscription is absent, not failed', () {
       final info = SubscriptionCancelInfo.fromDeleteJson(const {
         'keepAccount': false,
         'deleted': true,

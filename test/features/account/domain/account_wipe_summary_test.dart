@@ -66,9 +66,9 @@ void main() {
     );
   });
 
-  test('fromJson soft-omits WARDROBE-103 subscription fields', () {
+  test('fromJson omits WARDROBE-103 fields on DELETE /me/content', () {
     final summary = AccountWipeSummary.fromJson(const {
-      'keepAccount': false,
+      'keepAccount': true,
       'deletedWardrobes': 0,
       'deletedItems': 0,
       'deletedOutfits': 0,
@@ -79,7 +79,18 @@ void main() {
     expect(summary.deleted, isNull);
     expect(summary.entitlementRevoked, isNull);
     expect(summary.subscription, SubscriptionCancelInfo.absent);
-    expect(summary.isAccountDeleted, isTrue);
+    expect(summary.isAccountDeleted, isFalse);
+    expect(
+      AccountWipeSummary.hasLockedDeleteEnvelope(const {
+        'keepAccount': true,
+        'deletedWardrobes': 0,
+        'deletedItems': 0,
+        'deletedOutfits': 0,
+        'deletedS3Objects': 0,
+        's3Failures': 0,
+      }),
+      isFalse,
+    );
   });
 
   test('fromJson maps the locked DELETE /me 200 body', () {
@@ -138,6 +149,35 @@ void main() {
     });
     expect(periodEnd.subscription.isPeriodEnd, isTrue);
     expect(periodEnd.subscription.retryInStore, isFalse);
+  });
+
+  test('hasLockedDeleteEnvelope requires 3f9b38a DELETE /me keys', () {
+    expect(
+      AccountWipeSummary.hasLockedDeleteEnvelope(const {
+        'deleted': true,
+        'keepAccount': false,
+        'entitlementRevoked': true,
+        'subscription': {'status': 'NONE'},
+      }),
+      isTrue,
+    );
+    expect(
+      AccountWipeSummary.hasLockedDeleteEnvelope(const {
+        'keepAccount': false,
+        'deleted': true,
+        'entitlementRevoked': true,
+      }),
+      isFalse,
+    );
+    expect(
+      AccountWipeSummary.hasLockedDeleteEnvelope(const {
+        'deleted': true,
+        'keepAccount': false,
+        'entitlementRevoked': true,
+        'subscription': {'status': 'SUCCEEDED'},
+      }),
+      isFalse,
+    );
   });
 
   test('isAccountDeleted is false when deleted is explicitly false', () {

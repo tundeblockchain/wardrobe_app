@@ -1,6 +1,8 @@
-/// Locked `DELETE /me` fields (WARDROBE-103, wardrobe-backend#49 `3f9b38a`).
+/// Locked `DELETE /me` fields (WARDROBE-103).
 ///
-/// Soft-omit unset optionals so a pre-103 wipe body still parses.
+/// Production lock is wardrobe-backend#49 merge SHA `3f9b38a`, not the
+/// pre-merge `e312d55` tip. `subscription` optionals are omitted when unset.
+/// `DELETE /me/content` does not send this envelope.
 abstract final class AccountDeleteWire {
   static const deleted = 'deleted';
   static const keepAccount = 'keepAccount';
@@ -21,5 +23,7 @@ abstract final class AccountDeleteWire {
   static const cancelModeImmediate = 'IMMEDIATE';
   static const cancelModePeriodEnd = 'PERIOD_END';
 
+  static const unauthenticated = 'UNAUTHENTICATED';
   static const internalError = 'INTERNAL_ERROR';
+  static const invalidResponse = 'INVALID_RESPONSE';
 }
