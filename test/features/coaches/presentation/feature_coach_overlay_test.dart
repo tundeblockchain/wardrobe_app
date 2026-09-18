@@ -9,10 +9,10 @@ import 'package:wardrobe_app/features/coaches/data/coach_preferences.dart';
 import 'package:wardrobe_app/features/coaches/domain/coach_screen.dart';
 import 'package:wardrobe_app/features/coaches/presentation/feature_coach_overlay.dart';
 import 'package:wardrobe_app/features/coaches/presentation/screen_coach_host.dart';
-import 'package:wardrobe_app/features/shopping_links/presentation/widgets/related_shopping_links_section.dart';
 import 'package:wardrobe_app/features/wardrobes/presentation/wardrobes_screen.dart';
+import 'package:wardrobe_app/features/wardrobes/presentation/widgets/home_clothing_carousel.dart';
 
-import '../../../helpers/fake_shopping_links_repository.dart';
+import '../../../helpers/fake_item_repository.dart';
 import '../../../helpers/fake_wardrobe_repository.dart';
 import '../../../helpers/test_app.dart';
 
@@ -169,7 +169,7 @@ void main() {
     expect(gotIt.onPressed, isNotNull);
   });
 
-  testWidgets('home coach leaves shopping links in the tree', (tester) async {
+  testWidgets('home coach does not restore the shopping strip', (tester) async {
     tester.view.physicalSize = const Size(400, 1400);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
@@ -178,7 +178,7 @@ void main() {
     final prefs = InMemoryCoachPreferences();
     final harness = TestAppHarness(
       wardrobes: FakeWardrobeRepository(seed: [testWardrobe()]),
-      shoppingLinks: FakeShoppingLinksRepository(home: [testShoppingLink()]),
+      items: FakeItemRepository(seed: [testItem()]),
       coaches: prefs,
     );
     addTearDown(harness.dispose);
@@ -189,14 +189,15 @@ void main() {
     expect(find.byType(WardrobesScreen), findsOneWidget);
     expect(find.byKey(FeatureCoachOverlay.overlayKey), findsOneWidget);
     expect(find.text(CoachCopy.home.title), findsOneWidget);
-    expect(find.byKey(RelatedShoppingLinksSection.sectionKey), findsOneWidget);
+    expect(find.text('Related shopping links'), findsNothing);
+    expect(find.byKey(HomeClothingCarousel.carouselKey), findsOneWidget);
 
     await tester.tap(find.byKey(FeatureCoachOverlay.gotItKey));
     await tester.pumpAndSettle();
 
     expect(find.byKey(FeatureCoachOverlay.overlayKey), findsNothing);
-    expect(find.byKey(RelatedShoppingLinksSection.sectionKey), findsOneWidget);
-    expect(find.text('Related shopping links'), findsOneWidget);
+    expect(find.text('Related shopping links'), findsNothing);
+    expect(find.byKey(const Key('wardrobe_tile_wd_abc123')), findsOneWidget);
     expect(prefs.hasSeen(CoachScreen.home), isTrue);
   });
 }

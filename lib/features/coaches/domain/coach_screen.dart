@@ -19,7 +19,7 @@ class CoachCopy {
     title: 'Your wardrobes',
     body:
         'This is home. Open a wardrobe to manage items and outfits, or tap + '
-        'to start a new closet. Related shopping finds sit below the carousel.',
+        'to start a new closet. The carousel shows pieces from every closet.',
     icon: Icons.checkroom_outlined,
   );
 

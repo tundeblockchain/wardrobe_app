@@ -22,10 +22,7 @@ void main() {
     expect(CoachScreen.values, hasLength(6));
   });
 
-  test(
-    'home copy still mentions shopping finds (WARDROBE-100 is separate)',
-    () {
-      expect(CoachCopy.home.body.toLowerCase(), contains('shopping'));
-    },
-  );
+  test('home copy does not mention shopping links (WARDROBE-100)', () {
+    expect(CoachCopy.home.body.toLowerCase(), isNot(contains('shopping')));
+  });
 }
