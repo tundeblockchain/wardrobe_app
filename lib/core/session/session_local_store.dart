@@ -3,10 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// Disk leftovers that must not survive sign-out.
 ///
-/// Theme mode (WARDROBE-70) is device-scoped SharedPreferences and is not
-/// cleared here. Account-scoped prefs / secure storage still go through this
-/// hook so a future store cannot leak the previous account. Firebase Auth
-/// persistence is cleared by Firebase `signOut`, not here.
+/// Theme mode (WARDROBE-70) and first-visit coaches (WARDROBE-99) are
+/// device-scoped SharedPreferences and are not cleared here. Account-scoped
+/// prefs / secure storage still go through this hook so a future store cannot
+/// leak the previous account. Firebase Auth persistence is cleared by Firebase
+/// `signOut`, not here.
 abstract class SessionLocalStore {
   Future<void> clear();
 }

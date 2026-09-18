@@ -5,6 +5,8 @@ import '../../../core/router/app_routes.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/app_empty_state.dart';
 import '../../ai_profiles/application/selected_ai_profile.dart';
+import '../../coaches/domain/coach_screen.dart';
+import '../../coaches/presentation/screen_coach_host.dart';
 import '../../ai_profiles/presentation/widgets/ai_profile_picker_image.dart';
 import '../../entitlements/domain/entitlement_action.dart';
 import '../../entitlements/presentation/entitlement_guard.dart';
@@ -33,118 +35,122 @@ class DressingRoomScreen extends ConsumerWidget {
     final selected = ref.watch(selectedAiProfileProvider);
     final wardrobeItems = ref.watch(itemsControllerProvider(wardrobeId)).items;
 
-    return Scaffold(
-      key: screenKey,
-      appBar: AppSearchGlossBar(title: const Text('Dressing room')),
-      body: RefreshIndicator(
-        onRefresh: () =>
-            ref.read(outfitsControllerProvider(wardrobeId).notifier).refresh(),
-        child: ListView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          padding: AppSpacing.pageInsets,
-          children: [
-            Text(
-              'Pick an outfit to try on with your selected AI profile.',
-              style: Theme.of(context).textTheme.bodyMedium,
-            ),
-            const SizedBox(height: AppSpacing.md),
-            if (selected == null)
-              Card(
-                child: ListTile(
-                  leading: const Icon(Icons.face_retouching_natural_outlined),
-                  title: const Text('No AI profile selected'),
-                  subtitle: const Text('Choose a personal look or a model.'),
-                  trailing: TextButton(
-                    key: chooseProfileButtonKey,
-                    onPressed: () => pushIfEntitled(
-                      context,
-                      ref,
-                      EntitlementAction.aiTryOn,
-                      AppRoutes.aiTryOn,
-                    ),
-                    child: const Text('Choose'),
-                  ),
-                ),
-              )
-            else
-              Card(
-                color: Theme.of(context).colorScheme.primaryContainer,
-                child: ListTile(
-                  leading: SizedBox(
-                    width: 56,
-                    height: 72,
-                    child: AiProfilePickerImage(profile: selected),
-                  ),
-                  minLeadingWidth: 56,
-                  title: Text('Selected: ${selected.displayName}'),
-                  subtitle: Text(
-                    selected.isGenericModel
-                        ? 'Generic model'
-                        : 'Personal profile',
-                  ),
-                  trailing: TextButton(
-                    key: chooseProfileButtonKey,
-                    onPressed: () => pushIfEntitled(
-                      context,
-                      ref,
-                      EntitlementAction.aiTryOn,
-                      AppRoutes.aiTryOn,
-                    ),
-                    child: const Text('Change'),
-                  ),
-                ),
+    return ScreenCoachHost(
+      screen: CoachScreen.tryOn,
+      child: Scaffold(
+        key: screenKey,
+        appBar: AppSearchGlossBar(title: const Text('Dressing room')),
+        body: RefreshIndicator(
+          onRefresh: () => ref
+              .read(outfitsControllerProvider(wardrobeId).notifier)
+              .refresh(),
+          child: ListView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: AppSpacing.pageInsets,
+            children: [
+              Text(
+                'Pick an outfit to try on with your selected AI profile.',
+                style: Theme.of(context).textTheme.bodyMedium,
               ),
-            const SizedBox(height: AppSpacing.lg),
-            Text('Outfits', style: Theme.of(context).textTheme.titleLarge),
-            const SizedBox(height: AppSpacing.sm),
-            if (state.isLoading && state.outfits.isEmpty)
-              const Padding(
-                padding: EdgeInsets.symmetric(vertical: AppSpacing.xxl),
-                child: Center(child: CircularProgressIndicator()),
-              )
-            else if (state.errorMessage != null && state.outfits.isEmpty)
-              AppErrorState(
-                message: state.errorMessage!,
-                retryKey: retryButtonKey,
-                onRetry: () => ref
-                    .read(outfitsControllerProvider(wardrobeId).notifier)
-                    .refresh(),
-              )
-            else if (state.isEmpty)
-              AppEmptyState(
-                key: emptyStateKey,
-                icon: Icons.checkroom_outlined,
-                title: 'No outfits yet',
-                message: 'Build a look first, then come back to try it on.',
-                actionLabel: 'Create outfit',
-                actionKey: createOutfitButtonKey,
-                onAction: () => pushIfEntitled(
-                  context,
-                  ref,
-                  EntitlementAction.createOutfit,
-                  AppRoutes.createOutfit(wardrobeId),
-                  wardrobeId: wardrobeId,
-                ),
-              )
-            else ...[
-              if (state.errorMessage != null)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: AppSpacing.md),
-                  child: Text(
-                    state.errorMessage!,
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.error,
+              const SizedBox(height: AppSpacing.md),
+              if (selected == null)
+                Card(
+                  child: ListTile(
+                    leading: const Icon(Icons.face_retouching_natural_outlined),
+                    title: const Text('No AI profile selected'),
+                    subtitle: const Text('Choose a personal look or a model.'),
+                    trailing: TextButton(
+                      key: chooseProfileButtonKey,
+                      onPressed: () => pushIfEntitled(
+                        context,
+                        ref,
+                        EntitlementAction.aiTryOn,
+                        AppRoutes.aiTryOn,
+                      ),
+                      child: const Text('Choose'),
+                    ),
+                  ),
+                )
+              else
+                Card(
+                  color: Theme.of(context).colorScheme.primaryContainer,
+                  child: ListTile(
+                    leading: SizedBox(
+                      width: 56,
+                      height: 72,
+                      child: AiProfilePickerImage(profile: selected),
+                    ),
+                    minLeadingWidth: 56,
+                    title: Text('Selected: ${selected.displayName}'),
+                    subtitle: Text(
+                      selected.isGenericModel
+                          ? 'Generic model'
+                          : 'Personal profile',
+                    ),
+                    trailing: TextButton(
+                      key: chooseProfileButtonKey,
+                      onPressed: () => pushIfEntitled(
+                        context,
+                        ref,
+                        EntitlementAction.aiTryOn,
+                        AppRoutes.aiTryOn,
+                      ),
+                      child: const Text('Change'),
                     ),
                   ),
                 ),
-              for (final outfit in state.outfits)
-                _DressingRoomOutfitTile(
-                  wardrobeId: wardrobeId,
-                  outfit: outfit,
-                  wardrobeItems: wardrobeItems,
-                ),
+              const SizedBox(height: AppSpacing.lg),
+              Text('Outfits', style: Theme.of(context).textTheme.titleLarge),
+              const SizedBox(height: AppSpacing.sm),
+              if (state.isLoading && state.outfits.isEmpty)
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: AppSpacing.xxl),
+                  child: Center(child: CircularProgressIndicator()),
+                )
+              else if (state.errorMessage != null && state.outfits.isEmpty)
+                AppErrorState(
+                  message: state.errorMessage!,
+                  retryKey: retryButtonKey,
+                  onRetry: () => ref
+                      .read(outfitsControllerProvider(wardrobeId).notifier)
+                      .refresh(),
+                )
+              else if (state.isEmpty)
+                AppEmptyState(
+                  key: emptyStateKey,
+                  icon: Icons.checkroom_outlined,
+                  title: 'No outfits yet',
+                  message: 'Build a look first, then come back to try it on.',
+                  actionLabel: 'Create outfit',
+                  actionKey: createOutfitButtonKey,
+                  onAction: () => pushIfEntitled(
+                    context,
+                    ref,
+                    EntitlementAction.createOutfit,
+                    AppRoutes.createOutfit(wardrobeId),
+                    wardrobeId: wardrobeId,
+                  ),
+                )
+              else ...[
+                if (state.errorMessage != null)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: AppSpacing.md),
+                    child: Text(
+                      state.errorMessage!,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.error,
+                      ),
+                    ),
+                  ),
+                for (final outfit in state.outfits)
+                  _DressingRoomOutfitTile(
+                    wardrobeId: wardrobeId,
+                    outfit: outfit,
+                    wardrobeItems: wardrobeItems,
+                  ),
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );

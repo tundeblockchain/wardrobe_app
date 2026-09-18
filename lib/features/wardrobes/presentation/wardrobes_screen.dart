@@ -7,6 +7,8 @@ import '../../../core/router/app_routes.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/app_empty_state.dart';
 import '../../../core/widgets/app_fade_in.dart';
+import '../../coaches/domain/coach_screen.dart';
+import '../../coaches/presentation/screen_coach_host.dart';
 import '../../entitlements/domain/entitlement_action.dart';
 import '../../entitlements/presentation/entitlement_guard.dart';
 import '../../search/presentation/app_search_gloss_bar.dart';
@@ -78,96 +80,99 @@ class _WardrobesScreenState extends ConsumerState<WardrobesScreen>
     final clothingItems = ref.watch(homeClothingItemsProvider);
     final autoScroll = ref.watch(homeClothingCarouselAutoScrollProvider);
 
-    return Scaffold(
-      appBar: AppSearchGlossBar(
-        title: const Text('Wardrobes', key: WardrobesScreen.titleKey),
-        actions: [
-          IconButton(
-            key: WardrobesScreen.profileButtonKey,
-            tooltip: 'Account',
-            onPressed: () => context.push(AppRoutes.profile),
-            icon: const Icon(Icons.account_circle_outlined),
-          ),
-        ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        key: WardrobesScreen.createButtonKey,
-        onPressed: () => pushIfEntitled(
-          context,
-          ref,
-          EntitlementAction.createWardrobe,
-          AppRoutes.createWardrobe,
+    return ScreenCoachHost(
+      screen: CoachScreen.home,
+      child: Scaffold(
+        appBar: AppSearchGlossBar(
+          title: const Text('Wardrobes', key: WardrobesScreen.titleKey),
+          actions: [
+            IconButton(
+              key: WardrobesScreen.profileButtonKey,
+              tooltip: 'Account',
+              onPressed: () => context.push(AppRoutes.profile),
+              icon: const Icon(Icons.account_circle_outlined),
+            ),
+          ],
         ),
-        tooltip: 'Create wardrobe',
-        child: const Icon(Icons.add),
-      ),
-      body: RefreshIndicator(
-        onRefresh: _refreshList,
-        child: ListView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          padding: AppSpacing.pageInsets,
-          children: [
-            if (clothingItems.isNotEmpty) ...[
-              AppFadeIn(
-                child: HomeClothingCarousel(
-                  items: clothingItems,
-                  autoScroll: autoScroll,
-                ),
-              ),
-              const SizedBox(height: AppSpacing.md),
-            ],
-            if (state.isLoading && state.wardrobes.isEmpty)
-              const Padding(
-                padding: EdgeInsets.symmetric(vertical: AppSpacing.xxl),
-                child: Center(child: CircularProgressIndicator()),
-              )
-            else if (state.errorMessage != null && state.wardrobes.isEmpty)
-              AppErrorState(
-                message: state.errorMessage!,
-                retryKey: WardrobesScreen.retryButtonKey,
-                onRetry: _refreshList,
-              )
-            else if (state.isEmpty)
-              AppEmptyState(
-                key: WardrobesScreen.emptyStateKey,
-                icon: Icons.checkroom_outlined,
-                title: 'No wardrobes yet',
-                message: 'Create a wardrobe to get started.',
-                actionLabel: 'Create wardrobe',
-                onAction: () => pushIfEntitled(
-                  context,
-                  ref,
-                  EntitlementAction.createWardrobe,
-                  AppRoutes.createWardrobe,
-                ),
-              )
-            else ...[
-              Text(
-                'Wardrobes',
-                key: WardrobesScreen.listHeadingKey,
-                style: Theme.of(context).textTheme.headlineSmall,
-              ),
-              const SizedBox(height: AppSpacing.md),
-              if (state.errorMessage != null)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: AppSpacing.md),
-                  child: Text(
-                    state.errorMessage!,
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.error,
-                    ),
+        floatingActionButton: FloatingActionButton(
+          key: WardrobesScreen.createButtonKey,
+          onPressed: () => pushIfEntitled(
+            context,
+            ref,
+            EntitlementAction.createWardrobe,
+            AppRoutes.createWardrobe,
+          ),
+          tooltip: 'Create wardrobe',
+          child: const Icon(Icons.add),
+        ),
+        body: RefreshIndicator(
+          onRefresh: _refreshList,
+          child: ListView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: AppSpacing.pageInsets,
+            children: [
+              if (clothingItems.isNotEmpty) ...[
+                AppFadeIn(
+                  child: HomeClothingCarousel(
+                    items: clothingItems,
+                    autoScroll: autoScroll,
                   ),
                 ),
-              AppFadeIn(
-                child: Column(
-                  children: [
-                    for (final wardrobe in state.wardrobes)
-                      WardrobeListCard(wardrobe: wardrobe),
-                  ],
+                const SizedBox(height: AppSpacing.md),
+              ],
+              if (state.isLoading && state.wardrobes.isEmpty)
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: AppSpacing.xxl),
+                  child: Center(child: CircularProgressIndicator()),
+                )
+              else if (state.errorMessage != null && state.wardrobes.isEmpty)
+                AppErrorState(
+                  message: state.errorMessage!,
+                  retryKey: WardrobesScreen.retryButtonKey,
+                  onRetry: _refreshList,
+                )
+              else if (state.isEmpty)
+                AppEmptyState(
+                  key: WardrobesScreen.emptyStateKey,
+                  icon: Icons.checkroom_outlined,
+                  title: 'No wardrobes yet',
+                  message: 'Create a wardrobe to get started.',
+                  actionLabel: 'Create wardrobe',
+                  onAction: () => pushIfEntitled(
+                    context,
+                    ref,
+                    EntitlementAction.createWardrobe,
+                    AppRoutes.createWardrobe,
+                  ),
+                )
+              else ...[
+                Text(
+                  'Wardrobes',
+                  key: WardrobesScreen.listHeadingKey,
+                  style: Theme.of(context).textTheme.headlineSmall,
                 ),
-              ),
+                const SizedBox(height: AppSpacing.md),
+                if (state.errorMessage != null)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: AppSpacing.md),
+                    child: Text(
+                      state.errorMessage!,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.error,
+                      ),
+                    ),
+                  ),
+                AppFadeIn(
+                  child: Column(
+                    children: [
+                      for (final wardrobe in state.wardrobes)
+                        WardrobeListCard(wardrobe: wardrobe),
+                    ],
+                  ),
+                ),
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );

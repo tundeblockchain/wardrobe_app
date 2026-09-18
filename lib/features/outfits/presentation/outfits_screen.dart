@@ -6,6 +6,8 @@ import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/app_empty_state.dart';
 import '../../../core/widgets/app_fade_in.dart';
 import '../../../core/widgets/entity_delete.dart';
+import '../../coaches/domain/coach_screen.dart';
+import '../../coaches/presentation/screen_coach_host.dart';
 import '../../entitlements/domain/entitlement_action.dart';
 import '../../entitlements/presentation/entitlement_guard.dart';
 import '../../items/application/items_controller.dart';
@@ -32,104 +34,108 @@ class OutfitsScreen extends ConsumerWidget {
     final state = ref.watch(outfitsControllerProvider(wardrobeId));
     final wardrobeItems = ref.watch(itemsControllerProvider(wardrobeId)).items;
 
-    return Scaffold(
-      appBar: AppSearchGlossBar(
-        title: const Text('Outfits'),
-        actions: [
-          IconButton(
-            key: dressingRoomButtonKey,
-            tooltip: 'Dressing room',
-            onPressed: () => pushIfEntitled(
-              context,
-              ref,
-              EntitlementAction.aiTryOn,
-              AppRoutes.dressingRoom(wardrobeId),
+    return ScreenCoachHost(
+      screen: CoachScreen.outfit,
+      child: Scaffold(
+        appBar: AppSearchGlossBar(
+          title: const Text('Outfits'),
+          actions: [
+            IconButton(
+              key: dressingRoomButtonKey,
+              tooltip: 'Dressing room',
+              onPressed: () => pushIfEntitled(
+                context,
+                ref,
+                EntitlementAction.aiTryOn,
+                AppRoutes.dressingRoom(wardrobeId),
+              ),
+              icon: const Icon(Icons.face_retouching_natural_outlined),
             ),
-            icon: const Icon(Icons.face_retouching_natural_outlined),
-          ),
-          IconButton(
-            key: recommendationsButtonKey,
-            tooltip: 'Suggested outfits',
-            onPressed: () => pushIfEntitled(
-              context,
-              ref,
-              EntitlementAction.otherAi,
-              AppRoutes.recommendations(wardrobeId),
+            IconButton(
+              key: recommendationsButtonKey,
+              tooltip: 'Suggested outfits',
+              onPressed: () => pushIfEntitled(
+                context,
+                ref,
+                EntitlementAction.otherAi,
+                AppRoutes.recommendations(wardrobeId),
+              ),
+              icon: const Icon(Icons.auto_awesome_outlined),
             ),
-            icon: const Icon(Icons.auto_awesome_outlined),
-          ),
-        ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        key: createButtonKey,
-        tooltip: 'Create outfit',
-        onPressed: () => pushIfEntitled(
-          context,
-          ref,
-          EntitlementAction.createOutfit,
-          AppRoutes.createOutfit(wardrobeId),
-          wardrobeId: wardrobeId,
+          ],
         ),
-        child: const Icon(Icons.checkroom_outlined),
-      ),
-      body: RefreshIndicator(
-        onRefresh: () =>
-            ref.read(outfitsControllerProvider(wardrobeId).notifier).refresh(),
-        child: ListView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          padding: AppSpacing.pageInsets,
-          children: [
-            if (state.isLoading && state.outfits.isEmpty)
-              const Padding(
-                padding: EdgeInsets.symmetric(vertical: AppSpacing.xxl),
-                child: Center(child: CircularProgressIndicator()),
-              )
-            else if (state.errorMessage != null && state.outfits.isEmpty)
-              AppErrorState(
-                message: state.errorMessage!,
-                retryKey: OutfitsScreen.retryButtonKey,
-                onRetry: () => ref
-                    .read(outfitsControllerProvider(wardrobeId).notifier)
-                    .refresh(),
-              )
-            else if (state.isEmpty)
-              AppEmptyState(
-                key: OutfitsScreen.emptyStateKey,
-                icon: Icons.checkroom_outlined,
-                title: 'No outfits yet',
-                message: 'Build a look from items in this wardrobe.',
-                actionLabel: 'Create outfit',
-                onAction: () => pushIfEntitled(
-                  context,
-                  ref,
-                  EntitlementAction.createOutfit,
-                  AppRoutes.createOutfit(wardrobeId),
-                  wardrobeId: wardrobeId,
-                ),
-              )
-            else ...[
-              if (state.errorMessage != null)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: AppSpacing.md),
-                  child: Text(
-                    state.errorMessage!,
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.error,
+        floatingActionButton: FloatingActionButton(
+          key: createButtonKey,
+          tooltip: 'Create outfit',
+          onPressed: () => pushIfEntitled(
+            context,
+            ref,
+            EntitlementAction.createOutfit,
+            AppRoutes.createOutfit(wardrobeId),
+            wardrobeId: wardrobeId,
+          ),
+          child: const Icon(Icons.checkroom_outlined),
+        ),
+        body: RefreshIndicator(
+          onRefresh: () => ref
+              .read(outfitsControllerProvider(wardrobeId).notifier)
+              .refresh(),
+          child: ListView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: AppSpacing.pageInsets,
+            children: [
+              if (state.isLoading && state.outfits.isEmpty)
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: AppSpacing.xxl),
+                  child: Center(child: CircularProgressIndicator()),
+                )
+              else if (state.errorMessage != null && state.outfits.isEmpty)
+                AppErrorState(
+                  message: state.errorMessage!,
+                  retryKey: OutfitsScreen.retryButtonKey,
+                  onRetry: () => ref
+                      .read(outfitsControllerProvider(wardrobeId).notifier)
+                      .refresh(),
+                )
+              else if (state.isEmpty)
+                AppEmptyState(
+                  key: OutfitsScreen.emptyStateKey,
+                  icon: Icons.checkroom_outlined,
+                  title: 'No outfits yet',
+                  message: 'Build a look from items in this wardrobe.',
+                  actionLabel: 'Create outfit',
+                  onAction: () => pushIfEntitled(
+                    context,
+                    ref,
+                    EntitlementAction.createOutfit,
+                    AppRoutes.createOutfit(wardrobeId),
+                    wardrobeId: wardrobeId,
+                  ),
+                )
+              else ...[
+                if (state.errorMessage != null)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: AppSpacing.md),
+                    child: Text(
+                      state.errorMessage!,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.error,
+                      ),
                     ),
                   ),
+                AppFadeIn(
+                  child: OutfitCarousel(
+                    wardrobeId: wardrobeId,
+                    outfits: state.outfits,
+                    wardrobeItems: wardrobeItems,
+                    onDelete: (outfit) => _deleteOutfit(context, ref, outfit),
+                    cardKeyFor: (outfit) =>
+                        OutfitListTile.defaultTileKey(outfit.id),
+                  ),
                 ),
-              AppFadeIn(
-                child: OutfitCarousel(
-                  wardrobeId: wardrobeId,
-                  outfits: state.outfits,
-                  wardrobeItems: wardrobeItems,
-                  onDelete: (outfit) => _deleteOutfit(context, ref, outfit),
-                  cardKeyFor: (outfit) =>
-                      OutfitListTile.defaultTileKey(outfit.id),
-                ),
-              ),
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );

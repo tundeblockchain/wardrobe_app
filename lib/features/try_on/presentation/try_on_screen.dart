@@ -5,6 +5,8 @@ import '../../../core/router/app_routes.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/app_empty_state.dart';
 import '../../../core/widgets/app_fade_in.dart';
+import '../../coaches/domain/coach_screen.dart';
+import '../../coaches/presentation/screen_coach_host.dart';
 import '../../search/presentation/app_search_gloss_bar.dart';
 import '../../ai_profiles/application/generic_models_controller.dart';
 import '../../ai_profiles/application/personal_ai_profiles_controller.dart';
@@ -54,16 +56,21 @@ class TryOnScreen extends ConsumerWidget {
       ...models.models.where((profile) => profile.canUseForTryOn),
     ];
 
-    return Scaffold(
-      key: screenKey,
-      appBar: AppSearchGlossBar(title: Text(outfit?.name ?? 'Try on')),
-      body: RefreshIndicator(
-        onRefresh: () =>
-            ref.read(tryOnControllerProvider(_scope).notifier).refresh(),
-        child: ListView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          padding: AppSpacing.pageInsets,
-          children: [_buildBody(context, ref, state, selected, readyProfiles)],
+    return ScreenCoachHost(
+      screen: CoachScreen.tryOn,
+      child: Scaffold(
+        key: screenKey,
+        appBar: AppSearchGlossBar(title: Text(outfit?.name ?? 'Try on')),
+        body: RefreshIndicator(
+          onRefresh: () =>
+              ref.read(tryOnControllerProvider(_scope).notifier).refresh(),
+          child: ListView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: AppSpacing.pageInsets,
+            children: [
+              _buildBody(context, ref, state, selected, readyProfiles),
+            ],
+          ),
         ),
       ),
     );

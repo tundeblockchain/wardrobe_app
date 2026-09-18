@@ -12,6 +12,8 @@ import '../../entitlements/domain/entitlement_action.dart';
 import '../../entitlements/presentation/entitlement_guard.dart';
 import '../../search/presentation/app_search_gloss_bar.dart';
 import '../../../core/widgets/entity_delete.dart';
+import '../../coaches/domain/coach_screen.dart';
+import '../../coaches/presentation/screen_coach_host.dart';
 import '../../items/application/items_controller.dart';
 import '../../items/application/items_state.dart';
 import '../../items/domain/item.dart';
@@ -99,73 +101,80 @@ class _WardrobeDetailScreenState extends ConsumerState<WardrobeDetailScreen>
       }
     });
 
-    return Scaffold(
-      appBar: AppSearchGlossBar(
-        title: Text(wardrobe?.name ?? 'Wardrobe'),
-        actions: [
-          if (wardrobe != null) ...[
-            IconButton(
-              key: WardrobeDetailScreen.renameButtonKey,
-              tooltip: 'Rename',
-              onPressed: state.isSaving
-                  ? null
-                  : () => _rename(context, ref, wardrobe.name),
-              icon: const Icon(Icons.edit_outlined),
-            ),
-            IconButton(
-              key: WardrobeDetailScreen.deleteButtonKey,
-              tooltip: 'Delete',
-              onPressed: state.isSaving
-                  ? null
-                  : () => _confirmDelete(context, ref),
-              icon: const Icon(Icons.delete_outline),
-            ),
-          ],
-        ],
-      ),
-      floatingActionButton: wardrobe == null
-          ? null
-          : FloatingActionButton(
-              key: WardrobeDetailScreen.addItemButtonKey,
-              tooltip: 'Add item',
-              onPressed: () => pushIfEntitled(
-                context,
-                ref,
-                EntitlementAction.createItem,
-                AppRoutes.createItem(wardrobeId),
-                wardrobeId: wardrobeId,
+    return ScreenCoachHost(
+      screen: CoachScreen.wardrobe,
+      child: Scaffold(
+        appBar: AppSearchGlossBar(
+          title: Text(wardrobe?.name ?? 'Wardrobe'),
+          actions: [
+            if (wardrobe != null) ...[
+              IconButton(
+                key: WardrobeDetailScreen.renameButtonKey,
+                tooltip: 'Rename',
+                onPressed: state.isSaving
+                    ? null
+                    : () => _rename(context, ref, wardrobe.name),
+                icon: const Icon(Icons.edit_outlined),
               ),
-              child: const Icon(Icons.add_a_photo_outlined),
-            ),
-      body: SafeArea(
-        child: RefreshIndicator(
-          onRefresh: () async {
-            await Future.wait([
-              ref
-                  .read(wardrobeDetailControllerProvider(wardrobeId).notifier)
-                  .refresh(),
-              ref.read(itemsControllerProvider(wardrobeId).notifier).refresh(),
-              ref
-                  .read(outfitsControllerProvider(wardrobeId).notifier)
-                  .refresh(),
-              ref
-                  .read(recommendationsControllerProvider(wardrobeId).notifier)
-                  .refresh(),
-            ]);
-          },
-          child: ListView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            padding: AppSpacing.pageInsets,
-            children: [
-              _buildBody(
-                context,
-                ref,
-                state,
-                itemsState,
-                outfitsState,
-                recommendationsState,
+              IconButton(
+                key: WardrobeDetailScreen.deleteButtonKey,
+                tooltip: 'Delete',
+                onPressed: state.isSaving
+                    ? null
+                    : () => _confirmDelete(context, ref),
+                icon: const Icon(Icons.delete_outline),
               ),
             ],
+          ],
+        ),
+        floatingActionButton: wardrobe == null
+            ? null
+            : FloatingActionButton(
+                key: WardrobeDetailScreen.addItemButtonKey,
+                tooltip: 'Add item',
+                onPressed: () => pushIfEntitled(
+                  context,
+                  ref,
+                  EntitlementAction.createItem,
+                  AppRoutes.createItem(wardrobeId),
+                  wardrobeId: wardrobeId,
+                ),
+                child: const Icon(Icons.add_a_photo_outlined),
+              ),
+        body: SafeArea(
+          child: RefreshIndicator(
+            onRefresh: () async {
+              await Future.wait([
+                ref
+                    .read(wardrobeDetailControllerProvider(wardrobeId).notifier)
+                    .refresh(),
+                ref
+                    .read(itemsControllerProvider(wardrobeId).notifier)
+                    .refresh(),
+                ref
+                    .read(outfitsControllerProvider(wardrobeId).notifier)
+                    .refresh(),
+                ref
+                    .read(
+                      recommendationsControllerProvider(wardrobeId).notifier,
+                    )
+                    .refresh(),
+              ]);
+            },
+            child: ListView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: AppSpacing.pageInsets,
+              children: [
+                _buildBody(
+                  context,
+                  ref,
+                  state,
+                  itemsState,
+                  outfitsState,
+                  recommendationsState,
+                ),
+              ],
+            ),
           ),
         ),
       ),
