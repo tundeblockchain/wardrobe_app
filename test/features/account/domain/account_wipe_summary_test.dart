@@ -82,16 +82,33 @@ void main() {
     expect(summary.isAccountDeleted, isTrue);
   });
 
+  test('fromJson maps the locked DELETE /me 200 body', () {
+    final summary = AccountWipeSummary.fromJson(const {
+      'deleted': true,
+      'keepAccount': false,
+      'entitlementRevoked': true,
+      'subscription': {
+        'status': 'NONE',
+        'cancelMode': 'IMMEDIATE',
+        'store': 'APP_STORE',
+        'expiresAt': '2026-10-01T00:00:00.000Z',
+      },
+    });
+
+    expect(summary.deleted, isTrue);
+    expect(summary.keepAccount, isFalse);
+    expect(summary.entitlementRevoked, isTrue);
+    expect(summary.isAccountDeleted, isTrue);
+    expect(summary.subscription.status, SubscriptionCancelStatus.none);
+    expect(summary.subscription.retryInStore, isFalse);
+  });
+
   test('fromJson maps deleted, entitlementRevoked, and CANCEL_FAILED', () {
     final summary = AccountWipeSummary.fromJson(const {
       'keepAccount': false,
       'deleted': true,
       'entitlementRevoked': true,
-      'subscription': {
-        'status': 'CANCEL_FAILED',
-        'retryInStore': true,
-        'code': 'SUBSCRIPTION_CANCEL_FAILED',
-      },
+      'subscription': {'status': 'CANCEL_FAILED', 'retryInStore': true},
     });
 
     expect(summary.deleted, isTrue);
@@ -99,6 +116,28 @@ void main() {
     expect(summary.isAccountDeleted, isTrue);
     expect(summary.subscription.isFailed, isTrue);
     expect(summary.subscription.retryInStore, isTrue);
+  });
+
+  test('fromJson maps CANCELED and CANCEL_AT_PERIOD_END', () {
+    final canceled = AccountWipeSummary.fromJson(const {
+      'deleted': true,
+      'keepAccount': false,
+      'entitlementRevoked': true,
+      'subscription': {'status': 'CANCELED', 'cancelMode': 'IMMEDIATE'},
+    });
+    expect(canceled.subscription.status, SubscriptionCancelStatus.canceled);
+
+    final periodEnd = AccountWipeSummary.fromJson(const {
+      'deleted': true,
+      'keepAccount': false,
+      'entitlementRevoked': true,
+      'subscription': {
+        'status': 'CANCEL_AT_PERIOD_END',
+        'cancelMode': 'PERIOD_END',
+      },
+    });
+    expect(periodEnd.subscription.isPeriodEnd, isTrue);
+    expect(periodEnd.subscription.retryInStore, isFalse);
   });
 
   test('isAccountDeleted is false when deleted is explicitly false', () {

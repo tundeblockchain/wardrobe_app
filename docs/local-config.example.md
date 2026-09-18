@@ -87,4 +87,6 @@ map to Superwall (`ENTITLEMENT_WARDROBE_LIMIT` / `ENTITLEMENT_ITEM_LIMIT` /
 Account delete also calls Superwall cancel when the SDK exposes it
 ([WARDROBE-102](https://tundetunde000.atlassian.net/browse/WARDROBE-102)).
 Today the Flutter SDK has no store-cancel API, so the client hook returns
-skipped and Backend `DELETE /me` (WARDROBE-103) owns cancel/revoke.
+skipped and Backend `DELETE /me` (WARDROBE-103, wardrobe-backend#49
+`3f9b38a`) owns cancel/revoke. Flutter types that locked 200 body and
+soft-omits a missing `subscription` object.

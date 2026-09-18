@@ -51,8 +51,10 @@ class AccountController extends Notifier<AccountState> {
 
   /// Client Superwall cancel, then `DELETE /me`, then Firebase Auth delete.
   ///
-  /// Soft-fail: if store cancel fails, the wipe still counts, but the user
-  /// must Retry or Continue before we treat delete as complete.
+  /// Backend `subscription.status` is the source of truth. `CANCEL_FAILED`
+  /// / `retryInStore` shows manage-subscription copy before Firebase delete
+  /// so billing is never implied to be cleared. `500 INTERNAL_ERROR` retries
+  /// `DELETE /me`.
   Future<AccountWipeSummary?> deleteAccount() async {
     state = state.copyWith(
       isBusy: true,
@@ -65,11 +67,20 @@ class AccountController extends Notifier<AccountState> {
       final summary = await _repository.deleteAccount();
       return await _afterWipe(summary, clientCancel: clientCancel);
     } on ApiException catch (error) {
+      if (AccountSubscriptionCopy.isRetryableWipeFailure(error)) {
+        return _fail(
+          AccountSubscriptionCopy.wipeFailedMessage,
+          canRetryWipe: true,
+        );
+      }
       return _fail(error.message);
     } catch (_) {
       return _fail('Something went wrong. Please try again.');
     }
   }
+
+  /// Retry `DELETE /me` after `500 INTERNAL_ERROR`.
+  Future<AccountWipeSummary?> retryFailedWipe() => deleteAccount();
 
   /// Retry Superwall cancel after a soft-fail. Does not re-call `DELETE /me`.
   Future<AccountWipeSummary?> retrySubscriptionCancel() async {
@@ -187,11 +198,15 @@ class AccountController extends Notifier<AccountState> {
     await ref.read(wardrobesControllerProvider.notifier).refresh();
   }
 
-  AccountWipeSummary? _fail(String message) {
+  AccountWipeSummary? _fail(String message, {bool canRetryWipe = false}) {
     if (!ref.mounted) {
       return null;
     }
-    state = state.copyWith(isBusy: false, errorMessage: message);
+    state = state.copyWith(
+      isBusy: false,
+      errorMessage: message,
+      canRetryWipe: canRetryWipe,
+    );
     return null;
   }
 
@@ -232,24 +247,30 @@ class _ClientCancelOutcome {
       ? const SubscriptionCancelInfo(
           status: SubscriptionCancelStatus.cancelFailed,
           retryInStore: true,
-          message: AccountSubscriptionCopy.clientCancelFailedMessage,
         )
       : SubscriptionCancelInfo.absent;
 }
 
-/// Maps Backend subscription fields + client Superwall cancel onto follow-up.
+/// Maps Backend `subscription.status` onto follow-up. Backend is source of
+/// truth; a client Superwall throw only surfaces when the field is absent.
 AccountSubscriptionFollowUp resolveSubscriptionFollowUp(
   AccountWipeSummary summary, {
   required bool clientCancelFailed,
 }) {
   final subscription = summary.subscription;
-  if (subscription.isPeriodEnd && !subscription.isFailed) {
+  if (subscription.isFailed) {
+    return AccountSubscriptionFollowUp.cancelFailed;
+  }
+  if (subscription.isPeriodEnd) {
     return AccountSubscriptionFollowUp.cancelAtPeriodEnd;
+  }
+  if (subscription.retryInStore) {
+    return AccountSubscriptionFollowUp.cancelFailed;
   }
   if (subscription.isResolvedSuccess) {
     return AccountSubscriptionFollowUp.none;
   }
-  if (subscription.isFailed || clientCancelFailed) {
+  if (clientCancelFailed) {
     return AccountSubscriptionFollowUp.cancelFailed;
   }
   return AccountSubscriptionFollowUp.none;

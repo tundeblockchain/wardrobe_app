@@ -4,6 +4,7 @@ import 'package:wardrobe_app/core/network/api_exception.dart';
 import 'package:wardrobe_app/features/account/application/account_controller.dart';
 import 'package:wardrobe_app/features/account/application/account_state.dart';
 import 'package:wardrobe_app/features/account/data/dio_account_repository.dart';
+import 'package:wardrobe_app/features/account/domain/account_subscription_copy.dart';
 import 'package:wardrobe_app/features/account/domain/account_wipe_summary.dart';
 import 'package:wardrobe_app/features/account/domain/subscription_cancel_info.dart';
 import 'package:wardrobe_app/features/auth/application/auth_controller.dart';
@@ -115,30 +116,63 @@ void main() {
     expect(authRepository.deleteUserCalls, 0);
   });
 
+  test('deleteAccount CANCELED then deletes Firebase Auth', () async {
+    accountRepository.deleteResult = _deletedSummary.withCanceled();
+    paywall.cancelResult = CancelSubscriptionResult.canceled;
+
+    final summary = await container
+        .read(accountControllerProvider.notifier)
+        .deleteAccount();
+
+    expect(summary?.keepAccount, isFalse);
+    expect(paywall.cancelCount, 1);
+    expect(accountRepository.deleteCalls, 1);
+    expect(authRepository.deleteUserCalls, 1);
+    expect(container.read(accountControllerProvider).isAccountDeleted, isTrue);
+    expect(
+      container.read(accountControllerProvider).needsSubscriptionFollowUp,
+      isFalse,
+    );
+    await settle();
+    expect(container.read(authControllerProvider).user, isNull);
+  });
+
+  test('deleteAccount NONE then deletes Firebase Auth', () async {
+    accountRepository.deleteResult = _deletedSummary.withSubscription(
+      const SubscriptionCancelInfo(status: SubscriptionCancelStatus.none),
+    );
+
+    final summary = await container
+        .read(accountControllerProvider.notifier)
+        .deleteAccount();
+
+    expect(summary?.subscription.status, SubscriptionCancelStatus.none);
+    expect(authRepository.deleteUserCalls, 1);
+    expect(container.read(accountControllerProvider).isAccountDeleted, isTrue);
+    expect(
+      container.read(accountControllerProvider).needsSubscriptionFollowUp,
+      isFalse,
+    );
+  });
+
   test(
-    'deleteAccount cancels Superwall, calls DELETE /me, then Firebase',
+    'deleteAccount prefers Backend NONE over a client Superwall throw',
     () async {
-      accountRepository.deleteResult = _deletedSummary.withCanceled();
-      paywall.cancelResult = CancelSubscriptionResult.canceled;
+      paywall.cancelError = StateError('superwall cancel');
+      accountRepository.deleteResult = _deletedSummary.withSubscription(
+        const SubscriptionCancelInfo(status: SubscriptionCancelStatus.none),
+      );
 
       final summary = await container
           .read(accountControllerProvider.notifier)
           .deleteAccount();
 
-      expect(summary?.keepAccount, isFalse);
-      expect(paywall.cancelCount, 1);
-      expect(accountRepository.deleteCalls, 1);
+      expect(summary?.isAccountDeleted, isTrue);
       expect(authRepository.deleteUserCalls, 1);
-      expect(
-        container.read(accountControllerProvider).isAccountDeleted,
-        isTrue,
-      );
       expect(
         container.read(accountControllerProvider).needsSubscriptionFollowUp,
         isFalse,
       );
-      await settle();
-      expect(container.read(authControllerProvider).user, isNull);
     },
   );
 
@@ -156,6 +190,7 @@ void main() {
     expect(paywall.cancelCount, 1);
     expect(authRepository.deleteUserCalls, 0);
     expect(container.read(accountControllerProvider).isAccountDeleted, isFalse);
+    expect(container.read(accountControllerProvider).canRetryWipe, isFalse);
     expect(
       container.read(accountControllerProvider).errorMessage,
       'Missing token.',
@@ -164,6 +199,37 @@ void main() {
       container.read(authControllerProvider).user?.email,
       'user@example.com',
     );
+  });
+
+  test('deleteAccount 500 INTERNAL_ERROR retries DELETE /me', () async {
+    accountRepository.nextFailure = const ApiException(
+      message: 'Wipe failed.',
+      code: 'INTERNAL_ERROR',
+      statusCode: 500,
+    );
+
+    final first = await container
+        .read(accountControllerProvider.notifier)
+        .deleteAccount();
+
+    expect(first, isNull);
+    expect(accountRepository.deleteCalls, 1);
+    expect(authRepository.deleteUserCalls, 0);
+    expect(container.read(accountControllerProvider).canRetryWipe, isTrue);
+    expect(
+      container.read(accountControllerProvider).errorMessage,
+      AccountSubscriptionCopy.wipeFailedMessage,
+    );
+
+    final retried = await container
+        .read(accountControllerProvider.notifier)
+        .retryFailedWipe();
+
+    expect(retried?.isAccountDeleted, isTrue);
+    expect(accountRepository.deleteCalls, 2);
+    expect(authRepository.deleteUserCalls, 1);
+    expect(container.read(accountControllerProvider).canRetryWipe, isFalse);
+    expect(container.read(accountControllerProvider).isAccountDeleted, isTrue);
   });
 
   test(
@@ -205,8 +271,6 @@ void main() {
       const SubscriptionCancelInfo(
         status: SubscriptionCancelStatus.cancelFailed,
         retryInStore: true,
-        code: 'SUBSCRIPTION_CANCEL_FAILED',
-        message: 'Store cancel timed out.',
       ),
     );
 
@@ -224,7 +288,11 @@ void main() {
     );
     expect(
       container.read(accountControllerProvider).errorMessage,
-      'Store cancel timed out.',
+      AccountSubscriptionCopy.cancelFailedMessage,
+    );
+    expect(
+      container.read(accountControllerProvider).errorMessage,
+      contains('orphaned billing'),
     );
     expect(
       container.read(authControllerProvider).user?.email,
@@ -289,12 +357,34 @@ void main() {
         _deletedSummary.withSubscription(
           const SubscriptionCancelInfo(
             status: SubscriptionCancelStatus.cancelAtPeriodEnd,
-            retryInStore: true,
+            cancelMode: SubscriptionCancelMode.periodEnd,
           ),
         ),
         clientCancelFailed: false,
       ),
       AccountSubscriptionFollowUp.cancelAtPeriodEnd,
+    );
+  });
+
+  test('retryInStore with unknown status is cancel-failed follow-up', () {
+    expect(
+      resolveSubscriptionFollowUp(
+        _deletedSummary.withSubscription(
+          const SubscriptionCancelInfo(retryInStore: true),
+        ),
+        clientCancelFailed: false,
+      ),
+      AccountSubscriptionFollowUp.cancelFailed,
+    );
+  });
+
+  test('Backend CANCELED wins over client cancel failure', () {
+    expect(
+      resolveSubscriptionFollowUp(
+        _deletedSummary.withCanceled(),
+        clientCancelFailed: true,
+      ),
+      AccountSubscriptionFollowUp.none,
     );
   });
 }

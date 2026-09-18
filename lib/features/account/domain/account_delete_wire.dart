@@ -1,16 +1,11 @@
-/// Provisional `DELETE /me` subscription fields (WARDROBE-102 / WARDROBE-103).
+/// Locked `DELETE /me` fields (WARDROBE-103, wardrobe-backend#49 `3f9b38a`).
 ///
-/// Soft-stub until Backend posts the locked DTO + error codes. Missing keys
-/// must not fail parse. Prefer [subscription] (WARDROBE-103); also accept
-/// [subscriptionCancel] / [subscriptionCancelFailed] from the Flutter sketch.
+/// Soft-omit unset optionals so a pre-103 wipe body still parses.
 abstract final class AccountDeleteWire {
   static const deleted = 'deleted';
+  static const keepAccount = 'keepAccount';
   static const entitlementRevoked = 'entitlementRevoked';
   static const subscription = 'subscription';
-  static const subscriptionCancel = 'subscriptionCancel';
-  static const subscriptionCancelFailed = 'subscriptionCancelFailed';
-  static const code = 'code';
-  static const message = 'message';
 
   static const status = 'status';
   static const cancelMode = 'cancelMode';
@@ -22,9 +17,9 @@ abstract final class AccountDeleteWire {
   static const statusCanceled = 'CANCELED';
   static const statusCancelAtPeriodEnd = 'CANCEL_AT_PERIOD_END';
   static const statusCancelFailed = 'CANCEL_FAILED';
-  static const statusSucceeded = 'SUCCEEDED';
-  static const statusSkipped = 'SKIPPED';
-  static const statusFailed = 'FAILED';
 
-  static const subscriptionCancelFailedCode = 'SUBSCRIPTION_CANCEL_FAILED';
+  static const cancelModeImmediate = 'IMMEDIATE';
+  static const cancelModePeriodEnd = 'PERIOD_END';
+
+  static const internalError = 'INTERNAL_ERROR';
 }

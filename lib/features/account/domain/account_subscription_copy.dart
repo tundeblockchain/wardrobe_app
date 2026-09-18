@@ -1,3 +1,6 @@
+import '../../../core/network/api_exception.dart';
+import '../../entitlements/domain/subscription_tier.dart';
+import 'account_delete_wire.dart';
 import 'subscription_cancel_info.dart';
 
 /// Product copy for delete-account Superwall / store cancel follow-up.
@@ -10,44 +13,67 @@ abstract final class AccountSubscriptionCopy {
   static const cancelFailedTitle = 'Subscription may still be active';
 
   static const cancelFailedMessage =
-      'Your Wardrobe data was deleted, but the store subscription could not '
-      'be canceled. Retry now, or continue and cancel it in App Store or '
-      'Google Play. Continuing leaves a risk of orphaned billing.';
+      'Your Wardrobe account was deleted and paid features were revoked, '
+      'but the store subscription could not be canceled. Open App Store or '
+      'Google Play → Subscriptions to stop billing, or retry. Continuing '
+      'leaves a risk of orphaned billing.';
 
   static const cancelAtPeriodEndTitle = 'Subscription ends with this period';
 
   static const cancelAtPeriodEndMessage =
-      'Your Wardrobe data was deleted. The store subscription is set to end '
-      'when the current period finishes. Manage it in App Store or Google '
-      'Play if you need it to stop sooner.';
+      'Your Wardrobe account was deleted and Premium is already revoked. '
+      'The store subscription is set to end when the current period '
+      'finishes. Manage it in App Store or Google Play if you need it to '
+      'stop sooner.';
 
   static const clientCancelFailedMessage =
-      'Your Wardrobe data was deleted, but Superwall could not end the '
-      'store subscription. Retry now, or continue and cancel it in App Store '
-      'or Google Play. Continuing leaves a risk of orphaned billing.';
+      'Your Wardrobe data was deleted, but the store subscription may still '
+      'be billing. Open App Store or Google Play → Subscriptions to cancel, '
+      'or retry.';
+
+  static const wipeFailedMessage =
+      'Account delete failed on the server. Retry now. Your sign-in is '
+      'still active.';
 
   static const retryLabel = 'Retry';
   static const continueLabel = 'Continue';
-  static const manageInStoreLabel = 'Manage in store';
+  static const retryWipeLabel = 'Retry delete';
 
   static const storeManageHint =
       'Open App Store or Google Play → Subscriptions to cancel billing.';
 
-  static String followUpMessage(SubscriptionCancelInfo info) {
-    final fromBackend = info.message;
-    if (fromBackend != null && fromBackend.isNotEmpty) {
-      return fromBackend;
+  static String storeManageHintFor(SubscriptionCancelInfo info) {
+    switch (info.store) {
+      case EntitlementStore.appStore:
+        return 'Open App Store → Subscriptions to cancel billing.';
+      case EntitlementStore.playStore:
+        return 'Open Google Play → Subscriptions to cancel billing.';
+      case EntitlementStore.stripe:
+      case EntitlementStore.unknown:
+      case null:
+        return storeManageHint;
     }
-    if (info.isPeriodEnd) {
+  }
+
+  static String followUpMessage(SubscriptionCancelInfo info) {
+    if (info.isPeriodEnd && !info.isFailed && !info.retryInStore) {
       return cancelAtPeriodEndMessage;
+    }
+    if (info.status == SubscriptionCancelStatus.unknown) {
+      return clientCancelFailedMessage;
     }
     return cancelFailedMessage;
   }
 
   static String followUpTitle(SubscriptionCancelInfo info) {
-    if (info.isPeriodEnd && !info.isFailed) {
+    if (info.isPeriodEnd && !info.isFailed && !info.retryInStore) {
       return cancelAtPeriodEndTitle;
     }
     return cancelFailedTitle;
+  }
+
+  static bool isRetryableWipeFailure(ApiException error) {
+    final code = error.code?.trim().toUpperCase();
+    return code == AccountDeleteWire.internalError || error.statusCode == 500;
   }
 }

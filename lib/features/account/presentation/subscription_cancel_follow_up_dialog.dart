@@ -42,7 +42,7 @@ class SubscriptionCancelFollowUpDialog extends ConsumerWidget {
         Text(AccountSubscriptionCopy.followUpMessage(info), key: messageKey),
         const SizedBox(height: AppSpacing.md),
         Text(
-          AccountSubscriptionCopy.storeManageHint,
+          AccountSubscriptionCopy.storeManageHintFor(info),
           style: theme.textTheme.bodySmall?.copyWith(
             color: theme.colorScheme.onSurfaceVariant,
           ),

@@ -3,9 +3,9 @@ import 'subscription_cancel_info.dart';
 
 /// Success body from `DELETE /me/content` and `DELETE /me` (WARDROBE-36).
 ///
-/// WARDROBE-102 adds optional `deleted`, `entitlementRevoked`, and
-/// `subscription` / `subscriptionCancel` fields. Missing keys are omitted so
-/// today's Backend wipe body still parses.
+/// WARDROBE-103 (wardrobe-backend#49 `3f9b38a`) adds optional `deleted`,
+/// `entitlementRevoked`, and `subscription` on `DELETE /me`. Missing keys
+/// still parse so a legacy wipe body works until that deploy is live.
 class AccountWipeSummary {
   const AccountWipeSummary({
     required this.keepAccount,

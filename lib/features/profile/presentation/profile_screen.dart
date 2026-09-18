@@ -35,6 +35,7 @@ class ProfileScreen extends ConsumerWidget {
   static const signOutButtonKey = Key('profile_sign_out');
   static const clearContentButtonKey = Key('account_clear_content');
   static const deleteAccountButtonKey = Key('account_delete_account');
+  static const retryWipeButtonKey = Key('account_retry_wipe');
   static const errorTextKey = Key('account_error');
   static const infoTextKey = Key('account_info');
 
@@ -219,6 +220,18 @@ class ProfileScreen extends ConsumerWidget {
                 account.errorMessage!,
                 key: errorTextKey,
                 style: TextStyle(color: Theme.of(context).colorScheme.error),
+              ),
+            ],
+            if (account.canRetryWipe) ...[
+              const SizedBox(height: 8),
+              OutlinedButton(
+                key: retryWipeButtonKey,
+                onPressed: busy
+                    ? null
+                    : () => ref
+                          .read(accountControllerProvider.notifier)
+                          .retryFailedWipe(),
+                child: const Text(AccountSubscriptionCopy.retryWipeLabel),
               ),
             ],
             if (account.infoMessage != null) ...[

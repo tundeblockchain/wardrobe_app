@@ -1,21 +1,21 @@
+import '../../entitlements/domain/subscription_tier.dart';
 import 'account_delete_wire.dart';
 
-/// Store-cancel outcome from `DELETE /me` (provisional WARDROBE-103).
+/// `NONE` | `CANCELED` | `CANCEL_AT_PERIOD_END` | `CANCEL_FAILED`.
+///
+/// Locked WARDROBE-103 (wardrobe-backend#49 `3f9b38a`). Missing / unknown
+/// → [unknown] so a legacy wipe body is a no-op follow-up.
 enum SubscriptionCancelStatus {
   none(AccountDeleteWire.statusNone),
   canceled(AccountDeleteWire.statusCanceled),
   cancelAtPeriodEnd(AccountDeleteWire.statusCancelAtPeriodEnd),
   cancelFailed(AccountDeleteWire.statusCancelFailed),
-  succeeded(AccountDeleteWire.statusSucceeded),
-  skipped(AccountDeleteWire.statusSkipped),
-  failed(AccountDeleteWire.statusFailed),
   unknown('');
 
   const SubscriptionCancelStatus(this.wireValue);
 
   final String wireValue;
 
-  /// Unknown / missing → [unknown] so legacy `DELETE /me` stays a no-op.
   static SubscriptionCancelStatus parse(String? value) {
     if (value == null || value.isEmpty) {
       return SubscriptionCancelStatus.unknown;
@@ -34,18 +34,37 @@ enum SubscriptionCancelStatus {
 
   bool get isResolvedSuccess =>
       this == SubscriptionCancelStatus.none ||
-      this == SubscriptionCancelStatus.canceled ||
-      this == SubscriptionCancelStatus.succeeded ||
-      this == SubscriptionCancelStatus.skipped;
+      this == SubscriptionCancelStatus.canceled;
 
-  bool get isFailed =>
-      this == SubscriptionCancelStatus.cancelFailed ||
-      this == SubscriptionCancelStatus.failed;
+  bool get isFailed => this == SubscriptionCancelStatus.cancelFailed;
 
   bool get isPeriodEnd => this == SubscriptionCancelStatus.cancelAtPeriodEnd;
 }
 
-/// Optional `subscription` / `subscriptionCancel` object on `DELETE /me`.
+/// `IMMEDIATE` | `PERIOD_END`. Soft-omitted when unset.
+enum SubscriptionCancelMode {
+  immediate(AccountDeleteWire.cancelModeImmediate),
+  periodEnd(AccountDeleteWire.cancelModePeriodEnd);
+
+  const SubscriptionCancelMode(this.wireValue);
+
+  final String wireValue;
+
+  static SubscriptionCancelMode? tryParse(String? value) {
+    if (value == null || value.isEmpty) {
+      return null;
+    }
+    final normalized = value.trim().toUpperCase();
+    for (final mode in SubscriptionCancelMode.values) {
+      if (mode.wireValue == normalized) {
+        return mode;
+      }
+    }
+    return null;
+  }
+}
+
+/// Optional `subscription` object on `DELETE /me` (WARDROBE-103).
 class SubscriptionCancelInfo {
   const SubscriptionCancelInfo({
     this.status = SubscriptionCancelStatus.unknown,
@@ -53,32 +72,17 @@ class SubscriptionCancelInfo {
     this.store,
     this.expiresAt,
     this.retryInStore = false,
-    this.code,
-    this.message,
-    this.failedFlag = false,
   });
 
   static const absent = SubscriptionCancelInfo();
 
   final SubscriptionCancelStatus status;
-  final String? cancelMode;
-  final String? store;
+  final SubscriptionCancelMode? cancelMode;
+  final EntitlementStore? store;
   final DateTime? expiresAt;
   final bool retryInStore;
-  final String? code;
-  final String? message;
-  final bool failedFlag;
 
-  bool get isFailed {
-    if (status.isResolvedSuccess) {
-      return false;
-    }
-    if (status.isFailed || failedFlag) {
-      return true;
-    }
-    final code = this.code?.trim().toUpperCase();
-    return code == AccountDeleteWire.subscriptionCancelFailedCode;
-  }
+  bool get isFailed => status.isFailed;
 
   bool get isPeriodEnd => status.isPeriodEnd;
 
@@ -87,48 +91,22 @@ class SubscriptionCancelInfo {
   bool get shouldManageInStore => retryInStore || isFailed || isPeriodEnd;
 
   factory SubscriptionCancelInfo.fromDeleteJson(Map<String, dynamic> json) {
-    final primary = _asMap(json[AccountDeleteWire.subscription]);
-    final alt = _asMap(json[AccountDeleteWire.subscriptionCancel]);
-    final nested = <String, dynamic>{...?alt, ...?primary};
-    final failedFlag = json[AccountDeleteWire.subscriptionCancelFailed] == true;
-    final topCode = _asString(json[AccountDeleteWire.code]);
-    final topMessage = _asString(json[AccountDeleteWire.message]);
-    final nestedStatus = SubscriptionCancelStatus.parse(
-      _asString(nested[AccountDeleteWire.status]),
-    );
-    final nestedCode =
-        _asString(nested[AccountDeleteWire.code]) ??
-        (failedFlag ? AccountDeleteWire.subscriptionCancelFailedCode : null) ??
-        topCode;
-    final status = nestedStatus != SubscriptionCancelStatus.unknown
-        ? nestedStatus
-        : (failedFlag ||
-                  nestedCode?.toUpperCase() ==
-                      AccountDeleteWire.subscriptionCancelFailedCode
-              ? SubscriptionCancelStatus.cancelFailed
-              : SubscriptionCancelStatus.unknown);
-
-    if (nested.isEmpty &&
-        !failedFlag &&
-        nestedCode == null &&
-        topMessage == null) {
+    final nested = _asMap(json[AccountDeleteWire.subscription]);
+    if (nested == null) {
       return SubscriptionCancelInfo.absent;
     }
-
     return SubscriptionCancelInfo(
-      status: status,
-      cancelMode: _asString(nested[AccountDeleteWire.cancelMode]),
-      store: _asString(nested[AccountDeleteWire.store]),
+      status: SubscriptionCancelStatus.parse(
+        _asString(nested[AccountDeleteWire.status]),
+      ),
+      cancelMode: SubscriptionCancelMode.tryParse(
+        _asString(nested[AccountDeleteWire.cancelMode]),
+      ),
+      store: EntitlementStore.tryParse(
+        _asString(nested[AccountDeleteWire.store]),
+      ),
       expiresAt: _asDate(nested[AccountDeleteWire.expiresAt]),
       retryInStore: nested[AccountDeleteWire.retryInStore] == true,
-      code: nestedCode,
-      message:
-          _asString(nested[AccountDeleteWire.message]) ??
-          topMessage ??
-          (status.isFailed
-              ? 'The store subscription could not be canceled.'
-              : null),
-      failedFlag: failedFlag,
     );
   }
 
@@ -140,23 +118,12 @@ class SubscriptionCancelInfo {
             cancelMode == other.cancelMode &&
             store == other.store &&
             expiresAt == other.expiresAt &&
-            retryInStore == other.retryInStore &&
-            code == other.code &&
-            message == other.message &&
-            failedFlag == other.failedFlag;
+            retryInStore == other.retryInStore;
   }
 
   @override
-  int get hashCode => Object.hash(
-    status,
-    cancelMode,
-    store,
-    expiresAt,
-    retryInStore,
-    code,
-    message,
-    failedFlag,
-  );
+  int get hashCode =>
+      Object.hash(status, cancelMode, store, expiresAt, retryInStore);
 }
 
 Map<String, dynamic>? _asMap(Object? value) {

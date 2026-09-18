@@ -342,16 +342,19 @@ Clear all and Delete account live on `/profile` (WARDROBE-34 menu).
   never pretends the account is gone.
 - **Subscription cancel (WARDROBE-102)** — Backend
   [WARDROBE-103](https://tundetunde000.atlassian.net/browse/WARDROBE-103)
-  is the source of truth for store cancel + entitlement revoke. Flutter
-  soft-parses optional `deleted`, `entitlementRevoked`, and
-  `subscription` / `subscriptionCancel` (`NONE` | `CANCELED` |
-  `CANCEL_AT_PERIOD_END` | `CANCEL_FAILED`, plus sketch aliases
-  `SUCCEEDED` / `SKIPPED` / `FAILED`). Missing fields do not fail compile
-  or parse. `CANCEL_FAILED` (or a client Superwall throw) shows Retry vs
-  Continue with store-manage copy. `CANCEL_AT_PERIOD_END` shows period-end
-  copy; Continue still deletes Firebase Auth when `deleted` is true (or
-  when `keepAccount` is false on a legacy body). Server revoke remains the
-  API gate. Harden when Backend posts the locked DTO + SHA.
+  (`wardrobe-backend#49`, SHA `3f9b38a`) is the source of truth.
+  `DELETE /me` has no body: try store cancel → revoke ENTITLEMENT → delete
+  AWS data. `DELETE /me/content` is unchanged (no cancel). The 200 body is
+  `{ deleted, keepAccount, entitlementRevoked, subscription }`.
+  `subscription.status` is `NONE` | `CANCELED` | `CANCEL_AT_PERIOD_END` |
+  `CANCEL_FAILED`. Unset optionals (`cancelMode`, `store`, `expiresAt`,
+  `retryInStore`) are omitted. `CANCEL_FAILED` / `retryInStore: true` shows
+  App Store or Play manage-subscription copy plus Retry/Continue — the
+  account is already deleted and Premium revoked, but billing may still be
+  active. `CANCEL_AT_PERIOD_END` shows period-end copy (Premium already
+  revoked). Hard AWS wipe fail is `500 INTERNAL_ERROR` and retries
+  `DELETE /me`. Then the client deletes Firebase Auth. A live tip without
+  `subscription` still parses (soft-omit).
 
 Identity is the Firebase ID token only. An empty account still returns `200`.
 Wardrobe and item deletes use the existing `DELETE` APIs behind a confirm

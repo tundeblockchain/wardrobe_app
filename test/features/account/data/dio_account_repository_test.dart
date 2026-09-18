@@ -62,7 +62,7 @@ void main() {
     expect(adapter.requests.single.path, '/me');
   });
 
-  test('deleteAccount maps optional subscription cancel fields', () async {
+  test('deleteAccount maps the locked WARDROBE-103 200 body', () async {
     repository = buildRepository([
       HttpScript(
         statusCode: 200,
@@ -72,10 +72,9 @@ void main() {
           'deleted': true,
           'entitlementRevoked': true,
           'subscription': {
-            'status': 'CANCEL_FAILED',
-            'retryInStore': true,
-            'code': 'SUBSCRIPTION_CANCEL_FAILED',
-            'message': 'Store cancel failed.',
+            'status': 'CANCELED',
+            'cancelMode': 'IMMEDIATE',
+            'store': 'APP_STORE',
           },
         },
       ),
@@ -85,9 +84,52 @@ void main() {
 
     expect(result.isAccountDeleted, isTrue);
     expect(result.entitlementRevoked, isTrue);
-    expect(result.subscription.status, SubscriptionCancelStatus.cancelFailed);
-    expect(result.subscription.retryInStore, isTrue);
-    expect(result.subscription.message, 'Store cancel failed.');
+    expect(result.subscription.status, SubscriptionCancelStatus.canceled);
+    expect(result.subscription.retryInStore, isFalse);
+    expect(adapter.requests.single.data, isNull);
+  });
+
+  test(
+    'deleteAccount maps CANCEL_FAILED retryInStore without extra keys',
+    () async {
+      repository = buildRepository([
+        HttpScript(
+          statusCode: 200,
+          body: {
+            ...summary,
+            'keepAccount': false,
+            'deleted': true,
+            'entitlementRevoked': true,
+            'subscription': {'status': 'CANCEL_FAILED', 'retryInStore': true},
+          },
+        ),
+      ]);
+
+      final result = await repository.deleteAccount();
+
+      expect(result.isAccountDeleted, isTrue);
+      expect(result.entitlementRevoked, isTrue);
+      expect(result.subscription.status, SubscriptionCancelStatus.cancelFailed);
+      expect(result.subscription.retryInStore, isTrue);
+    },
+  );
+
+  test('maps INTERNAL_ERROR 500 on DELETE /me', () async {
+    repository = buildRepository([
+      const HttpScript(
+        statusCode: 500,
+        body: {'code': 'INTERNAL_ERROR', 'message': 'Wipe failed.'},
+      ),
+    ]);
+
+    expect(
+      () => repository.deleteAccount(),
+      throwsA(
+        isA<ApiException>()
+            .having((error) => error.code, 'code', 'INTERNAL_ERROR')
+            .having((error) => error.statusCode, 'statusCode', 500),
+      ),
+    );
   });
 
   test('empty account still returns 200 zeros', () async {

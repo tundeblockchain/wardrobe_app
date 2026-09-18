@@ -14,6 +14,7 @@ class AccountState {
     this.infoMessage,
     this.subscriptionFollowUp = AccountSubscriptionFollowUp.none,
     this.subscriptionFollowUpInfo = SubscriptionCancelInfo.absent,
+    this.canRetryWipe = false,
   });
 
   final bool isBusy;
@@ -23,6 +24,9 @@ class AccountState {
   final String? infoMessage;
   final AccountSubscriptionFollowUp subscriptionFollowUp;
   final SubscriptionCancelInfo subscriptionFollowUpInfo;
+
+  /// `500 INTERNAL_ERROR` after `DELETE /me` — retry the wipe, not Firebase.
+  final bool canRetryWipe;
 
   bool get needsSubscriptionFollowUp =>
       subscriptionFollowUp != AccountSubscriptionFollowUp.none;
@@ -39,6 +43,7 @@ class AccountState {
     AccountSubscriptionFollowUp? subscriptionFollowUp,
     SubscriptionCancelInfo? subscriptionFollowUpInfo,
     bool clearFollowUp = false,
+    bool? canRetryWipe,
   }) {
     return AccountState(
       isBusy: isBusy ?? this.isBusy,
@@ -52,6 +57,7 @@ class AccountState {
       subscriptionFollowUpInfo: clearFollowUp
           ? SubscriptionCancelInfo.absent
           : (subscriptionFollowUpInfo ?? this.subscriptionFollowUpInfo),
+      canRetryWipe: clearError ? false : (canRetryWipe ?? this.canRetryWipe),
     );
   }
 
@@ -65,7 +71,8 @@ class AccountState {
             errorMessage == other.errorMessage &&
             infoMessage == other.infoMessage &&
             subscriptionFollowUp == other.subscriptionFollowUp &&
-            subscriptionFollowUpInfo == other.subscriptionFollowUpInfo;
+            subscriptionFollowUpInfo == other.subscriptionFollowUpInfo &&
+            canRetryWipe == other.canRetryWipe;
   }
 
   @override
@@ -77,5 +84,6 @@ class AccountState {
     infoMessage,
     subscriptionFollowUp,
     subscriptionFollowUpInfo,
+    canRetryWipe,
   );
 }
