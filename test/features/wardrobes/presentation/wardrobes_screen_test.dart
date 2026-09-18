@@ -7,7 +7,6 @@ import 'package:wardrobe_app/features/entitlements/domain/entitlement.dart';
 import 'package:wardrobe_app/features/items/data/dio_item_repository.dart';
 import 'package:wardrobe_app/features/items/presentation/widgets/item_browse_image.dart';
 import 'package:wardrobe_app/features/shopping_links/presentation/widgets/related_shopping_links_section.dart';
-import 'package:wardrobe_app/features/shopping_links/presentation/widgets/shopping_product_card.dart';
 import 'package:wardrobe_app/features/wardrobes/application/wardrobe_items_provider.dart';
 import 'package:wardrobe_app/features/wardrobes/data/dio_wardrobe_repository.dart';
 import 'package:wardrobe_app/core/network/api_exception.dart';
@@ -296,92 +295,75 @@ void main() {
     },
   );
 
-  testWidgets('home shows an empty related shopping links stub', (
-    tester,
-  ) async {
+  testWidgets('home does not show related shopping links', (tester) async {
     tester.view.physicalSize = const Size(400, 1400);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
 
-    final harness = TestAppHarness();
-    addTearDown(harness.dispose);
-
-    await tester.pumpWidget(harness.app());
-    await tester.pumpAndSettle();
-
-    expect(find.byKey(RelatedShoppingLinksSection.sectionKey), findsOneWidget);
-    expect(find.text('Related shopping links'), findsOneWidget);
-    expect(find.text('No similar products to shop yet.'), findsOneWidget);
-    expect(find.byType(ShoppingProductCard), findsNothing);
-    expect(find.byType(WardrobeListCard), findsOneWidget);
-  });
-
-  testWidgets('home shopping cards do not block wardrobe browsing', (
-    tester,
-  ) async {
-    tester.view.physicalSize = const Size(400, 1600);
-    tester.view.devicePixelRatio = 1;
-    addTearDown(tester.view.resetPhysicalSize);
-    addTearDown(tester.view.resetDevicePixelRatio);
-
-    final link = testShoppingLink();
-    final harness = TestAppHarness(
-      shoppingLinks: FakeShoppingLinksRepository(home: [link]),
-    );
-    addTearDown(harness.dispose);
-
-    await tester.pumpWidget(harness.app());
-    await tester.pumpAndSettle();
-
-    expect(find.byType(ShoppingProductCard), findsOneWidget);
-    expect(find.text('Black cotton tee'), findsOneWidget);
-    expect(find.text('Summer Clothes'), findsOneWidget);
-
-    await tester.tap(find.byKey(ShoppingProductCard.cardKey(link.url)));
-    await tester.pump();
-    expect(harness.shoppingOpener.opened, [Uri.parse(link.url)]);
-  });
-
-  testWidgets('home shopping errors stay on the section', (tester) async {
-    tester.view.physicalSize = const Size(400, 1400);
-    tester.view.devicePixelRatio = 1;
-    addTearDown(tester.view.resetPhysicalSize);
-    addTearDown(tester.view.resetDevicePixelRatio);
-
-    final shopping = FakeShoppingLinksRepository()
-      ..nextFailure = const ApiException(
-        message: 'Shopping links are unavailable right now.',
-        code: 'NETWORK_ERROR',
-      );
+    final shopping = FakeShoppingLinksRepository(home: [testShoppingLink()]);
     final harness = TestAppHarness(shoppingLinks: shopping);
     addTearDown(harness.dispose);
 
     await tester.pumpWidget(harness.app());
     await tester.pumpAndSettle();
 
-    expect(
-      find.text('Shopping links are unavailable right now.'),
-      findsOneWidget,
-    );
-    expect(find.byKey(RelatedShoppingLinksSection.retryKey), findsOneWidget);
+    expect(find.byKey(RelatedShoppingLinksSection.sectionKey), findsNothing);
+    expect(find.text('Related shopping links'), findsNothing);
+    expect(find.text('No similar products to shop yet.'), findsNothing);
     expect(find.byType(WardrobeListCard), findsOneWidget);
     expect(find.text('Summer Clothes'), findsOneWidget);
+    expect(shopping.homeCalls, 0);
   });
 
-  testWidgets('Free tier still sees related shopping links', (tester) async {
+  testWidgets('home pull-to-refresh does not fetch shopping links', (
+    tester,
+  ) async {
     tester.view.physicalSize = const Size(400, 1400);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
 
-    final harness = TestAppHarness(entitlement: Entitlement.free);
+    final shopping = FakeShoppingLinksRepository();
+    final harness = TestAppHarness(shoppingLinks: shopping);
+    addTearDown(harness.dispose);
+
+    await tester.pumpWidget(harness.app());
+    await tester.pumpAndSettle();
+    expect(shopping.homeCalls, 0);
+
+    await tester.fling(
+      find.byType(WardrobesScreen),
+      const Offset(0, 400),
+      1000,
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(RelatedShoppingLinksSection.sectionKey), findsNothing);
+    expect(shopping.homeCalls, 0);
+    expect(find.byType(WardrobeListCard), findsOneWidget);
+  });
+
+  testWidgets('Free tier home still omits related shopping links', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(400, 1400);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final shopping = FakeShoppingLinksRepository(home: [testShoppingLink()]);
+    final harness = TestAppHarness(
+      shoppingLinks: shopping,
+      entitlement: Entitlement.free,
+    );
     addTearDown(harness.dispose);
 
     await tester.pumpWidget(harness.app());
     await tester.pumpAndSettle();
 
-    expect(find.text('Related shopping links'), findsOneWidget);
+    expect(find.text('Related shopping links'), findsNothing);
     expect(find.byType(WardrobeListCard), findsOneWidget);
+    expect(shopping.homeCalls, 0);
   });
 }

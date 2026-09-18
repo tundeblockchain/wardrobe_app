@@ -65,9 +65,6 @@ Authenticated routes:
   Item hits prefer list/get `processedImageUrl`, else `originalImageUrl`
   (no Backend search API). Outfits show a cover already on the model.
   Missing or failed images fall back to a kind icon so the row stays tappable.
-  Related shopping links ([WARDROBE-95](https://tundetunde000.atlassian.net/browse/WARDROBE-95))
-  sit below the clothing carousel as a non-blocking Google Shopping–style
-  strip (Free / Basic / Premium — not entitlement-gated)
 
 - `/wardrobes/create` — name form
 - `/wardrobes/:wardrobeId` — detail, rename, delete, item list, outfits entry, suggestions entry
@@ -135,7 +132,8 @@ device. On Android, gallery uses the system Photo Picker (no
 `READ_MEDIA_IMAGES`); camera still uses `CAMERA`. See
 [docs/android-photo-picker.md](docs/android-photo-picker.md).
 Item detail also shows **Related shopping links** for that item
-([WARDROBE-95](https://tundetunde000.atlassian.net/browse/WARDROBE-95)).
+([WARDROBE-95](https://tundetunde000.atlassian.net/browse/WARDROBE-95),
+Home strip removed in [WARDROBE-100](https://tundetunde000.atlassian.net/browse/WARDROBE-100)).
 
 Backend item/upload APIs (WARDROBE-8 / WARDROBE-11) may not be live yet; the
 client is scaffolded against the contract with mocked unit tests.
@@ -176,24 +174,29 @@ Virtual try-on inference is WARDROBE-51 (outfit render API).
 
 ## Related shopping links (WARDROBE-95)
 
-Home and item detail show a **Related shopping links** section. Available on
-**Free, Basic, and Premium** — not entitlement-gated. Flutter never holds
-OpenAI or Bright Data keys; those stay on Backend
+Item detail shows a **Related shopping links** section. Home no longer
+renders or fetches mixed shopping links
+([WARDROBE-100](https://tundetunde000.atlassian.net/browse/WARDROBE-100)).
+Available on **Free, Basic, and Premium** — not entitlement-gated. Flutter
+never holds OpenAI or Bright Data keys; those stay on Backend
 ([WARDROBE-96](https://tundetunde000.atlassian.net/browse/WARDROBE-96)).
 
 Locked contract (wardrobe-backend#47 squash SHA **`aaf46cd`** /
 `aaf46cdef1f6f1da6e550c73ebee7c3f45729a96` on Backend **main**).
-`ShoppingLinksContract.liveEnabled` is `true` — Home and item detail call
-those paths through `DioShoppingLinksRepository`:
+`ShoppingLinksContract.liveEnabled` is `true` — item detail calls
+`GET /wardrobes/{wardrobeId}/items/{itemId}/shopping-links` through
+`DioShoppingLinksRepository`. The mixed Home path
+`GET /shopping-links?limit=5&linksPerItem=8` remains in the repository
+contract but is unused by the Flutter UI.
 
 ```http
 GET /wardrobes/{wardrobeId}/items/{itemId}/shopping-links
-GET /shopping-links?limit=5&linksPerItem=8
 ```
 
-Home query: `limit` default 5 max 10; `linksPerItem` default 8 max 12.
-Invalid query is Backend `400 VALIDATION_ERROR` — Flutter only sends the
-clamped defaults.
+Home mixed query (unused by the client): `limit` default 5 max 10;
+`linksPerItem` default 8 max 12. Invalid query is Backend
+`400 VALIDATION_ERROR` — Flutter only sends the clamped defaults if that
+path is called.
 
 Link object (soft-omit unset; never JSON `null`):
 

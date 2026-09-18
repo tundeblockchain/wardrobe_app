@@ -40,7 +40,7 @@ import 'fake_upload_repository.dart';
 import 'fake_wardrobe_repository.dart';
 import 'item_processing_poll_overrides.dart';
 
-/// Empty shopping-links so Home / item detail never hit live Dio in tests.
+/// Empty shopping-links so item detail never hits live Dio in tests.
 List<Override> shoppingLinksTestOverrides({
   FakeShoppingLinksRepository? repository,
   FakeShoppingLinkOpener? opener,
