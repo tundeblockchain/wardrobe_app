@@ -8,6 +8,8 @@ import 'package:wardrobe_app/features/account/data/dio_account_repository.dart';
 import 'package:wardrobe_app/features/ai_profiles/data/dio_ai_profile_repository.dart';
 import 'package:wardrobe_app/features/auth/application/auth_controller.dart';
 import 'package:wardrobe_app/features/auth/domain/app_user.dart';
+import 'package:wardrobe_app/features/coaches/data/coach_preferences.dart';
+import 'package:wardrobe_app/features/coaches/domain/coach_screen.dart';
 import 'package:wardrobe_app/features/entitlements/data/dio_entitlement_repository.dart';
 import 'package:wardrobe_app/features/entitlements/data/paywall_gateway_provider.dart';
 import 'package:wardrobe_app/features/entitlements/domain/entitlement.dart';
@@ -80,6 +82,7 @@ class TestAppHarness {
     FakeAccountRepository? account,
     FakeShoppingLinksRepository? shoppingLinks,
     Entitlement? entitlement,
+    CoachPreferences? coaches,
   }) : auth =
            auth ??
            FakeAuthRepository(
@@ -95,7 +98,9 @@ class TestAppHarness {
        shoppingLinks = shoppingLinks ?? FakeShoppingLinksRepository(),
        entitlements = FakeEntitlementRepository(
          seed: entitlement ?? Entitlement.premium,
-       );
+       ),
+       coaches =
+           coaches ?? InMemoryCoachPreferences(seen: {...CoachScreen.values});
 
   final FakeAuthRepository auth;
   final FakeWardrobeRepository wardrobes;
@@ -104,6 +109,7 @@ class TestAppHarness {
   final FakeAccountRepository account;
   final FakeShoppingLinksRepository shoppingLinks;
   final FakeEntitlementRepository entitlements;
+  final CoachPreferences coaches;
   final paywall = FakePaywallGateway();
   final sessionStore = InMemorySessionLocalStore();
   final sessionImages = RecordingSessionImageCache();
@@ -139,6 +145,7 @@ class TestAppHarness {
         homeClothingCarouselAutoScrollProvider.overrideWithValue(false),
         entitlementRepositoryProvider.overrideWithValue(entitlements),
         paywallGatewayProvider.overrideWithValue(paywall),
+        coachPreferencesProvider.overrideWithValue(coaches),
         ...itemProcessingPollTestOverrides(),
       ],
       child: const WardrobeApp(),

@@ -179,15 +179,11 @@ void main() {
     final harness = TestAppHarness(
       wardrobes: FakeWardrobeRepository(seed: [testWardrobe()]),
       shoppingLinks: FakeShoppingLinksRepository(home: [testShoppingLink()]),
+      coaches: prefs,
     );
     addTearDown(harness.dispose);
 
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [coachPreferencesProvider.overrideWithValue(prefs)],
-        child: harness.app(),
-      ),
-    );
+    await tester.pumpWidget(harness.app());
     await tester.pumpAndSettle();
 
     expect(find.byType(WardrobesScreen), findsOneWidget);
