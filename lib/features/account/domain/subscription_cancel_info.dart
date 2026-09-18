@@ -82,15 +82,14 @@ class SubscriptionCancelInfo {
 
   bool get isPeriodEnd => status.isPeriodEnd;
 
+  bool get isResolvedSuccess => status.isResolvedSuccess;
+
   bool get shouldManageInStore => retryInStore || isFailed || isPeriodEnd;
 
   factory SubscriptionCancelInfo.fromDeleteJson(Map<String, dynamic> json) {
     final primary = _asMap(json[AccountDeleteWire.subscription]);
     final alt = _asMap(json[AccountDeleteWire.subscriptionCancel]);
-    final nested = <String, dynamic>{
-      if (alt != null) ...alt,
-      if (primary != null) ...primary,
-    };
+    final nested = <String, dynamic>{...?alt, ...?primary};
     final failedFlag = json[AccountDeleteWire.subscriptionCancelFailed] == true;
     final topCode = _asString(json[AccountDeleteWire.code]);
     final topMessage = _asString(json[AccountDeleteWire.message]);

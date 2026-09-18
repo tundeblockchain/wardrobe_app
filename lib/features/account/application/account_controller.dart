@@ -63,7 +63,7 @@ class AccountController extends Notifier<AccountState> {
     final clientCancel = await _cancelClientSubscription();
     try {
       final summary = await _repository.deleteAccount();
-      return _afterWipe(summary, clientCancel: clientCancel);
+      return await _afterWipe(summary, clientCancel: clientCancel);
     } on ApiException catch (error) {
       return _fail(error.message);
     } catch (_) {
