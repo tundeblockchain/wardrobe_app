@@ -1,5 +1,6 @@
 import 'package:superwallkit_flutter/superwallkit_flutter.dart';
 
+import '../domain/paywall_gateway.dart';
 import 'superwall_paywall_gateway.dart';
 
 /// Binds the Superwall Flutter SDK to [SuperwallPaywallGateway] hooks.
@@ -36,5 +37,9 @@ void bindProductionSuperwallSdk() {
       final result = await Superwall.shared.restorePurchases();
       return result is RestorationResultRestored;
     },
+    // Superwall Flutter has no store-cancel API. Backend DELETE /me
+    // (WARDROBE-103) cancels/revokes; this hook stays skipped until the SDK
+    // grows a cancel surface. Tests inject throws via [bindSuperwallSdk].
+    cancelSubscription: () async => CancelSubscriptionResult.skipped,
   );
 }

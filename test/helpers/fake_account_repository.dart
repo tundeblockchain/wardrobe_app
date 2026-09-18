@@ -1,6 +1,7 @@
 import 'package:wardrobe_app/core/network/api_exception.dart';
 import 'package:wardrobe_app/features/account/domain/account_repository.dart';
 import 'package:wardrobe_app/features/account/domain/account_wipe_summary.dart';
+import 'package:wardrobe_app/features/account/domain/subscription_cancel_info.dart';
 
 /// In-memory [AccountRepository] for unit and widget tests.
 class FakeAccountRepository implements AccountRepository {
@@ -22,6 +23,9 @@ class FakeAccountRepository implements AccountRepository {
     deletedOutfits: 1,
     deletedS3Objects: 3,
     s3Failures: 0,
+    deleted: true,
+    entitlementRevoked: true,
+    subscription: SubscriptionCancelInfo(status: SubscriptionCancelStatus.none),
   );
 
   @override

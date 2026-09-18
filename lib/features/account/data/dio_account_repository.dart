@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/network/api_exception.dart';
 import '../../../core/network/dio_client.dart';
+import '../domain/account_delete_wire.dart';
 import '../domain/account_repository.dart';
 import '../domain/account_wipe_summary.dart';
 
@@ -16,21 +17,27 @@ class DioAccountRepository implements AccountRepository {
 
   @override
   Future<AccountWipeSummary> clearContent() {
-    return _wipe('/me/content');
+    return _wipe('/me/content', requireDeleteEnvelope: false);
   }
 
   @override
   Future<AccountWipeSummary> deleteAccount() {
-    return _wipe('/me');
+    return _wipe('/me', requireDeleteEnvelope: true);
   }
 
-  Future<AccountWipeSummary> _wipe(String path) {
+  Future<AccountWipeSummary> _wipe(
+    String path, {
+    required bool requireDeleteEnvelope,
+  }) {
     return _guard(() async {
       final response = await _dio.delete<dynamic>(
         path,
         options: Options(receiveTimeout: _wipeTimeout),
       );
-      return _parseSummary(response.data);
+      return _parseSummary(
+        response.data,
+        requireDeleteEnvelope: requireDeleteEnvelope,
+      );
     });
   }
 
@@ -43,13 +50,24 @@ class DioAccountRepository implements AccountRepository {
   }
 }
 
-AccountWipeSummary _parseSummary(dynamic data) {
+AccountWipeSummary _parseSummary(
+  dynamic data, {
+  required bool requireDeleteEnvelope,
+}) {
   if (data is Map) {
-    return AccountWipeSummary.fromJson(Map<String, dynamic>.from(data));
+    final json = Map<String, dynamic>.from(data);
+    if (requireDeleteEnvelope &&
+        !AccountWipeSummary.hasLockedDeleteEnvelope(json)) {
+      throw const ApiException(
+        message: 'Unexpected account delete response.',
+        code: AccountDeleteWire.invalidResponse,
+      );
+    }
+    return AccountWipeSummary.fromJson(json);
   }
   throw const ApiException(
     message: 'Unexpected account wipe response.',
-    code: 'INVALID_RESPONSE',
+    code: AccountDeleteWire.invalidResponse,
   );
 }
 

@@ -107,6 +107,14 @@ class SuperwallPaywallGateway implements PaywallGateway {
       return RestorePurchasesResult.failed;
     }
   }
+
+  @override
+  Future<CancelSubscriptionResult> cancelSubscription() async {
+    if (!_configured) {
+      return CancelSubscriptionResult.skipped;
+    }
+    return cancelSuperwallSubscription();
+  }
 }
 
 /// SDK hooks isolated so unit tests never need the native plugin.
@@ -126,6 +134,9 @@ Future<void> Function(String placement, {Map<String, Object>? params})
 registerSuperwallPlacement = (_, {params}) async {};
 
 Future<bool> Function() restoreSuperwallPurchases = () async => false;
+
+Future<CancelSubscriptionResult> Function() cancelSuperwallSubscription =
+    () async => CancelSubscriptionResult.skipped;
 
 Future<void> _unimplementedConfigure({
   required String apiKey,
@@ -149,10 +160,13 @@ void bindSuperwallSdk({
   })
   registerPlacement,
   required Future<bool> Function() restorePurchases,
+  Future<CancelSubscriptionResult> Function()? cancelSubscription,
 }) {
   configureSuperwallSdk = configure;
   identifySuperwallUser = identify;
   resetSuperwallUser = reset;
   registerSuperwallPlacement = registerPlacement;
   restoreSuperwallPurchases = restorePurchases;
+  cancelSuperwallSubscription =
+      cancelSubscription ?? (() async => CancelSubscriptionResult.skipped);
 }

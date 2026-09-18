@@ -37,6 +37,11 @@ class FallbackPaywallGateway implements PaywallGateway {
   Future<RestorePurchasesResult> restorePurchases() async {
     return RestorePurchasesResult.unavailable;
   }
+
+  @override
+  Future<CancelSubscriptionResult> cancelSubscription() async {
+    return CancelSubscriptionResult.skipped;
+  }
 }
 
 /// Local paywall sheet used when Superwall keys are unset (CI, tests, stubs).

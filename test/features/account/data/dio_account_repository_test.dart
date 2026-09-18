@@ -3,6 +3,7 @@ import 'package:wardrobe_app/core/network/api_exception.dart';
 import 'package:wardrobe_app/core/network/dio_client.dart';
 import 'package:wardrobe_app/core/network/id_token_source.dart';
 import 'package:wardrobe_app/features/account/data/dio_account_repository.dart';
+import 'package:wardrobe_app/features/account/domain/subscription_cancel_info.dart';
 
 import '../../../helpers/scripted_http_adapter.dart';
 
@@ -48,16 +49,93 @@ void main() {
     expect(adapter.requests.single.path, '/me/content');
   });
 
-  test('deleteAccount deletes /me with keepAccount false', () async {
+  test('deleteAccount requires the locked 3f9b38a envelope', () async {
     repository = buildRepository([
       HttpScript(statusCode: 200, body: {...summary, 'keepAccount': false}),
     ]);
 
+    expect(
+      () => repository.deleteAccount(),
+      throwsA(
+        isA<ApiException>().having(
+          (error) => error.code,
+          'code',
+          'INVALID_RESPONSE',
+        ),
+      ),
+    );
+  });
+
+  test('deleteAccount maps the locked WARDROBE-103 200 body', () async {
+    repository = buildRepository([
+      HttpScript(
+        statusCode: 200,
+        body: {
+          ...summary,
+          'keepAccount': false,
+          'deleted': true,
+          'entitlementRevoked': true,
+          'subscription': {
+            'status': 'CANCELED',
+            'cancelMode': 'IMMEDIATE',
+            'store': 'APP_STORE',
+          },
+        },
+      ),
+    ]);
+
     final result = await repository.deleteAccount();
 
-    expect(result.keepAccount, isFalse);
+    expect(result.isAccountDeleted, isTrue);
+    expect(result.entitlementRevoked, isTrue);
+    expect(result.subscription.status, SubscriptionCancelStatus.canceled);
+    expect(result.subscription.retryInStore, isFalse);
+    expect(adapter.requests.single.data, isNull);
     expect(adapter.requests.single.method, 'DELETE');
     expect(adapter.requests.single.path, '/me');
+  });
+
+  test(
+    'deleteAccount maps CANCEL_FAILED retryInStore without extra keys',
+    () async {
+      repository = buildRepository([
+        HttpScript(
+          statusCode: 200,
+          body: {
+            ...summary,
+            'keepAccount': false,
+            'deleted': true,
+            'entitlementRevoked': true,
+            'subscription': {'status': 'CANCEL_FAILED', 'retryInStore': true},
+          },
+        ),
+      ]);
+
+      final result = await repository.deleteAccount();
+
+      expect(result.isAccountDeleted, isTrue);
+      expect(result.entitlementRevoked, isTrue);
+      expect(result.subscription.status, SubscriptionCancelStatus.cancelFailed);
+      expect(result.subscription.retryInStore, isTrue);
+    },
+  );
+
+  test('maps INTERNAL_ERROR 500 on DELETE /me', () async {
+    repository = buildRepository([
+      const HttpScript(
+        statusCode: 500,
+        body: {'code': 'INTERNAL_ERROR', 'message': 'Wipe failed.'},
+      ),
+    ]);
+
+    expect(
+      () => repository.deleteAccount(),
+      throwsA(
+        isA<ApiException>()
+            .having((error) => error.code, 'code', 'INTERNAL_ERROR')
+            .having((error) => error.statusCode, 'statusCode', 500),
+      ),
+    );
   });
 
   test('empty account still returns 200 zeros', () async {
@@ -80,7 +158,25 @@ void main() {
     expect(result.deletedItems, 0);
   });
 
-  test('maps UNAUTHENTICATED to ApiException', () async {
+  test('maps UNAUTHENTICATED on DELETE /me', () async {
+    repository = buildRepository([
+      const HttpScript(
+        statusCode: 401,
+        body: {'code': 'UNAUTHENTICATED', 'message': 'Missing token.'},
+      ),
+    ]);
+
+    expect(
+      () => repository.deleteAccount(),
+      throwsA(
+        isA<ApiException>()
+            .having((error) => error.code, 'code', 'UNAUTHENTICATED')
+            .having((error) => error.statusCode, 'statusCode', 401),
+      ),
+    );
+  });
+
+  test('maps UNAUTHENTICATED on DELETE /me/content', () async {
     repository = buildRepository([
       const HttpScript(
         statusCode: 401,

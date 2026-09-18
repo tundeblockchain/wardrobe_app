@@ -10,6 +10,8 @@ import '../../coaches/presentation/screen_coach_host.dart';
 import '../../search/presentation/app_search_gloss_bar.dart';
 import '../../../core/widgets/type_to_confirm_dialog.dart';
 import '../../account/application/account_controller.dart';
+import '../../account/domain/account_subscription_copy.dart';
+import '../../account/presentation/subscription_cancel_follow_up_dialog.dart';
 import '../../auth/application/auth_controller.dart';
 import '../../auth/domain/app_user.dart';
 import '../../entitlements/application/entitlements_controller.dart';
@@ -33,6 +35,7 @@ class ProfileScreen extends ConsumerWidget {
   static const signOutButtonKey = Key('profile_sign_out');
   static const clearContentButtonKey = Key('account_clear_content');
   static const deleteAccountButtonKey = Key('account_delete_account');
+  static const retryWipeButtonKey = Key('account_retry_wipe');
   static const errorTextKey = Key('account_error');
   static const infoTextKey = Key('account_info');
 
@@ -57,6 +60,12 @@ class ProfileScreen extends ConsumerWidget {
     ref.listen(accountControllerProvider, (previous, next) {
       if (next.isAccountDeleted && context.mounted) {
         context.go(AppRoutes.login);
+        return;
+      }
+      if (next.needsSubscriptionFollowUp &&
+          previous?.subscriptionFollowUp != next.subscriptionFollowUp &&
+          context.mounted) {
+        SubscriptionCancelFollowUpDialog.show(context);
       }
     });
 
@@ -213,6 +222,18 @@ class ProfileScreen extends ConsumerWidget {
                 style: TextStyle(color: Theme.of(context).colorScheme.error),
               ),
             ],
+            if (account.canRetryWipe) ...[
+              const SizedBox(height: 8),
+              OutlinedButton(
+                key: retryWipeButtonKey,
+                onPressed: busy
+                    ? null
+                    : () => ref
+                          .read(accountControllerProvider.notifier)
+                          .retryFailedWipe(),
+                child: const Text(AccountSubscriptionCopy.retryWipeLabel),
+              ),
+            ],
             if (account.infoMessage != null) ...[
               const SizedBox(height: 12),
               Text(account.infoMessage!, key: infoTextKey),
@@ -284,9 +305,7 @@ class ProfileScreen extends ConsumerWidget {
     final confirmed = await TypeToConfirmDialog.show(
       context,
       title: 'Delete your account?',
-      message:
-          'This permanently deletes every wardrobe, item, outfit, and photo, '
-          'then removes your sign-in. This cannot be undone.',
+      message: AccountSubscriptionCopy.deleteConfirmMessage,
       phrase: deletePhrase,
       confirmLabel: 'Delete account',
     );
