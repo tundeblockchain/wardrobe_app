@@ -8,6 +8,8 @@ import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/app_empty_state.dart';
 import '../../../core/widgets/enlarged_image_popup.dart';
 import '../../../core/widgets/entity_delete.dart';
+import '../../coaches/domain/coach_screen.dart';
+import '../../coaches/presentation/screen_coach_host.dart';
 import '../../outfits/application/outfits_controller.dart';
 import '../../search/presentation/app_search_gloss_bar.dart';
 import '../../shopping_links/application/item_shopping_links_controller.dart';
@@ -96,44 +98,51 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen>
       }
     });
 
-    return Scaffold(
-      appBar: AppSearchGlossBar(
-        title: Text(item?.name ?? 'Item'),
-        actions: [
-          if (item != null) ...[
-            IconButton(
-              key: ItemDetailScreen.editButtonKey,
-              tooltip: 'Edit',
-              onPressed: state.isSaving
-                  ? null
-                  : () => context.push(
-                      AppRoutes.editItem(widget.wardrobeId, widget.itemId),
-                    ),
-              icon: const Icon(Icons.edit_outlined),
-            ),
-            IconButton(
-              key: ItemDetailScreen.deleteButtonKey,
-              tooltip: 'Delete',
-              onPressed: state.isSaving ? null : () => _confirmDelete(context),
-              icon: const Icon(Icons.delete_outline),
-            ),
+    return ScreenCoachHost(
+      screen: CoachScreen.item,
+      child: Scaffold(
+        appBar: AppSearchGlossBar(
+          title: Text(item?.name ?? 'Item'),
+          actions: [
+            if (item != null) ...[
+              IconButton(
+                key: ItemDetailScreen.editButtonKey,
+                tooltip: 'Edit',
+                onPressed: state.isSaving
+                    ? null
+                    : () => context.push(
+                        AppRoutes.editItem(widget.wardrobeId, widget.itemId),
+                      ),
+                icon: const Icon(Icons.edit_outlined),
+              ),
+              IconButton(
+                key: ItemDetailScreen.deleteButtonKey,
+                tooltip: 'Delete',
+                onPressed: state.isSaving
+                    ? null
+                    : () => _confirmDelete(context),
+                icon: const Icon(Icons.delete_outline),
+              ),
+            ],
           ],
-        ],
-      ),
-      body: SafeArea(
-        child: RefreshIndicator(
-          onRefresh: () async {
-            await Future.wait([
-              ref.read(itemDetailControllerProvider(_scope).notifier).refresh(),
-              ref
-                  .read(itemShoppingLinksControllerProvider(_scope).notifier)
-                  .refresh(),
-            ]);
-          },
-          child: ListView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            padding: AppSpacing.pageInsets,
-            children: [_buildBody(context, state, wardrobes, outfits)],
+        ),
+        body: SafeArea(
+          child: RefreshIndicator(
+            onRefresh: () async {
+              await Future.wait([
+                ref
+                    .read(itemDetailControllerProvider(_scope).notifier)
+                    .refresh(),
+                ref
+                    .read(itemShoppingLinksControllerProvider(_scope).notifier)
+                    .refresh(),
+              ]);
+            },
+            child: ListView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: AppSpacing.pageInsets,
+              children: [_buildBody(context, state, wardrobes, outfits)],
+            ),
           ),
         ),
       ),

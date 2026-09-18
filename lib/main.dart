@@ -6,6 +6,7 @@ import 'app.dart';
 import 'core/config/app_config.dart';
 import 'core/firebase/firebase_bootstrap.dart';
 import 'core/theme/theme_preferences.dart';
+import 'features/coaches/data/coach_preferences.dart';
 import 'features/entitlements/data/superwall_sdk_binding.dart';
 import 'features/items/data/image_picker_item_image_picker.dart';
 
@@ -22,6 +23,9 @@ Future<void> main() async {
       overrides: [
         themePreferencesProvider.overrideWithValue(
           SharedPreferencesThemeStore(prefs),
+        ),
+        coachPreferencesProvider.overrideWithValue(
+          SharedPreferencesCoachStore(prefs),
         ),
       ],
       child: const WardrobeApp(),

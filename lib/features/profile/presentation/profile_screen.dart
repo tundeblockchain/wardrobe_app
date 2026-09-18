@@ -5,6 +5,8 @@ import 'package:go_router/go_router.dart';
 import '../../../core/router/app_routes.dart';
 import '../../../core/theme/theme_controller.dart';
 import '../../../core/widgets/app_gloss.dart';
+import '../../coaches/domain/coach_screen.dart';
+import '../../coaches/presentation/screen_coach_host.dart';
 import '../../search/presentation/app_search_gloss_bar.dart';
 import '../../../core/widgets/type_to_confirm_dialog.dart';
 import '../../account/application/account_controller.dart';
@@ -58,199 +60,206 @@ class ProfileScreen extends ConsumerWidget {
       }
     });
 
-    return Scaffold(
-      key: screenKey,
-      appBar: AppSearchGlossBar(title: const Text('Account')),
-      body: ListView(
-        padding: const EdgeInsets.all(24),
-        children: [
-          _AccountCard(user: user),
-          const SizedBox(height: 24),
-          SwitchListTile(
-            key: themeToggleKey,
-            contentPadding: EdgeInsets.zero,
-            secondary: Icon(
-              isDark ? Icons.dark_mode_outlined : Icons.light_mode_outlined,
+    return ScreenCoachHost(
+      screen: CoachScreen.profile,
+      child: Scaffold(
+        key: screenKey,
+        appBar: AppSearchGlossBar(title: const Text('Account')),
+        body: ListView(
+          padding: const EdgeInsets.all(24),
+          children: [
+            _AccountCard(user: user),
+            const SizedBox(height: 24),
+            SwitchListTile(
+              key: themeToggleKey,
+              contentPadding: EdgeInsets.zero,
+              secondary: Icon(
+                isDark ? Icons.dark_mode_outlined : Icons.light_mode_outlined,
+              ),
+              title: const Text('Dark theme'),
+              subtitle: const Text('Burgundy and plum in light and dark'),
+              value: isDark,
+              onChanged: (dark) {
+                ref.read(themeControllerProvider.notifier).setDark(dark);
+              },
             ),
-            title: const Text('Dark theme'),
-            subtitle: const Text('Burgundy and plum in light and dark'),
-            value: isDark,
-            onChanged: (dark) {
-              ref.read(themeControllerProvider.notifier).setDark(dark);
-            },
-          ),
-          ListTile(
-            key: ProfileScreen.planTileKey,
-            contentPadding: EdgeInsets.zero,
-            leading: const Icon(Icons.workspace_premium_outlined),
-            title: const Text('Plan'),
-            subtitle: Text(
-              '${plan.tier.label} · ${plan.tier == SubscriptionTier.premium
-                  ? 'AI included'
-                  : plan.tier == SubscriptionTier.basic
-                  ? 'Unlimited wardrobes'
-                  : '1 wardrobe, 5 items, 5 outfits'}',
+            ListTile(
+              key: ProfileScreen.planTileKey,
+              contentPadding: EdgeInsets.zero,
+              leading: const Icon(Icons.workspace_premium_outlined),
+              title: const Text('Plan'),
+              subtitle: Text(
+                '${plan.tier.label} · ${plan.tier == SubscriptionTier.premium
+                    ? 'AI included'
+                    : plan.tier == SubscriptionTier.basic
+                    ? 'Unlimited wardrobes'
+                    : '1 wardrobe, 5 items, 5 outfits'}',
+              ),
+              trailing: Text(
+                plan.tier == SubscriptionTier.premium ? 'Manage' : 'Upgrade',
+              ),
+              onTap: () async {
+                final placement = plan.tier == SubscriptionTier.premium
+                    ? PaywallPlacement.upgradePremium
+                    : plan.tier == SubscriptionTier.basic
+                    ? PaywallPlacement.upgradePremium
+                    : PaywallPlacement.upgradeBasic;
+                await ref
+                    .read(paywallGatewayProvider)
+                    .present(placement: placement, context: context);
+                if (!context.mounted) {
+                  return;
+                }
+                await ref
+                    .read(entitlementsControllerProvider.notifier)
+                    .refresh();
+              },
             ),
-            trailing: Text(
-              plan.tier == SubscriptionTier.premium ? 'Manage' : 'Upgrade',
+            ListTile(
+              key: ProfileScreen.restorePurchasesTileKey,
+              contentPadding: EdgeInsets.zero,
+              leading: const Icon(Icons.restore),
+              title: const Text('Restore purchases'),
+              subtitle: const Text(
+                'Refresh subscription status from the store',
+              ),
+              trailing: entitlements.isRestoring
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(Icons.chevron_right),
+              onTap: entitlements.isRestoring
+                  ? null
+                  : () => ref
+                        .read(entitlementsControllerProvider.notifier)
+                        .restorePurchases(),
             ),
-            onTap: () async {
-              final placement = plan.tier == SubscriptionTier.premium
-                  ? PaywallPlacement.upgradePremium
-                  : plan.tier == SubscriptionTier.basic
-                  ? PaywallPlacement.upgradePremium
-                  : PaywallPlacement.upgradeBasic;
-              await ref
-                  .read(paywallGatewayProvider)
-                  .present(placement: placement, context: context);
-              if (!context.mounted) {
-                return;
-              }
-              await ref.read(entitlementsControllerProvider.notifier).refresh();
-            },
-          ),
-          ListTile(
-            key: ProfileScreen.restorePurchasesTileKey,
-            contentPadding: EdgeInsets.zero,
-            leading: const Icon(Icons.restore),
-            title: const Text('Restore purchases'),
-            subtitle: const Text('Refresh subscription status from the store'),
-            trailing: entitlements.isRestoring
-                ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : const Icon(Icons.chevron_right),
-            onTap: entitlements.isRestoring
-                ? null
-                : () => ref
-                      .read(entitlementsControllerProvider.notifier)
-                      .restorePurchases(),
-          ),
-          if (entitlements.infoMessage != null) ...[
-            const SizedBox(height: 8),
-            Text(entitlements.infoMessage!),
-          ],
-          if (entitlements.errorMessage != null) ...[
+            if (entitlements.infoMessage != null) ...[
+              const SizedBox(height: 8),
+              Text(entitlements.infoMessage!),
+            ],
+            if (entitlements.errorMessage != null) ...[
+              const SizedBox(height: 8),
+              Text(
+                entitlements.errorMessage!,
+                style: TextStyle(color: Theme.of(context).colorScheme.error),
+              ),
+            ],
+            ListTile(
+              key: aiTryOnTileKey,
+              contentPadding: EdgeInsets.zero,
+              leading: const Icon(Icons.checkroom_outlined),
+              title: const Text('AI try-on'),
+              subtitle: const Text('Your photos and model looks'),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => context.push(AppRoutes.aiTryOn),
+            ),
+            ListTile(
+              key: rateTileKey,
+              contentPadding: EdgeInsets.zero,
+              leading: const Icon(Icons.star_outline),
+              title: const Text('Rate the app'),
+              subtitle: const Text('Leave a review on the store'),
+              trailing: rate.isBusy
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(Icons.chevron_right),
+              onTap: rate.isBusy
+                  ? null
+                  : () => ref.read(rateAppControllerProvider.notifier).rate(),
+            ),
+            ListTile(
+              key: contactTileKey,
+              contentPadding: EdgeInsets.zero,
+              leading: const Icon(Icons.mail_outline),
+              title: const Text('Contact us'),
+              subtitle: const Text('Send a message to the team'),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => context.push(AppRoutes.contactUs),
+            ),
+            ListTile(
+              key: reportBugTileKey,
+              contentPadding: EdgeInsets.zero,
+              leading: const Icon(Icons.bug_report_outlined),
+              title: const Text('Report a bug'),
+              subtitle: const Text('Tell us what went wrong'),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => context.push(AppRoutes.reportBug),
+            ),
+            if (rate.errorMessage != null) ...[
+              const SizedBox(height: 8),
+              Text(
+                rate.errorMessage!,
+                style: TextStyle(color: Theme.of(context).colorScheme.error),
+              ),
+            ],
+            const SizedBox(height: 32),
+            Text('Danger zone', style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: 8),
             Text(
-              entitlements.errorMessage!,
-              style: TextStyle(color: Theme.of(context).colorScheme.error),
+              'These actions cannot be undone.',
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
+            if (account.errorMessage != null) ...[
+              const SizedBox(height: 12),
+              Text(
+                account.errorMessage!,
+                key: errorTextKey,
+                style: TextStyle(color: Theme.of(context).colorScheme.error),
+              ),
+            ],
+            if (account.infoMessage != null) ...[
+              const SizedBox(height: 12),
+              Text(account.infoMessage!, key: infoTextKey),
+            ],
+            if (account.isBusy) ...[
+              const SizedBox(height: 16),
+              const Center(child: CircularProgressIndicator()),
+            ],
+            ListTile(
+              key: clearContentButtonKey,
+              contentPadding: EdgeInsets.zero,
+              leading: const Icon(Icons.delete_sweep_outlined),
+              title: const Text('Clear all content'),
+              subtitle: const Text(
+                'Delete every wardrobe, item, and outfit. Stay signed in.',
+              ),
+              enabled: !busy,
+              onTap: busy ? null : () => _clearContent(context, ref),
+            ),
+            ListTile(
+              key: deleteAccountButtonKey,
+              contentPadding: EdgeInsets.zero,
+              leading: Icon(
+                Icons.person_off_outlined,
+                color: Theme.of(context).colorScheme.error,
+              ),
+              title: Text(
+                'Delete account',
+                style: TextStyle(color: Theme.of(context).colorScheme.error),
+              ),
+              subtitle: const Text(
+                'Permanently delete your data and sign-in. You will need to '
+                'create a new account to use Wardrobe again.',
+              ),
+              enabled: !busy,
+              onTap: busy ? null : () => _deleteAccount(context, ref),
+            ),
+            const SizedBox(height: 24),
+            OutlinedButton(
+              key: signOutButtonKey,
+              onPressed: busy
+                  ? null
+                  : () => ref.read(authControllerProvider.notifier).signOut(),
+              child: const Text('Sign out'),
             ),
           ],
-          ListTile(
-            key: aiTryOnTileKey,
-            contentPadding: EdgeInsets.zero,
-            leading: const Icon(Icons.checkroom_outlined),
-            title: const Text('AI try-on'),
-            subtitle: const Text('Your photos and model looks'),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () => context.push(AppRoutes.aiTryOn),
-          ),
-          ListTile(
-            key: rateTileKey,
-            contentPadding: EdgeInsets.zero,
-            leading: const Icon(Icons.star_outline),
-            title: const Text('Rate the app'),
-            subtitle: const Text('Leave a review on the store'),
-            trailing: rate.isBusy
-                ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : const Icon(Icons.chevron_right),
-            onTap: rate.isBusy
-                ? null
-                : () => ref.read(rateAppControllerProvider.notifier).rate(),
-          ),
-          ListTile(
-            key: contactTileKey,
-            contentPadding: EdgeInsets.zero,
-            leading: const Icon(Icons.mail_outline),
-            title: const Text('Contact us'),
-            subtitle: const Text('Send a message to the team'),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () => context.push(AppRoutes.contactUs),
-          ),
-          ListTile(
-            key: reportBugTileKey,
-            contentPadding: EdgeInsets.zero,
-            leading: const Icon(Icons.bug_report_outlined),
-            title: const Text('Report a bug'),
-            subtitle: const Text('Tell us what went wrong'),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () => context.push(AppRoutes.reportBug),
-          ),
-          if (rate.errorMessage != null) ...[
-            const SizedBox(height: 8),
-            Text(
-              rate.errorMessage!,
-              style: TextStyle(color: Theme.of(context).colorScheme.error),
-            ),
-          ],
-          const SizedBox(height: 32),
-          Text('Danger zone', style: Theme.of(context).textTheme.titleMedium),
-          const SizedBox(height: 8),
-          Text(
-            'These actions cannot be undone.',
-            style: Theme.of(context).textTheme.bodyMedium,
-          ),
-          if (account.errorMessage != null) ...[
-            const SizedBox(height: 12),
-            Text(
-              account.errorMessage!,
-              key: errorTextKey,
-              style: TextStyle(color: Theme.of(context).colorScheme.error),
-            ),
-          ],
-          if (account.infoMessage != null) ...[
-            const SizedBox(height: 12),
-            Text(account.infoMessage!, key: infoTextKey),
-          ],
-          if (account.isBusy) ...[
-            const SizedBox(height: 16),
-            const Center(child: CircularProgressIndicator()),
-          ],
-          ListTile(
-            key: clearContentButtonKey,
-            contentPadding: EdgeInsets.zero,
-            leading: const Icon(Icons.delete_sweep_outlined),
-            title: const Text('Clear all content'),
-            subtitle: const Text(
-              'Delete every wardrobe, item, and outfit. Stay signed in.',
-            ),
-            enabled: !busy,
-            onTap: busy ? null : () => _clearContent(context, ref),
-          ),
-          ListTile(
-            key: deleteAccountButtonKey,
-            contentPadding: EdgeInsets.zero,
-            leading: Icon(
-              Icons.person_off_outlined,
-              color: Theme.of(context).colorScheme.error,
-            ),
-            title: Text(
-              'Delete account',
-              style: TextStyle(color: Theme.of(context).colorScheme.error),
-            ),
-            subtitle: const Text(
-              'Permanently delete your data and sign-in. You will need to '
-              'create a new account to use Wardrobe again.',
-            ),
-            enabled: !busy,
-            onTap: busy ? null : () => _deleteAccount(context, ref),
-          ),
-          const SizedBox(height: 24),
-          OutlinedButton(
-            key: signOutButtonKey,
-            onPressed: busy
-                ? null
-                : () => ref.read(authControllerProvider.notifier).signOut(),
-            child: const Text('Sign out'),
-          ),
-        ],
+        ),
       ),
     );
   }

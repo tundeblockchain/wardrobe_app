@@ -29,8 +29,8 @@ Sign in with Apple on iOS
 
 Layers (dependencies point downward only):
 
-1. **Presentation** — screens (`login`, `signup`, `forgot-password`, splash, wardrobes list / create / detail, add item / item detail / edit item, outfits list / create / detail / edit, dressing room / try-on, profile / contact us / report a bug / AI try-on) plus header search and related shopping links
-2. **Controller / Provider** — Riverpod auth, wardrobe, item, outfit, try-on, recommendation, support / rate-app, account, AI-profile, header-search, and shopping-links controllers
+1. **Presentation** — screens (`login`, `signup`, `forgot-password`, splash, wardrobes list / create / detail, add item / item detail / edit item, outfits list / create / detail / edit, dressing room / try-on, profile / contact us / report a bug / AI try-on) plus header search, related shopping links, and first-visit coach marks
+2. **Controller / Provider** — Riverpod auth, wardrobe, item, outfit, try-on, recommendation, support / rate-app, account, AI-profile, header-search, shopping-links, and coach-mark controllers
 3. **Repository** — `AuthRepository`, `WardrobeRepository`, `ItemRepository`, `UploadRepository`, `OutfitRepository`, `RecommendationRepository`, `SupportRepository`, `AccountRepository`, `AiProfileRepository`, `ShoppingLinksRepository`
 4. **API client / Firebase** — `FirebaseAuthRepository` (email/password + Google + Apple on iOS), Dio + ID-token interceptor, wardrobe/item/upload/outfit/recommendation/support/account/AI-profile/shopping-links Dio repositories, `image_picker` behind `ItemImagePicker`, `in_app_review` behind `AppReviewer`, `url_launcher` behind `ShoppingLinkOpener`
 
@@ -65,6 +65,10 @@ Authenticated routes:
   Item hits prefer list/get `processedImageUrl`, else `originalImageUrl`
   (no Backend search API). Outfits show a cover already on the model.
   Missing or failed images fall back to a kind icon so the row stays tappable.
+  First-visit coach marks ([WARDROBE-99](https://tundetunde000.atlassian.net/browse/WARDROBE-99))
+  highlight key actions on Home, wardrobe detail, outfits, item detail,
+  virtual try-on, and Account. Dismissed flags persist on-device
+  (`SharedPreferences`) and do not repeat every open.
 
 - `/wardrobes/create` — name form
 - `/wardrobes/:wardrobeId` — detail, rename, delete, item list, outfits entry, suggestions entry
