@@ -4,6 +4,8 @@ import 'package:wardrobe_app/core/network/api_exception.dart';
 import 'package:wardrobe_app/features/entitlements/application/pending_paywall.dart';
 import 'package:wardrobe_app/features/entitlements/domain/entitlement_paywall_copy.dart';
 import 'package:wardrobe_app/features/entitlements/domain/paywall_placement.dart';
+import 'package:wardrobe_app/features/inbox/application/inbox_controller.dart';
+import 'package:wardrobe_app/features/inbox/domain/job_event.dart';
 import 'package:wardrobe_app/features/items/application/add_item_controller.dart';
 import 'package:wardrobe_app/features/items/application/item_detail_controller.dart';
 import 'package:wardrobe_app/features/items/application/item_local_preview_cache.dart';
@@ -17,6 +19,7 @@ import 'package:wardrobe_app/features/items/domain/item.dart';
 import '../../../helpers/fake_item_image_picker.dart';
 import '../../../helpers/fake_item_repository.dart';
 import '../../../helpers/fake_upload_repository.dart';
+import '../../../helpers/inbox_test_overrides.dart';
 import '../../../helpers/item_processing_poll_overrides.dart';
 
 void main() {
@@ -35,6 +38,7 @@ void main() {
         uploadRepositoryProvider.overrideWithValue(uploads),
         itemImagePickerProvider.overrideWithValue(picker),
         ...itemProcessingPollTestOverrides(),
+        ...inboxTestOverrides(),
       ],
     );
   });
@@ -99,6 +103,11 @@ void main() {
     expect(detail.item?.name, 'Black T-Shirt');
     expect(detail.item?.category, ItemCategory.top);
     expect(detail.item?.originalImageKey, 'users/uid/uploads/uuid.jpg');
+    final pending = container.read(inboxControllerProvider).pending;
+    expect(pending, hasLength(1));
+    expect(pending.single.itemId, created.id);
+    expect(pending.single.jobType, JobEventType.processWardrobeItem);
+    expect(pending.single.isLocalPending, isTrue);
   });
 
   test(
@@ -126,6 +135,7 @@ void main() {
             .processingStatus,
         ItemProcessingStatus.ready,
       );
+      expect(container.read(inboxControllerProvider).pending, isEmpty);
     },
   );
 
@@ -239,6 +249,11 @@ void main() {
     expect(
       container.read(addItemControllerProvider('wd_abc123')).isSubmitting,
       isFalse,
+    );
+    expect(container.read(inboxControllerProvider).pending, hasLength(2));
+    expect(
+      container.read(inboxControllerProvider).pending.map((e) => e.itemId),
+      ['item_1', 'item_2'],
     );
   });
 

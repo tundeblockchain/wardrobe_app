@@ -21,6 +21,7 @@ import '../../../helpers/fake_auth_repository.dart';
 import '../../../helpers/fake_item_repository.dart';
 import '../../../helpers/fake_shopping_links_repository.dart';
 import '../../../helpers/fake_wardrobe_repository.dart';
+import '../../../helpers/inbox_test_overrides.dart';
 import '../../../helpers/test_app.dart';
 
 void main() {
@@ -47,6 +48,7 @@ void main() {
           ),
           homeClothingCarouselAutoScrollProvider.overrideWithValue(false),
           ...shoppingLinksTestOverrides(),
+          ...inboxTestOverrides(),
         ],
         child: const MaterialApp(home: WardrobesScreen()),
       ),
