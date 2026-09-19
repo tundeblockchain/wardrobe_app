@@ -35,17 +35,18 @@ class ItemsController extends Notifier<ItemsState> {
   Future<void> refresh() async {
     state = state.copyWith(isLoading: true, clearError: true);
     try {
-      final items = await _repository.listItems(
-        wardrobeId,
-        filters: state.filters,
-      );
+      // WARDROBE-116: load the wardrobe deck, then filter in
+      // [ItemsState.visibleItems]. Do not invent a search API.
+      //
+      // TODO(WARDROBE-116): if the loaded list is insufficient (very
+      // large wardrobes), pass `state.filters.toQueryParameters()` to
+      // `GET /wardrobes/{id}/items` (Backend GSI). Keep client [apply]
+      // as an idempotent safety window over whatever the list returns.
+      final items = await _repository.listItems(wardrobeId);
       if (!ref.mounted) {
         return;
       }
-      state = state.copyWith(
-        isLoading: false,
-        items: state.filters.applyLoadedFallback(items),
-      );
+      state = state.copyWith(isLoading: false, items: items);
     } on ApiException catch (error) {
       if (!ref.mounted) {
         return;
@@ -62,12 +63,15 @@ class ItemsController extends Notifier<ItemsState> {
     }
   }
 
+  /// Apply category / colour / tag chips over the already-loaded list.
+  ///
+  /// Does not refetch. Pull-to-refresh, resume, and route re-entry still
+  /// reload the full deck; [ItemsState.visibleItems] reapplies [filters].
   Future<void> setFilters(ItemListFilters filters) async {
     if (state.filters == filters) {
       return;
     }
     state = state.copyWith(filters: filters);
-    await refresh();
   }
 
   void upsert(Item item) {

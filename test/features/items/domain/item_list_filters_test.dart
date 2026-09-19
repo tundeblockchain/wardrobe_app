@@ -98,6 +98,62 @@ void main() {
     });
   });
 
+  group('ItemListFilters.apply category colour tag', () {
+    test('filters by category colour and subcategory tag', () {
+      final tee = testItem();
+      final jeans = testItem(
+        id: 'jeans',
+        category: ItemCategory.bottom,
+        subcategory: 'JEANS',
+        colours: const ['BLUE'],
+      );
+      const filters = ItemListFilters(
+        category: ItemCategory.bottom,
+        colour: ItemColour.blue,
+        subcategory: ItemSubcategory.jeans,
+      );
+
+      expect(filters.apply([tee, jeans]), [jeans]);
+    });
+
+    test('matches AI category colour and tag when user fields differ', () {
+      final detected = testItem(
+        id: 'ai',
+        category: ItemCategory.top,
+        subcategory: 'TSHIRT',
+        colours: const ['BLACK'],
+        ai: const ItemAiMetadata(
+          detectedCategory: ItemCategory.shoes,
+          detectedSubcategory: 'BOOTS',
+          detectedColours: ['BROWN'],
+        ),
+      );
+      const filters = ItemListFilters(
+        category: ItemCategory.shoes,
+        colour: ItemColour.brown,
+        subcategory: ItemSubcategory.boots,
+      );
+
+      expect(filters.apply([detected, testItem()]), [detected]);
+    });
+
+    test('empty filters return the loaded list unchanged', () {
+      final items = [testItem(), testItem(id: 'item_2')];
+      expect(const ItemListFilters().apply(items), items);
+    });
+
+    test('toQueryParameters remains the GSI extension point', () {
+      expect(
+        const ItemListFilters(
+          category: ItemCategory.top,
+          colour: ItemColour.black,
+          subcategory: ItemSubcategory.tshirt,
+        ).toQueryParameters(),
+        {'category': 'TOP', 'colour': 'BLACK', 'subcategory': 'TSHIRT'},
+      );
+    });
+  });
+
   group('ItemListFilters.applyLoadedFallback', () {
     test('hides items acquired before acquiredAfter', () {
       final older = testItem(id: 'old', acquiredAt: DateTime.utc(2020, 1, 1));

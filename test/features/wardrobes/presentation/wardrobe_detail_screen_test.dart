@@ -5,6 +5,7 @@ import 'package:wardrobe_app/core/network/api_exception.dart';
 import 'package:wardrobe_app/core/widgets/destructive_confirm_dialog.dart';
 import 'package:wardrobe_app/features/items/data/dio_item_repository.dart';
 import 'package:wardrobe_app/features/items/domain/item.dart';
+import 'package:wardrobe_app/features/items/domain/item_taxonomy.dart';
 import 'package:wardrobe_app/features/items/presentation/widgets/item_filter_bar.dart';
 import 'package:wardrobe_app/features/items/presentation/widgets/item_swipe_card.dart';
 import 'package:wardrobe_app/features/items/presentation/widgets/item_swipe_deck.dart';
@@ -179,6 +180,143 @@ void main() {
     expect(find.text('Black boots'), findsOneWidget);
     expect(find.text('1 of 1'), findsOneWidget);
     expect(find.text('Black Nike T-Shirt'), findsNothing);
+  });
+
+  testWidgets(
+    'colour chip filters the loaded deck without hiding other items',
+    (tester) async {
+      final white = testItem(
+        id: 'item_white',
+        name: 'White shirt',
+        colours: const ['WHITE'],
+      );
+      await pumpDetail(tester, items: [testItem(), white]);
+
+      await tester.ensureVisible(
+        find.byKey(ItemFilterBar.colourChipKey(ItemColour.white)),
+      );
+      await tester.tap(
+        find.byKey(ItemFilterBar.colourChipKey(ItemColour.white)),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('White shirt'), findsOneWidget);
+      expect(find.text('1 of 1'), findsOneWidget);
+      expect(find.text('Black Nike T-Shirt'), findsNothing);
+    },
+  );
+
+  testWidgets('tag chip filters subcategory on the loaded deck', (
+    tester,
+  ) async {
+    final hoodie = testItem(
+      id: 'item_hoodie',
+      name: 'Grey hoodie',
+      subcategory: 'HOODIE',
+      colours: const ['GREY'],
+    );
+    await pumpDetail(tester, items: [testItem(), hoodie]);
+
+    await tester.ensureVisible(
+      find.byKey(ItemFilterBar.categoryChipKey(ItemCategory.top)),
+    );
+    await tester.tap(
+      find.byKey(ItemFilterBar.categoryChipKey(ItemCategory.top)),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Tag'), findsOneWidget);
+
+    await tester.ensureVisible(
+      find.byKey(ItemFilterBar.subcategoryChipKey(ItemSubcategory.hoodie)),
+    );
+    await tester.tap(
+      find.byKey(ItemFilterBar.subcategoryChipKey(ItemSubcategory.hoodie)),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Grey hoodie'), findsOneWidget);
+    expect(find.text('1 of 1'), findsOneWidget);
+    expect(find.text('Black Nike T-Shirt'), findsNothing);
+  });
+
+  testWidgets('empty filter results show a soft message and clear filters', (
+    tester,
+  ) async {
+    await pumpDetail(tester, items: [testItem()]);
+
+    await tester.ensureVisible(
+      find.byKey(ItemFilterBar.categoryChipKey(ItemCategory.dress)),
+    );
+    await tester.tap(
+      find.byKey(ItemFilterBar.categoryChipKey(ItemCategory.dress)),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(WardrobeDetailScreen.itemsFilteredEmptyKey),
+      findsOneWidget,
+    );
+    expect(find.text('No matches'), findsOneWidget);
+    expect(find.text('No items match these filters.'), findsOneWidget);
+    expect(find.byType(ItemSwipeDeck), findsNothing);
+
+    await tester.tap(
+      find.byKey(WardrobeDetailScreen.itemsFilteredEmptyClearKey),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byType(ItemSwipeDeck), findsOneWidget);
+    expect(find.text('Black Nike T-Shirt'), findsOneWidget);
+    expect(
+      find.byKey(WardrobeDetailScreen.itemsFilteredEmptyKey),
+      findsNothing,
+    );
+  });
+
+  testWidgets('filter deck skips cross-fade when motion is reduced', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(800, 2000);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          wardrobeRepositoryProvider.overrideWithValue(
+            FakeWardrobeRepository(seed: [testWardrobe()]),
+          ),
+          itemRepositoryProvider.overrideWithValue(
+            FakeItemRepository(seed: [testItem()]),
+          ),
+          outfitRepositoryProvider.overrideWithValue(FakeOutfitRepository()),
+          recommendationRepositoryProvider.overrideWithValue(
+            FakeRecommendationRepository(),
+          ),
+          ...itemProcessingPollTestOverrides(),
+        ],
+        child: MaterialApp(
+          home: MediaQuery(
+            data: const MediaQueryData(disableAnimations: true),
+            child: const WardrobeDetailScreen(wardrobeId: 'wd_abc123'),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byType(AnimatedSwitcher), findsNothing);
+    await tester.ensureVisible(
+      find.byKey(ItemFilterBar.categoryChipKey(ItemCategory.dress)),
+    );
+    await tester.tap(
+      find.byKey(ItemFilterBar.categoryChipKey(ItemCategory.dress)),
+    );
+    await tester.pump();
+
+    expect(find.text('No matches'), findsOneWidget);
+    expect(find.byType(AnimatedSwitcher), findsNothing);
   });
 
   testWidgets('hide-older-than filter drops clothes acquired before the date', (

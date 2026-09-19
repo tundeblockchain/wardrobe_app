@@ -98,10 +98,13 @@ Authenticated routes nested under a wardrobe:
   wardrobe-backend#45 merged main `f8f6ded`): ISO date `YYYY-MM-DD` on the
   wire. Writes never send a datetime. Reads still accept ISO datetime and
   keep the calendar date. Create soft-omits empty; PATCH omit / JSON `null`
-  clear matches subcategory REMOVE. Item lists send inclusive
-  `acquiredAfter` / `acquiredBefore` query params to live Backend. Items
-  with no `acquiredAt` are excluded when either bound is set. A matching
-  client-side window is an idempotent safety filter over the loaded deck.
+  clear matches subcategory REMOVE. Wardrobe item lists filter the
+  already-loaded deck on the client
+  ([WARDROBE-116](https://tundetunde000.atlassian.net/browse/WARDROBE-116)):
+  category, colour, subcategory/tag, and inclusive `acquiredAfter` /
+  `acquiredBefore`. Items with no `acquiredAt` are excluded when either
+  bound is set. Query-string GSI params stay on `ItemListFilters` as an
+  extension point only — no dedicated search API.
 
 Upload flow:
 
@@ -125,12 +128,12 @@ photo. Backend WARDROBE-54 item JSON keeps `image.originalKey` /
 key exists). Flutter maps those two fields first; aliases such as
 `rawImageUrl` / `imageUrl` remain as fallbacks.
 An empty wardrobe keeps the existing empty state. Category / colour /
-subcategory chips still send WARDROBE-21 query params to
-`GET /wardrobes/{wardrobeId}/items`. Hide-older-than sends live WARDROBE-92
-(`f8f6ded`) `acquiredAfter` (and optional `acquiredBefore`) and applies
-the same inclusive window to the loaded card deck as an idempotent safety
-filter. The client
-refetches on pull-to-refresh, app resume, and route re-entry (no websockets).
+tag chips and hide-older-than apply to the loaded card deck
+([WARDROBE-116](https://tundetunde000.atlassian.net/browse/WARDROBE-116)).
+Clear filters restores the full deck. Zero matches show a soft empty
+message. Filter transitions respect reduce-motion. The client
+refetches the unfiltered list on pull-to-refresh, app resume, and route
+re-entry (no websockets).
 Camera/gallery is abstracted as `ItemImagePicker` so unit tests never need a
 device. On Android, gallery uses the system Photo Picker (no
 `READ_MEDIA_IMAGES`); camera still uses `CAMERA`. See

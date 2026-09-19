@@ -26,8 +26,8 @@ class FakeItemRepository implements ItemRepository {
   ItemProcessingStatus createStatus = ItemProcessingStatus.pending;
 
   /// When false (default), acquired query params are recorded but not applied
-  /// so tests cover the client-side [ItemListFilters.applyLoadedFallback]
-  /// window. Set true to mimic live Backend WARDROBE-92 (`f8f6ded`) filtering.
+  /// so tests cover the client-side [ItemListFilters.apply] window. Set true
+  /// to mimic a Backend GSI that honours `acquiredAfter` / `acquiredBefore`.
   bool applyAcquiredQueryParams = false;
 
   @override
