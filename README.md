@@ -29,10 +29,10 @@ Sign in with Apple on iOS
 
 Layers (dependencies point downward only):
 
-1. **Presentation** — screens (`login`, `signup`, `forgot-password`, splash, wardrobes list / create / detail, add item / item detail / edit item, outfits list / create / detail / edit, dressing room / try-on, profile / contact us / report a bug / AI try-on) plus header search, related shopping links, first-visit coach marks, and the Superwall / themed paywall sheet
-2. **Controller / Provider** — Riverpod auth, wardrobe, item, outfit, try-on, recommendation, support / rate-app, account, entitlements / paywall, AI-profile, header-search, shopping-links, and coach-mark controllers
-3. **Repository** — `AuthRepository`, `WardrobeRepository`, `ItemRepository`, `UploadRepository`, `OutfitRepository`, `RecommendationRepository`, `SupportRepository`, `AccountRepository`, `AiProfileRepository`, `ShoppingLinksRepository`
-4. **API client / Firebase** — `FirebaseAuthRepository` (email/password + Google + Apple on iOS), Dio + ID-token interceptor, wardrobe/item/upload/outfit/recommendation/support/account/AI-profile/shopping-links Dio repositories, `image_picker` behind `ItemImagePicker`, `in_app_review` behind `AppReviewer`, `url_launcher` behind `ShoppingLinkOpener`
+1. **Presentation** — screens (`login`, `signup`, `forgot-password`, splash, wardrobes list / create / detail, add item / item detail / edit item, outfits list / create / detail / edit, worn-on calendar, dressing room / try-on, profile / contact us / report a bug / AI try-on) plus header search, related shopping links, first-visit coach marks, and the Superwall / themed paywall sheet
+2. **Controller / Provider** — Riverpod auth, wardrobe, item, outfit, worn-on, try-on, recommendation, support / rate-app, account, entitlements / paywall, AI-profile, header-search, shopping-links, and coach-mark controllers
+3. **Repository** — `AuthRepository`, `WardrobeRepository`, `ItemRepository`, `UploadRepository`, `OutfitRepository`, `WornOnRepository`, `RecommendationRepository`, `SupportRepository`, `AccountRepository`, `AiProfileRepository`, `ShoppingLinksRepository`
+4. **API client / Firebase** — `FirebaseAuthRepository` (email/password + Google + Apple on iOS), Dio + ID-token interceptor, wardrobe/item/upload/outfit/worn-on/recommendation/support/account/AI-profile/shopping-links Dio repositories, `image_picker` behind `ItemImagePicker`, `in_app_review` behind `AppReviewer`, `url_launcher` behind `ShoppingLinkOpener`
 
 ## Auth shell
 
@@ -71,7 +71,8 @@ Authenticated routes:
   (`SharedPreferences`) and do not repeat every open.
 
 - `/wardrobes/create` — name form
-- `/wardrobes/:wardrobeId` — detail, rename, delete, item list, outfits entry, suggestions entry
+- `/wardrobes/:wardrobeId` — detail, rename, delete, item list, outfits entry, worn-on calendar entry, suggestions entry
+- `/wardrobes/:wardrobeId/worn-on` — month calendar / list of worn-on dates
 
 The Dio client matches the backend contract (`GET/POST /wardrobes`,
 `GET/PATCH/DELETE /wardrobes/{wardrobeId}`). Response `wardrobeId` is mapped to
@@ -166,7 +167,7 @@ Authenticated routes nested under a wardrobe:
 
 - `/wardrobes/:wardrobeId/outfits` — list + empty state
 - `/wardrobes/:wardrobeId/outfits/create` — name + pick items into slots
-- `/wardrobes/:wardrobeId/outfits/:outfitId` — detail, delete, Try on
+- `/wardrobes/:wardrobeId/outfits/:outfitId` — detail, delete, Try on, worn-on log
 - `/wardrobes/:wardrobeId/outfits/:outfitId/edit` — rename and change slots
 - `/wardrobes/:wardrobeId/outfits/:outfitId/try-on` — virtual try-on
 - `/wardrobes/:wardrobeId/try-on` — dressing room (pick an outfit)
@@ -178,6 +179,39 @@ maps to domain `id`.
 
 Backend outfits API (WARDROBE-7) may not be live yet; the client is scaffolded
 against the contract with mocked unit tests. Virtual try-on is WARDROBE-51.
+
+### Outfit worn-on log (WARDROBE-121)
+
+Mark an outfit as worn on a calendar date and browse a simple wardrobe
+month list. Consumes Backend
+[WARDROBE-120](https://tundetunde000.atlassian.net/browse/WARDROBE-120)
+([wardrobe-backend#52](https://github.com/tundeblockchain/wardrobe-backend/pull/52)
+SHA `7d24d0e`). Not entitlement-gated. Outfit GET / list stay unchanged
+(no `wornOn` field on the outfit). Body / query / path `userId` is ignored.
+
+```http
+POST   /wardrobes/{wardrobeId}/outfits/{outfitId}/worn-on
+GET    /wardrobes/{wardrobeId}/outfits/{outfitId}/worn-on
+DELETE /wardrobes/{wardrobeId}/outfits/{outfitId}/worn-on/{date}
+GET    /wardrobes/{wardrobeId}/worn-on?from=YYYY-MM-DD&to=YYYY-MM-DD
+```
+
+Set body: `{ "wornOn": "2026-09-18" }` — `YYYY-MM-DD` only. Entry DTO:
+`{ outfitId, wardrobeId, wornOn, createdAt }` (`201` first log, `200` if
+that date already exists). List is `{ "entries": [...] }` newest `wornOn`
+first. Delete is `204` (missing dates too). Calendar `from` / `to` are
+optional inclusive bounds; `from` after `to` is `400 VALIDATION_ERROR`.
+Flutter joins `outfitId` to the cached outfit list for names.
+
+Errors: `401 UNAUTHENTICATED`, `404 WARDROBE_NOT_FOUND` /
+`OUTFIT_NOT_FOUND`, `400 VALIDATION_ERROR`. No `WORN_ON_NOT_FOUND`.
+Unused optionals are soft-omitted (never JSON `null`). GET list/calendar
+treats an undeployed route (`404` without those ownership codes) as an
+empty log so outfit detail stays usable before Backend merge.
+
+Outfit detail: **Mark worn today** / **Pick a date**, plus unmark on each
+logged day. Wardrobe detail and the outfits header open the month
+calendar (`AppMotion.reduce` skips grid motion).
 
 ## Recommendations
 

@@ -70,6 +70,8 @@ void main() {
     expect(find.text('Items'), findsOneWidget);
     expect(find.text('Outfits'), findsOneWidget);
     expect(find.text('Suggestions'), findsOneWidget);
+    expect(find.text('Worn on'), findsOneWidget);
+    expect(find.byKey(WardrobeDetailScreen.wornOnButtonKey), findsOneWidget);
     expect(find.text('Dressing room'), findsOneWidget);
     expect(find.text('Create outfit'), findsOneWidget);
     expect(find.byKey(WardrobeDetailScreen.addItemButtonKey), findsOneWidget);

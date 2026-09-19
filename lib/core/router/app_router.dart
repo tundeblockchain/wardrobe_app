@@ -26,6 +26,7 @@ import '../../features/try_on/presentation/try_on_screen.dart';
 import '../../features/wardrobes/presentation/create_wardrobe_screen.dart';
 import '../../features/wardrobes/presentation/wardrobe_detail_screen.dart';
 import '../../features/wardrobes/presentation/wardrobes_screen.dart';
+import '../../features/worn_on/presentation/wardrobe_worn_on_screen.dart';
 import 'app_routes.dart';
 import 'auth_redirect.dart';
 
@@ -126,6 +127,13 @@ final routerProvider = Provider<GoRouter>((ref) {
                 builder: (context, state) {
                   final wardrobeId = state.pathParameters['wardrobeId']!;
                   return DressingRoomScreen(wardrobeId: wardrobeId);
+                },
+              ),
+              GoRoute(
+                path: 'worn-on',
+                builder: (context, state) {
+                  final wardrobeId = state.pathParameters['wardrobeId']!;
+                  return WardrobeWornOnScreen(wardrobeId: wardrobeId);
                 },
               ),
               GoRoute(

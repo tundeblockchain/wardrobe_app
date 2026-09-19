@@ -17,6 +17,7 @@ import '../application/outfit_scope.dart';
 import 'widgets/outfit_hero_card.dart';
 import 'widgets/outfit_item_slider.dart';
 import '../../search/presentation/app_search_gloss_bar.dart';
+import '../../worn_on/presentation/widgets/outfit_worn_on_section.dart';
 
 /// Outfit detail with edit and delete.
 class OutfitDetailScreen extends ConsumerWidget {
@@ -161,6 +162,8 @@ class OutfitDetailScreen extends ConsumerWidget {
           onItemTap: (itemId) =>
               context.push(AppRoutes.itemDetail(wardrobeId, itemId)),
         ),
+        const SizedBox(height: 32),
+        OutfitWornOnSection(wardrobeId: wardrobeId, outfitId: outfitId),
         if (state.errorMessage != null) ...[
           const SizedBox(height: 16),
           Text(
