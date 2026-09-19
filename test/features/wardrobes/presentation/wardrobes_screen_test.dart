@@ -21,6 +21,7 @@ import '../../../helpers/fake_auth_repository.dart';
 import '../../../helpers/fake_item_repository.dart';
 import '../../../helpers/fake_shopping_links_repository.dart';
 import '../../../helpers/fake_wardrobe_repository.dart';
+import '../../../helpers/inbox_test_overrides.dart';
 import '../../../helpers/test_app.dart';
 
 void main() {
@@ -47,6 +48,7 @@ void main() {
           ),
           homeClothingCarouselAutoScrollProvider.overrideWithValue(false),
           ...shoppingLinksTestOverrides(),
+          ...inboxTestOverrides(),
         ],
         child: const MaterialApp(home: WardrobesScreen()),
       ),
@@ -83,7 +85,8 @@ void main() {
 
     expect(find.byType(WardrobesScreen), findsOneWidget);
     expect(find.byKey(WardrobesScreen.emptyStateKey), findsOneWidget);
-    expect(find.text('No wardrobes yet'), findsOneWidget);
+    expect(find.text('Start your first wardrobe'), findsOneWidget);
+    expect(find.text('Create wardrobe'), findsOneWidget);
     expect(find.byType(WardrobeListCard), findsNothing);
     expect(find.byKey(HomeClothingCarousel.carouselKey), findsNothing);
     expect(find.textContaining('Signed in as'), findsNothing);

@@ -13,6 +13,8 @@ class FakeItemRepository implements ItemRepository {
 
   final List<Item> items;
   ApiException? nextFailure;
+  ApiException? createFailure;
+  int? failOnCreateCall;
   int listCalls = 0;
   int getCalls = 0;
   int createCalls = 0;
@@ -83,6 +85,13 @@ class FakeItemRepository implements ItemRepository {
     lastImageKey = imageKey;
     lastSubcategoryArg = subcategory;
     lastAcquiredAtArg = ItemAcquiredAt.dateOnlyOrNull(acquiredAt);
+    if (failOnCreateCall == createCalls) {
+      throw createFailure ??
+          const ApiException(
+            message: 'Could not save this item.',
+            code: 'ITEM_CREATE_FAILED',
+          );
+    }
     _maybeFail();
     final now = DateTime.utc(2026, 9, 4, 12);
     final item = Item(

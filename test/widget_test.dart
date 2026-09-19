@@ -83,7 +83,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(WardrobesScreen), findsOneWidget);
-    expect(find.text('No wardrobes yet'), findsOneWidget);
+    expect(find.text('Start your first wardrobe'), findsOneWidget);
     expect(find.textContaining('Signed in as'), findsNothing);
     expect(find.text('Sign out'), findsNothing);
     expect(find.byKey(WardrobesScreen.profileButtonKey), findsOneWidget);
@@ -367,7 +367,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(WardrobesScreen), findsOneWidget);
-    expect(find.text('No wardrobes yet'), findsOneWidget);
+    expect(find.text('Start your first wardrobe'), findsOneWidget);
     expect(find.textContaining('Signed in as'), findsNothing);
     expect(find.text('Sign out'), findsNothing);
     expect(find.byKey(WardrobesScreen.profileButtonKey), findsOneWidget);
@@ -414,7 +414,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(WardrobesScreen), findsOneWidget);
-    expect(find.text('No wardrobes yet'), findsOneWidget);
+    expect(find.text('Start your first wardrobe'), findsOneWidget);
     expect(find.textContaining('Signed in as'), findsNothing);
     expect(find.text('Sign out'), findsNothing);
     expect(find.byKey(WardrobesScreen.profileButtonKey), findsOneWidget);

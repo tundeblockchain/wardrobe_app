@@ -69,7 +69,11 @@ Authenticated routes:
   First-visit coach marks ([WARDROBE-99](https://tundetunde000.atlassian.net/browse/WARDROBE-99))
   highlight key actions on Home, wardrobe detail, outfits, item detail,
   virtual try-on, and Account. Dismissed flags persist on-device
-  (`SharedPreferences`) and do not repeat every open.
+  (`SharedPreferences`) and do not repeat every open. Empty Home / Wardrobe
+  lists also show a short convert card
+  ([WARDROBE-113](https://tundetunde000.atlassian.net/browse/WARDROBE-113))
+  with a clear CTA to create the first wardrobe or add the first item from
+  the gallery.
 
 - `/wardrobes/create` — name form
 - `/wardrobes/:wardrobeId` — detail, rename, delete, item list, outfits entry, worn-on calendar entry, suggestions entry
@@ -87,7 +91,10 @@ against that contract and covered with mocked unit tests.
 
 Authenticated routes nested under a wardrobe:
 
-- `/wardrobes/:wardrobeId/items/create` — camera/gallery + metadata
+- `/wardrobes/:wardrobeId/items/create` — camera / gallery (multi-select) +
+  metadata. Optional `?pick=gallery` or `?pick=camera` opens the picker.
+  Several gallery photos upload and create sequentially; partial failures
+  keep items that already saved.
 - `/wardrobes/:wardrobeId/items/:itemId` — item detail, delete, move / copy
   to another owned wardrobe
   ([WARDROBE-119](https://tundetunde000.atlassian.net/browse/WARDROBE-119)).
@@ -102,7 +109,7 @@ Authenticated routes nested under a wardrobe:
   blocked while the item is on a source outfit (`400`, message may include
   `outfitId`). Copy on Free at the 5-item cap returns
   `403 ENTITLEMENT_ITEM_LIMIT` and queues the existing item-limit paywall
-  (WARDROBE-117 may be parallel). Neither action enqueues
+  (WARDROBE-117). Neither action enqueues
   `PROCESS_WARDROBE_ITEM`. Lists refresh after success.
 - `/wardrobes/:wardrobeId/items/:itemId/edit` — edit metadata (optional new photo).
   Subcategory is optional. Empty / none is saveable. PATCH follows Backend
@@ -153,7 +160,8 @@ timeout. Backend WARDROBE-54 item JSON keeps `image.originalKey` /
 (while the original key exists) and `processedImageUrl` (when a processed
 key exists). Flutter maps those two fields first; aliases such as
 `rawImageUrl` / `imageUrl` remain as fallbacks.
-An empty wardrobe keeps the existing empty state. Category / colour /
+An empty wardrobe shows a short convert card (add from gallery / take a
+photo) instead of a long tutorial. Category / colour /
 tag chips and hide-older-than apply to the loaded card deck
 ([WARDROBE-116](https://tundetunde000.atlassian.net/browse/WARDROBE-116)).
 Clear filters restores the full deck. Zero matches show a soft empty
@@ -161,7 +169,9 @@ message. Filter transitions respect reduce-motion. The client
 refetches the unfiltered list on pull-to-refresh, app resume, and route
 re-entry (no websockets).
 Camera/gallery is abstracted as `ItemImagePicker` so unit tests never need a
-device. On Android, gallery uses the system Photo Picker (no
+device. Gallery add-item uses `pickMultipleFromGallery` (Photo Picker
+multi-select on Android). Camera and replace-photo stay single-image.
+On Android, gallery uses the system Photo Picker (no
 `READ_MEDIA_IMAGES`); camera still uses `CAMERA`. See
 [docs/android-photo-picker.md](docs/android-photo-picker.md).
 Item detail also shows **Related shopping links** for that item

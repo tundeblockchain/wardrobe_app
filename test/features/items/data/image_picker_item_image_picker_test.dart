@@ -57,6 +57,48 @@ void main() {
     ).called(1);
   });
 
+  test('pickMultipleFromGallery maps each selected file for upload', () async {
+    final mock = _MockImagePicker();
+    when(
+      () => mock.pickMultiImage(
+        maxWidth: 2048,
+        maxHeight: 2048,
+        imageQuality: 85,
+      ),
+    ).thenAnswer(
+      (_) async => [
+        XFile.fromData(
+          Uint8List.fromList(const [0xFF, 0xD8, 0xFF]),
+          mimeType: 'image/jpeg',
+          path: 'shirt.jpg',
+          name: 'shirt.jpg',
+        ),
+        XFile.fromData(
+          Uint8List.fromList(const [1, 2, 3]),
+          mimeType: 'image/png',
+          path: 'jeans.png',
+          name: 'jeans.png',
+        ),
+      ],
+    );
+
+    final picked = await ImagePickerItemImagePicker(picker: mock)
+        .pickMultipleFromGallery();
+
+    expect(picked, hasLength(2));
+    expect(picked[0].contentType, 'image/jpeg');
+    expect(picked[0].fileName, 'shirt.jpg');
+    expect(picked[1].contentType, 'image/png');
+    expect(picked[1].fileName, 'jeans.png');
+    verify(
+      () => mock.pickMultiImage(
+        maxWidth: 2048,
+        maxHeight: 2048,
+        imageQuality: 85,
+      ),
+    ).called(1);
+  });
+
   test('pickFromCamera still uses the camera source', () async {
     final mock = _MockImagePicker();
     when(

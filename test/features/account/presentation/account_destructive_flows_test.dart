@@ -61,7 +61,7 @@ void main() {
 
     expect(harness.wardrobes.deleteCalls, 1);
     expect(find.byType(WardrobesScreen), findsOneWidget);
-    expect(find.text('No wardrobes yet'), findsOneWidget);
+    expect(find.text('Start your first wardrobe'), findsOneWidget);
   });
 
   testWidgets('wardrobe delete error stays on detail and shows a snackbar', (

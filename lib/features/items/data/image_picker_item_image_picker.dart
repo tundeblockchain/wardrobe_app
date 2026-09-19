@@ -33,6 +33,19 @@ class ImagePickerItemImagePicker implements ItemImagePicker {
   @override
   Future<PickedImage?> pickFromGallery() => _pick(ImageSource.gallery);
 
+  @override
+  Future<List<PickedImage>> pickMultipleFromGallery() async {
+    final files = await _picker.pickMultiImage(
+      imageQuality: 85,
+      maxWidth: 2048,
+      maxHeight: 2048,
+    );
+    if (files.isEmpty) {
+      return const [];
+    }
+    return [for (final file in files) await _fromXFile(file)];
+  }
+
   Future<PickedImage?> _pick(ImageSource source) async {
     final file = await _picker.pickImage(
       source: source,
@@ -43,6 +56,10 @@ class ImagePickerItemImagePicker implements ItemImagePicker {
     if (file == null) {
       return null;
     }
+    return _fromXFile(file);
+  }
+
+  Future<PickedImage> _fromXFile(XFile file) async {
     return PickedImage(
       bytes: await file.readAsBytes(),
       contentType: inferImageContentType(
