@@ -157,6 +157,20 @@ class DioItemRepository implements ItemRepository {
     });
   }
 
+  @override
+  Future<Item> reprocessItem({
+    required String wardrobeId,
+    required String itemId,
+  }) {
+    return _guard(() async {
+      final response = await _dio.post<dynamic>(
+        '${_itemPath(wardrobeId, itemId)}/reprocess',
+        data: const <String, dynamic>{},
+      );
+      return parseItem(response.data);
+    });
+  }
+
   Future<T> _guard<T>(Future<T> Function() action) async {
     try {
       return await action();

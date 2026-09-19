@@ -105,9 +105,7 @@ void main() {
     expectNoCreatedUpdatedDateStamps();
   });
 
-  testWidgets('hides FAILED status and processingError while keeping delete', (
-    tester,
-  ) async {
+  testWidgets('shows FAILED processingError and a retry CTA', (tester) async {
     await pumpDetail(
       tester,
       repository: FakeItemRepository(
@@ -120,14 +118,59 @@ void main() {
       ),
     );
 
-    expect(find.byType(ProcessingStatusBanner), findsNothing);
-    expect(find.text('Failed'), findsNothing);
+    expect(find.byType(ProcessingStatusBanner), findsOneWidget);
+    expect(find.text('Failed'), findsOneWidget);
+    expect(find.text('Background removal failed.'), findsOneWidget);
+    expect(find.byKey(ItemDetailScreen.reprocessButtonKey), findsOneWidget);
+    expect(find.text('Retry'), findsOneWidget);
     expect(find.text('Processing'), findsNothing);
-    expect(find.text('Processed'), findsNothing);
-    expect(find.text('Background removal failed.'), findsNothing);
+    expect(find.text('Ready'), findsNothing);
     expect(find.text('Black Nike T-Shirt'), findsWidgets);
     expect(find.byKey(ItemBrowseImage.imageKey('item_xyz123')), findsOneWidget);
     expect(find.byKey(ItemDetailScreen.deleteButtonKey), findsOneWidget);
+  });
+
+  testWidgets('reprocess 400 shows a snackbar and keeps retry', (tester) async {
+    final repository = FakeItemRepository(
+      seed: [testItem(processingStatus: ItemProcessingStatus.failed)],
+    );
+    await pumpDetail(tester, repository: repository);
+    repository.nextFailure = const ApiException(
+      message: 'Item has no original image to reprocess.',
+      code: 'VALIDATION_ERROR',
+      statusCode: 400,
+    );
+
+    await tester.tap(find.byKey(ItemDetailScreen.reprocessButtonKey));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text('Item has no original image to reprocess.'),
+      findsOneWidget,
+    );
+    expect(find.byKey(ItemDetailScreen.reprocessButtonKey), findsOneWidget);
+    expect(repository.reprocessCalls, 1);
+  });
+
+  testWidgets('retry applies PENDING and hides the failed CTA', (tester) async {
+    final repository = FakeItemRepository(
+      seed: [
+        testItem(
+          processingStatus: ItemProcessingStatus.failed,
+          processingError: 'Background removal failed.',
+        ),
+      ],
+    );
+    await pumpDetail(tester, repository: repository);
+
+    await tester.tap(find.byKey(ItemDetailScreen.reprocessButtonKey));
+    await tester.pumpAndSettle();
+
+    expect(repository.reprocessCalls, 1);
+    expect(find.text('Failed'), findsNothing);
+    expect(find.text('Background removal failed.'), findsNothing);
+    expect(find.byKey(ItemDetailScreen.reprocessButtonKey), findsNothing);
+    expect(find.text('Pending'), findsNothing);
   });
 
   testWidgets('shows meta block with wardrobe membership and outfit usage', (

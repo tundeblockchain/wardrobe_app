@@ -20,6 +20,7 @@ class FakeItemRepository implements ItemRepository {
   int deleteCalls = 0;
   int moveCalls = 0;
   int copyCalls = 0;
+  int reprocessCalls = 0;
   String? lastTargetWardrobeId;
   ItemTransferKind? lastTransferKind;
   String? lastImageKey;
@@ -264,6 +265,48 @@ class FakeItemRepository implements ItemRepository {
     );
     items.add(copied);
     return copied;
+  }
+
+  @override
+  Future<Item> reprocessItem({
+    required String wardrobeId,
+    required String itemId,
+  }) async {
+    reprocessCalls++;
+    _maybeFail();
+    final index = items.indexWhere(
+      (item) => item.wardrobeId == wardrobeId && item.id == itemId,
+    );
+    if (index < 0) {
+      throw const ApiException(
+        message: 'Item not found.',
+        code: 'ITEM_NOT_FOUND',
+        statusCode: 404,
+      );
+    }
+    final current = items[index];
+    if (current.processingStatus == ItemProcessingStatus.pending ||
+        current.processingStatus == ItemProcessingStatus.processing) {
+      throw const ApiException(
+        message: 'Item is already processing.',
+        code: 'PROCESSING_IN_PROGRESS',
+        statusCode: 409,
+      );
+    }
+    if (current.processingStatus != ItemProcessingStatus.failed) {
+      throw const ApiException(
+        message: 'Only FAILED items can be retried.',
+        code: 'ITEM_NOT_RETRIABLE',
+        statusCode: 409,
+      );
+    }
+    final updated = current.copyWith(
+      processingStatus: ItemProcessingStatus.pending,
+      processingError: null,
+      updatedAt: DateTime.utc(2026, 9, 19),
+    );
+    items[index] = updated;
+    return updated;
   }
 
   bool _matchesFilters(Item item, ItemListFilters filters) {

@@ -362,6 +362,55 @@ void main() {
     expect(find.byKey(ItemFilterBar.clearButtonKey), findsOneWidget);
   });
 
+  testWidgets('FAILED item card shows processingError and retry', (
+    tester,
+  ) async {
+    final items = FakeItemRepository(
+      seed: [
+        testItem(
+          processingStatus: ItemProcessingStatus.failed,
+          processingError: 'Background removal failed.',
+        ),
+      ],
+    );
+
+    tester.view.physicalSize = const Size(800, 2000);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          wardrobeRepositoryProvider.overrideWithValue(
+            FakeWardrobeRepository(seed: [testWardrobe()]),
+          ),
+          itemRepositoryProvider.overrideWithValue(items),
+          outfitRepositoryProvider.overrideWithValue(FakeOutfitRepository()),
+          recommendationRepositoryProvider.overrideWithValue(
+            FakeRecommendationRepository(),
+          ),
+          ...itemProcessingPollTestOverrides(),
+        ],
+        child: const MaterialApp(
+          home: WardrobeDetailScreen(wardrobeId: 'wd_abc123'),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Failed'), findsOneWidget);
+    expect(find.text('Background removal failed.'), findsOneWidget);
+    expect(find.byKey(ItemSwipeCard.retryKey(testItem().id)), findsOneWidget);
+
+    await tester.tap(find.byKey(ItemSwipeCard.retryKey(testItem().id)));
+    await tester.pumpAndSettle();
+
+    expect(items.reprocessCalls, 1);
+    expect(find.text('Failed'), findsNothing);
+    expect(find.text('Retry'), findsNothing);
+  });
+
   testWidgets('PROCESSING item card shows a delete control', (tester) async {
     await pumpDetail(
       tester,

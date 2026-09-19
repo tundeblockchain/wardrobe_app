@@ -54,6 +54,9 @@ void main() {
 
     test('FAILED is terminal and ERROR is not treated as processing', () {
       expect(ItemProcessingStatus.parse('FAILED').isTerminal, isTrue);
+      expect(ItemProcessingStatus.parse('FAILED').canReprocess, isTrue);
+      expect(ItemProcessingStatus.parse('PENDING').canReprocess, isFalse);
+      expect(ItemProcessingStatus.parse('READY').canReprocess, isFalse);
       expect(ItemProcessingStatus.parse('FAILED').isInProgress, isFalse);
       expect(ItemProcessingStatus.parse('READY').isTerminal, isTrue);
       expect(ItemProcessingStatus.parse('PROCESSING').isInProgress, isTrue);

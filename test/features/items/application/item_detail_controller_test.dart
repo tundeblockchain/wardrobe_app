@@ -355,4 +355,228 @@ void main() {
       ItemTransferMessages.sameWardrobe,
     );
   });
+
+  test(
+    'reprocess applies 202 PENDING and does not auto-retry after timeout',
+    () async {
+      repository.items
+        ..clear()
+        ..add(
+          testItem(
+            processingStatus: ItemProcessingStatus.failed,
+            processingError: 'Background removal failed.',
+          ),
+        );
+      container.read(itemDetailControllerProvider(scope));
+      await settle();
+      final getsBefore = repository.getCalls;
+
+      final ok = await container
+          .read(itemDetailControllerProvider(scope).notifier)
+          .reprocess();
+
+      final state = container.read(itemDetailControllerProvider(scope));
+      expect(ok, isFalse);
+      expect(state.item?.processingStatus, ItemProcessingStatus.pending);
+      expect(state.item?.processingError, isNull);
+      expect(state.isPolling, isFalse);
+      expect(state.showProcessingRetry, isFalse);
+      expect(repository.reprocessCalls, 1);
+      expect(repository.getCalls, getsBefore);
+      expect(
+        container
+            .read(itemsControllerProvider('wd_abc123'))
+            .items
+            .single
+            .processingStatus,
+        ItemProcessingStatus.pending,
+      );
+    },
+  );
+
+  test('reprocess polls get until READY', () async {
+    final ticks = ItemProcessingPollTicks();
+    container.dispose();
+    repository = FakeItemRepository(
+      seed: [
+        testItem(
+          processingStatus: ItemProcessingStatus.failed,
+          processingError: 'Classifier unavailable.',
+        ),
+      ],
+    );
+    container = ProviderContainer.test(
+      overrides: [
+        itemRepositoryProvider.overrideWithValue(repository),
+        ...ticks.overrides(),
+      ],
+    );
+    container.read(itemDetailControllerProvider(scope));
+    await settle();
+
+    final future = container
+        .read(itemDetailControllerProvider(scope).notifier)
+        .reprocess();
+    await settle();
+    expect(
+      container
+          .read(itemDetailControllerProvider(scope))
+          .item
+          ?.processingStatus,
+      ItemProcessingStatus.pending,
+    );
+    expect(
+      container.read(itemDetailControllerProvider(scope)).isPolling,
+      isTrue,
+    );
+
+    repository.items[0] = testItem(
+      processingStatus: ItemProcessingStatus.ready,
+      processedImageKey: 'https://cdn.example.com/processed.png',
+    );
+    await ticks.tickAll();
+    final ok = await future;
+
+    expect(ok, isTrue);
+    final item = container.read(itemDetailControllerProvider(scope)).item;
+    expect(item?.processingStatus, ItemProcessingStatus.ready);
+    expect(item?.processedImageKey, 'https://cdn.example.com/processed.png');
+    expect(
+      container.read(itemDetailControllerProvider(scope)).isPolling,
+      isFalse,
+    );
+    expect(
+      container.read(itemDetailControllerProvider(scope)).showProcessingBanner,
+      isFalse,
+    );
+  });
+
+  test('409 PROCESSING_IN_PROGRESS keeps polling without a snackbar', () async {
+    final ticks = ItemProcessingPollTicks();
+    container.dispose();
+    repository = FakeItemRepository(
+      seed: [
+        testItem(
+          processingStatus: ItemProcessingStatus.failed,
+          processingError: 'rembg failed',
+        ),
+      ],
+    );
+    container = ProviderContainer.test(
+      overrides: [
+        itemRepositoryProvider.overrideWithValue(repository),
+        ...ticks.overrides(),
+      ],
+    );
+    container.read(itemDetailControllerProvider(scope));
+    await settle();
+    repository.nextFailure = const ApiException(
+      message: 'Item is already processing.',
+      code: 'PROCESSING_IN_PROGRESS',
+      statusCode: 409,
+    );
+    repository.items[0] = testItem(
+      processingStatus: ItemProcessingStatus.pending,
+    );
+
+    final future = container
+        .read(itemDetailControllerProvider(scope).notifier)
+        .reprocess();
+    await settle();
+    expect(repository.reprocessCalls, 1);
+    expect(
+      container.read(itemDetailControllerProvider(scope)).snackMessage,
+      isNull,
+    );
+    expect(
+      container.read(itemDetailControllerProvider(scope)).isPolling,
+      isTrue,
+    );
+
+    repository.items[0] = testItem(
+      processingStatus: ItemProcessingStatus.failed,
+      processingError: 'Still failed.',
+    );
+    await ticks.tickAll();
+    await future;
+
+    final state = container.read(itemDetailControllerProvider(scope));
+    expect(state.item?.processingStatus, ItemProcessingStatus.failed);
+    expect(state.item?.processingError, 'Still failed.');
+    expect(state.showProcessingRetry, isTrue);
+    expect(state.snackMessage, isNull);
+  });
+
+  test('reprocess 403 queues the other-AI paywall and a snackbar', () async {
+    repository.items
+      ..clear()
+      ..add(testItem(processingStatus: ItemProcessingStatus.failed));
+    container.read(itemDetailControllerProvider(scope));
+    await settle();
+    repository.nextFailure = const ApiException(
+      message: 'Premium is required for AI processing.',
+      code: 'ENTITLEMENT_AI_REQUIRED',
+      statusCode: 403,
+    );
+
+    final ok = await container
+        .read(itemDetailControllerProvider(scope).notifier)
+        .reprocess();
+
+    expect(ok, isFalse);
+    expect(
+      container.read(itemDetailControllerProvider(scope)).snackMessage,
+      'Premium is required for AI processing.',
+    );
+    expect(container.read(pendingPaywallProvider), PaywallPlacement.otherAi);
+    expect(
+      container
+          .read(itemDetailControllerProvider(scope))
+          .item
+          ?.processingStatus,
+      ItemProcessingStatus.failed,
+    );
+  });
+
+  test(
+    'reprocess 500 surfaces a snackbar and leaves FAILED retryable',
+    () async {
+      repository.items
+        ..clear()
+        ..add(testItem(processingStatus: ItemProcessingStatus.failed));
+      container.read(itemDetailControllerProvider(scope));
+      await settle();
+      repository.nextFailure = const ApiException(
+        message: 'Could not enqueue processing.',
+        code: 'INTERNAL_ERROR',
+        statusCode: 500,
+      );
+
+      final ok = await container
+          .read(itemDetailControllerProvider(scope).notifier)
+          .reprocess();
+
+      expect(ok, isFalse);
+      expect(
+        container.read(itemDetailControllerProvider(scope)).snackMessage,
+        'Could not enqueue processing.',
+      );
+      expect(
+        container.read(itemDetailControllerProvider(scope)).showProcessingRetry,
+        isTrue,
+      );
+    },
+  );
+
+  test('does not reprocess PENDING or READY items', () async {
+    container.read(itemDetailControllerProvider(scope));
+    await settle();
+
+    final ok = await container
+        .read(itemDetailControllerProvider(scope).notifier)
+        .reprocess();
+
+    expect(ok, isFalse);
+    expect(repository.reprocessCalls, 0);
+  });
 }

@@ -57,6 +57,9 @@ enum ItemProcessingStatus {
   bool get isTerminal =>
       this == ItemProcessingStatus.ready || this == ItemProcessingStatus.failed;
 
+  /// Backend WARDROBE-123 only re-enqueues [failed]. Never PENDING / READY.
+  bool get canReprocess => this == ItemProcessingStatus.failed;
+
   static ItemProcessingStatus parse(String? value) {
     if (value == null || value.isEmpty) {
       return ItemProcessingStatus.ready;

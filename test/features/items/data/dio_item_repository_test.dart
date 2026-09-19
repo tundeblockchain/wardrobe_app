@@ -410,6 +410,85 @@ void main() {
     );
   });
 
+  test(
+    'reprocessItem posts the WARDROBE-123 path and maps 202 PENDING',
+    () async {
+      repository = buildRepository([
+        HttpScript(
+          statusCode: 202,
+          body: {...payload, 'processingStatus': 'PENDING'},
+        ),
+      ]);
+
+      final result = await repository.reprocessItem(
+        wardrobeId: 'wd_abc123',
+        itemId: 'item_xyz123',
+      );
+
+      expect(result.id, 'item_xyz123');
+      expect(result.processingStatus, ItemProcessingStatus.pending);
+      expect(result.processingError, isNull);
+      expect(adapter.requests.single.method, 'POST');
+      expect(
+        adapter.requests.single.path,
+        '/wardrobes/wd_abc123/items/item_xyz123/reprocess',
+      );
+      expect(_requestBody(adapter.requests.single), isEmpty);
+    },
+  );
+
+  test('reprocessItem maps 409 PROCESSING_IN_PROGRESS', () async {
+    repository = buildRepository([
+      const HttpScript(
+        statusCode: 409,
+        body: {
+          'error': {
+            'code': 'PROCESSING_IN_PROGRESS',
+            'message': 'Item is already processing.',
+          },
+        },
+      ),
+    ]);
+
+    expect(
+      () => repository.reprocessItem(
+        wardrobeId: 'wd_abc123',
+        itemId: 'item_xyz123',
+      ),
+      throwsA(
+        isA<ApiException>()
+            .having((error) => error.code, 'code', 'PROCESSING_IN_PROGRESS')
+            .having((error) => error.statusCode, 'statusCode', 409),
+      ),
+    );
+  });
+
+  test('reprocessItem maps 403 ENTITLEMENT_AI_REQUIRED', () async {
+    repository = buildRepository([
+      const HttpScript(
+        statusCode: 403,
+        body: {
+          'error': {
+            'code': 'ENTITLEMENT_AI_REQUIRED',
+            'message': 'Premium is required for AI processing.',
+          },
+        },
+      ),
+    ]);
+
+    expect(
+      () => repository.reprocessItem(
+        wardrobeId: 'wd_abc123',
+        itemId: 'item_xyz123',
+      ),
+      throwsA(
+        isA<ApiException>()
+            .having((error) => error.code, 'code', 'ENTITLEMENT_AI_REQUIRED')
+            .having((error) => error.statusCode, 'statusCode', 403),
+      ),
+    );
+  });
+
   test('deleteItem accepts 204 with an empty body', () async {
     repository = buildRepository([const HttpScript(statusCode: 204)]);
 

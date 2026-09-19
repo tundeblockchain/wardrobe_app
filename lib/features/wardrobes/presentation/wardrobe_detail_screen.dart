@@ -111,6 +111,16 @@ class _WardrobeDetailScreenState extends ConsumerState<WardrobeDetailScreen>
         context.go(AppRoutes.wardrobes);
       }
     });
+    ref.listen(itemsControllerProvider(wardrobeId), (previous, next) {
+      final snack = next.snackMessage;
+      if (snack != null && snack != previous?.snackMessage && context.mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(snack)));
+        ref
+            .read(itemsControllerProvider(wardrobeId).notifier)
+            .clearSnackMessage();
+      }
+    });
 
     return ScreenCoachHost(
       screen: CoachScreen.wardrobe,
@@ -571,6 +581,12 @@ class _ItemsSection extends ConsumerWidget {
           onOpenItem: (item) =>
               context.push(AppRoutes.itemDetail(wardrobeId, item.id)),
           onDeleteItem: (item) => _deleteItem(context, ref, item),
+          onRetryItem: (item) => ref
+              .read(itemsControllerProvider(wardrobeId).notifier)
+              .reprocessItem(item.id),
+          showProcessingProgress: state.showProcessingProgress,
+          isRetrying: (item) =>
+              state.isReprocessing(item.id) || state.isPolling(item.id),
           onClearFilters: () {
             ref
                 .read(itemsControllerProvider(wardrobeId).notifier)
@@ -604,12 +620,18 @@ class _FilteredItemsDeck extends StatelessWidget {
     required this.items,
     required this.onOpenItem,
     required this.onDeleteItem,
+    required this.onRetryItem,
+    required this.showProcessingProgress,
+    required this.isRetrying,
     required this.onClearFilters,
   });
 
   final List<Item> items;
   final ValueChanged<Item> onOpenItem;
   final ValueChanged<Item> onDeleteItem;
+  final ValueChanged<Item> onRetryItem;
+  final bool Function(Item item) showProcessingProgress;
+  final bool Function(Item item) isRetrying;
   final VoidCallback onClearFilters;
 
   @override
@@ -629,6 +651,9 @@ class _FilteredItemsDeck extends StatelessWidget {
             items: items,
             onOpenItem: onOpenItem,
             onDeleteItem: onDeleteItem,
+            onRetryItem: onRetryItem,
+            showProcessingProgress: showProcessingProgress,
+            isRetrying: isRetrying,
           );
 
     if (AppMotion.reduce(context)) {

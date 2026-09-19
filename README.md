@@ -135,10 +135,19 @@ swipe left or right (or Next item) to advance; vertical scroll does not
 flip or advance the card.
 Tap the card or View details to open the existing item screen.
 Cards prefer a processed HTTP(S) photo when present, otherwise the original
-upload (network URL or the just-uploaded local bytes). They still show
-`processingStatus` (`PENDING` / `PROCESSING` / `READY` / `FAILED`) as a chip
-and a thin progress bar — never a processing-only placeholder that hides the
-photo. Backend WARDROBE-54 item JSON keeps `image.originalKey` /
+upload (network URL or the just-uploaded local bytes). They never replace
+the photo with a processing-only placeholder. `FAILED` items show
+`processingError` (when present) and a one-tap Retry control on the
+wardrobe card and item detail
+([WARDROBE-124](https://tundetunde000.atlassian.net/browse/WARDROBE-124)).
+Retry calls `POST /wardrobes/{wardrobeId}/items/{itemId}/reprocess`
+(Backend WARDROBE-123, wardrobe-backend#50 `58c3a0b`). A `202` ClothingItem
+is applied immediately (`processingStatus: PENDING`, no `processingError`);
+the client then polls get / list until `READY` or `FAILED`.
+`409 PROCESSING_IN_PROGRESS` is treated as already running (keep polling).
+`403 ENTITLEMENT_AI_REQUIRED` opens the existing Premium paywall.
+Retry is offered on `FAILED` only — there is no client-side stuck-PENDING
+timeout. Backend WARDROBE-54 item JSON keeps `image.originalKey` /
 `image.processedKey` and adds short-lived GET URLs: `originalImageUrl`
 (while the original key exists) and `processedImageUrl` (when a processed
 key exists). Flutter maps those two fields first; aliases such as

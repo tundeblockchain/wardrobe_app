@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wardrobe_app/core/lifecycle/app_lifecycle.dart';
 import 'package:wardrobe_app/core/network/api_exception.dart';
+import 'package:wardrobe_app/features/entitlements/application/pending_paywall.dart';
+import 'package:wardrobe_app/features/entitlements/domain/paywall_placement.dart';
 import 'package:wardrobe_app/features/items/application/item_local_preview_cache.dart';
 import 'package:wardrobe_app/features/items/application/items_controller.dart';
 import 'package:wardrobe_app/features/items/data/dio_item_repository.dart';
@@ -323,5 +325,111 @@ void main() {
       container.read(itemLocalPreviewCacheProvider)['item_xyz123'],
       isNull,
     );
+  });
+
+  test(
+    'reprocessItem applies PENDING and does not poll after a zero timeout',
+    () async {
+      repository.items.add(
+        testItem(
+          processingStatus: ItemProcessingStatus.failed,
+          processingError: 'Background removal failed.',
+        ),
+      );
+      container.read(itemsControllerProvider('wd_abc123'));
+      await settle();
+      final listsBefore = repository.listCalls;
+      final getsBefore = repository.getCalls;
+
+      final ok = await container
+          .read(itemsControllerProvider('wd_abc123').notifier)
+          .reprocessItem('item_xyz123');
+
+      final state = container.read(itemsControllerProvider('wd_abc123'));
+      expect(ok, isFalse);
+      expect(state.items.single.processingStatus, ItemProcessingStatus.pending);
+      expect(state.items.single.processingError, isNull);
+      expect(state.isPolling('item_xyz123'), isFalse);
+      expect(state.showProcessingRetry(state.items.single), isFalse);
+      expect(repository.reprocessCalls, 1);
+      expect(repository.listCalls, listsBefore);
+      expect(repository.getCalls, getsBefore);
+    },
+  );
+
+  test('reprocessItem 409 PROCESSING_IN_PROGRESS keeps polling', () async {
+    final ticks = ItemProcessingPollTicks();
+    container.dispose();
+    repository = FakeItemRepository(
+      seed: [testItem(processingStatus: ItemProcessingStatus.failed)],
+    );
+    container = ProviderContainer.test(
+      overrides: [
+        itemRepositoryProvider.overrideWithValue(repository),
+        ...ticks.overrides(),
+      ],
+    );
+    container.read(itemsControllerProvider('wd_abc123'));
+    await settle();
+    repository.nextFailure = const ApiException(
+      message: 'Item is already processing.',
+      code: 'PROCESSING_IN_PROGRESS',
+      statusCode: 409,
+    );
+    repository.items[0] = testItem(
+      processingStatus: ItemProcessingStatus.pending,
+    );
+
+    final future = container
+        .read(itemsControllerProvider('wd_abc123').notifier)
+        .reprocessItem('item_xyz123');
+    await settle();
+    expect(
+      container.read(itemsControllerProvider('wd_abc123')).snackMessage,
+      isNull,
+    );
+    expect(
+      container
+          .read(itemsControllerProvider('wd_abc123'))
+          .isPolling('item_xyz123'),
+      isTrue,
+    );
+
+    repository.items[0] = testItem();
+    await ticks.tickAll();
+    final ok = await future;
+    expect(ok, isTrue);
+    expect(
+      container
+          .read(itemsControllerProvider('wd_abc123'))
+          .items
+          .single
+          .processingStatus,
+      ItemProcessingStatus.ready,
+    );
+  });
+
+  test('reprocessItem 403 queues the other-AI paywall', () async {
+    repository.items.add(
+      testItem(processingStatus: ItemProcessingStatus.failed),
+    );
+    container.read(itemsControllerProvider('wd_abc123'));
+    await settle();
+    repository.nextFailure = const ApiException(
+      message: 'Premium is required for AI processing.',
+      code: 'ENTITLEMENT_AI_REQUIRED',
+      statusCode: 403,
+    );
+
+    final ok = await container
+        .read(itemsControllerProvider('wd_abc123').notifier)
+        .reprocessItem('item_xyz123');
+
+    expect(ok, isFalse);
+    expect(
+      container.read(itemsControllerProvider('wd_abc123')).snackMessage,
+      'Premium is required for AI processing.',
+    );
+    expect(container.read(pendingPaywallProvider), PaywallPlacement.otherAi);
   });
 }
