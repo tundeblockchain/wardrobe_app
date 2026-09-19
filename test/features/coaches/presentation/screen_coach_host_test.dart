@@ -26,6 +26,7 @@ import '../../../helpers/fake_recommendation_repository.dart';
 import '../../../helpers/fake_wardrobe_repository.dart';
 import '../../../helpers/inbox_test_overrides.dart';
 import '../../../helpers/item_processing_poll_overrides.dart';
+import '../../../helpers/share_test_overrides.dart';
 import '../../../helpers/test_app.dart';
 
 void main() {
@@ -59,6 +60,7 @@ void main() {
             ...entitlementTestOverrides(),
             ...itemProcessingPollTestOverrides(),
             ...inboxTestOverrides(),
+            ...shareTestOverrides(),
           ],
           child: MaterialApp(home: home),
         ),

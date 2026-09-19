@@ -16,6 +16,7 @@ import 'package:wardrobe_app/features/items/presentation/widgets/item_transfer_s
 import 'package:wardrobe_app/features/items/presentation/widgets/processing_status_chip.dart';
 import 'package:wardrobe_app/features/outfits/data/dio_outfit_repository.dart';
 import 'package:wardrobe_app/features/outfits/domain/outfit.dart';
+import 'package:wardrobe_app/features/share/domain/share_errors.dart';
 import 'package:wardrobe_app/features/shopping_links/data/dio_shopping_links_repository.dart';
 import 'package:wardrobe_app/features/shopping_links/presentation/widgets/related_shopping_links_section.dart';
 import 'package:wardrobe_app/features/shopping_links/presentation/widgets/shopping_product_card.dart';
@@ -28,7 +29,10 @@ import '../../../helpers/fake_outfit_repository.dart';
 import '../../../helpers/fake_shopping_link_opener.dart';
 import '../../../helpers/fake_shopping_links_repository.dart';
 import '../../../helpers/fake_wardrobe_repository.dart';
+import '../../../helpers/fake_share_repository.dart';
+import '../../../helpers/fake_share_sheet.dart';
 import '../../../helpers/item_processing_poll_overrides.dart';
+import '../../../helpers/share_test_overrides.dart';
 
 void main() {
   Future<void> pumpDetail(
@@ -38,6 +42,9 @@ void main() {
     FakeOutfitRepository? outfits,
     FakeShoppingLinksRepository? shoppingLinks,
     FakeShoppingLinkOpener? shoppingOpener,
+    FakeShareRepository? shares,
+    FakeShareSheet? shareSheet,
+    String shareLandingBaseUrl = testShareLandingBaseUrl,
   }) async {
     tester.view.physicalSize = const Size(800, 1600);
     tester.view.devicePixelRatio = 1;
@@ -73,6 +80,11 @@ void main() {
             shoppingOpener ?? FakeShoppingLinkOpener(),
           ),
           ...itemProcessingPollTestOverrides(),
+          ...shareTestOverrides(
+            repository: shares,
+            sheet: shareSheet,
+            landingBaseUrl: shareLandingBaseUrl,
+          ),
         ],
         child: const MaterialApp(
           home: ItemDetailScreen(
@@ -100,6 +112,7 @@ void main() {
     expect(find.text('Processed'), findsNothing);
     expect(find.text('Ready'), findsNothing);
     expect(find.text('Failed'), findsNothing);
+    expect(find.byKey(ItemDetailScreen.shareButtonKey), findsOneWidget);
     expect(find.byKey(ItemDetailScreen.editButtonKey), findsOneWidget);
     expect(find.byKey(ItemDetailScreen.deleteButtonKey), findsOneWidget);
     expectNoCreatedUpdatedDateStamps();
@@ -365,5 +378,48 @@ void main() {
 
     expect(find.text(ItemTransferMessages.itemLimitUpgrade), findsWidgets);
     expect(find.textContaining('ENTITLEMENT_ITEM_LIMIT'), findsNothing);
+  });
+
+  testWidgets('share CTA creates a token and opens the sheet', (tester) async {
+    final shares = FakeShareRepository();
+    final sheet = FakeShareSheet();
+    await pumpDetail(
+      tester,
+      repository: FakeItemRepository(
+        seed: [testItem(processedImageUrl: 'https://cdn.example.com/item.jpg')],
+      ),
+      shares: shares,
+      shareSheet: sheet,
+    );
+
+    await tester.tap(find.byKey(ItemDetailScreen.shareButtonKey));
+    await tester.pumpAndSettle();
+
+    expect(shares.createItemCalls, 1);
+    expect(sheet.payloads.single.title, 'Black Nike T-Shirt');
+    expect(
+      sheet.payloads.single.url,
+      'https://share.example.com/share/shr_abc123xyz',
+    );
+  });
+
+  testWidgets('share CTA snacks when the landing base is missing', (
+    tester,
+  ) async {
+    final shares = FakeShareRepository();
+    final sheet = FakeShareSheet();
+    await pumpDetail(
+      tester,
+      shares: shares,
+      shareSheet: sheet,
+      shareLandingBaseUrl: '',
+    );
+
+    await tester.tap(find.byKey(ItemDetailScreen.shareButtonKey));
+    await tester.pumpAndSettle();
+
+    expect(shares.createItemCalls, 0);
+    expect(sheet.payloads, isEmpty);
+    expect(find.text(ShareErrors.missingLandingBase), findsOneWidget);
   });
 }

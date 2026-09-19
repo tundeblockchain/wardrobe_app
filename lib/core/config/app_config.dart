@@ -49,6 +49,7 @@ class SubscriptionProductIds {
 class AppConfig {
   const AppConfig({
     required this.apiBaseUrl,
+    this.shareLandingBaseUrl = '',
     this.superwallApiKey = '',
     this.superwallIosApiKey = '',
     this.superwallAndroidApiKey = '',
@@ -62,6 +63,9 @@ class AppConfig {
         'API_BASE_URL',
         defaultValue: 'https://api.example.com',
       ),
+      shareLandingBaseUrl: const String.fromEnvironment(
+        'SHARE_LANDING_BASE_URL',
+      ),
       superwallApiKey: const String.fromEnvironment('SUPERWALL_API_KEY'),
       superwallIosApiKey: const String.fromEnvironment('SUPERWALL_IOS_API_KEY'),
       superwallAndroidApiKey: const String.fromEnvironment(
@@ -73,6 +77,11 @@ class AppConfig {
 
   /// Backend API origin used by Dio. Override with `--dart-define=API_BASE_URL=`.
   final String apiBaseUrl;
+
+  /// Landing-site origin for public share links. Relative `sharePath` is
+  /// appended. Override with `--dart-define=SHARE_LANDING_BASE_URL=`.
+  /// Never defaults to a production host.
+  final String shareLandingBaseUrl;
 
   /// Generic Superwall public API key. Prefer the platform-specific keys.
   final String superwallApiKey;

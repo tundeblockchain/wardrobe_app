@@ -14,6 +14,9 @@ import '../../outfits/application/outfits_controller.dart';
 import '../../search/presentation/app_search_gloss_bar.dart';
 import '../../shopping_links/application/item_shopping_links_controller.dart';
 import '../../shopping_links/presentation/widgets/related_shopping_links_section.dart';
+import '../../share/application/share_controller.dart';
+import '../../share/domain/share_image.dart';
+import '../../share/presentation/widgets/share_action_button.dart';
 import '../../wardrobes/application/wardrobes_controller.dart';
 import '../../wardrobes/domain/wardrobe.dart';
 import '../application/item_detail_controller.dart';
@@ -47,6 +50,7 @@ class ItemDetailScreen extends ConsumerStatefulWidget {
   static const overflowMenuKey = Key('item_detail_overflow');
   static const moveMenuKey = Key('item_detail_move');
   static const copyMenuKey = Key('item_detail_copy');
+  static const shareButtonKey = Key('item_detail_share');
 
   @override
   ConsumerState<ItemDetailScreen> createState() => _ItemDetailScreenState();
@@ -122,6 +126,19 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen>
           title: Text(item?.name ?? 'Item'),
           actions: [
             if (item != null) ...[
+              ShareActionButton(
+                key: ItemDetailScreen.shareButtonKey,
+                enabled: !state.isSaving,
+                onShare: (origin) => ref
+                    .read(shareControllerProvider.notifier)
+                    .shareItem(
+                      wardrobeId: widget.wardrobeId,
+                      itemId: widget.itemId,
+                      title: item.name,
+                      imageUrl: ShareImage.itemUrl(item),
+                      origin: origin,
+                    ),
+              ),
               IconButton(
                 key: ItemDetailScreen.editButtonKey,
                 tooltip: 'Edit',

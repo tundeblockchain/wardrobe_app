@@ -9,8 +9,17 @@ void main() {
       expect(config.hasSuperwallApiKey, isFalse);
       expect(config.productIds.basicMonthly, 'wardrobe_basic_monthly');
       expect(config.productIds.premiumYearly, 'wardrobe_premium_yearly');
+      expect(config.shareLandingBaseUrl, isEmpty);
     },
   );
+
+  test('share landing base is stored from the constructor', () {
+    const config = AppConfig(
+      apiBaseUrl: 'https://api.example.com',
+      shareLandingBaseUrl: 'https://share.example.com',
+    );
+    expect(config.shareLandingBaseUrl, 'https://share.example.com');
+  });
 
   test('resolved Superwall key prefers platform-specific dart-defines', () {
     const config = AppConfig(

@@ -29,10 +29,10 @@ Sign in with Apple on iOS
 
 Layers (dependencies point downward only):
 
-1. **Presentation** — screens (`login`, `signup`, `forgot-password`, splash, wardrobes list / create / detail, add item / item detail / edit item, outfits list / create / detail / edit, worn-on calendar, dressing room / try-on, profile / processing inbox / contact us / report a bug / AI try-on) plus header search, related shopping links, first-visit coach marks, and the Superwall / themed paywall sheet
-2. **Controller / Provider** — Riverpod auth, wardrobe, item, outfit, worn-on, try-on, inbox, recommendation, support / rate-app, account, entitlements / paywall, AI-profile, header-search, shopping-links, and coach-mark controllers
-3. **Repository** — `AuthRepository`, `WardrobeRepository`, `ItemRepository`, `UploadRepository`, `OutfitRepository`, `WornOnRepository`, `RecommendationRepository`, `SupportRepository`, `AccountRepository`, `AiProfileRepository`, `ShoppingLinksRepository`, `JobEventRepository`, `DeviceRepository`
-4. **API client / Firebase** — `FirebaseAuthRepository` (email/password + Google + Apple on iOS), Dio + ID-token interceptor, wardrobe/item/upload/outfit/worn-on/recommendation/support/account/AI-profile/shopping-links/events/devices Dio repositories, `image_picker` behind `ItemImagePicker`, `in_app_review` behind `AppReviewer`, `url_launcher` behind `ShoppingLinkOpener`, optional Firebase Messaging behind `PushTokenSource`
+1. **Presentation** — screens (`login`, `signup`, `forgot-password`, splash, wardrobes list / create / detail, add item / item detail / edit item, outfits list / create / detail / edit, worn-on calendar, dressing room / try-on, profile / processing inbox / contact us / report a bug / AI try-on) plus header search, related shopping links, item/outfit share, first-visit coach marks, and the Superwall / themed paywall sheet
+2. **Controller / Provider** — Riverpod auth, wardrobe, item, outfit, worn-on, try-on, inbox, recommendation, support / rate-app, account, entitlements / paywall, AI-profile, header-search, shopping-links, share, and coach-mark controllers
+3. **Repository** — `AuthRepository`, `WardrobeRepository`, `ItemRepository`, `UploadRepository`, `OutfitRepository`, `WornOnRepository`, `RecommendationRepository`, `SupportRepository`, `AccountRepository`, `AiProfileRepository`, `ShoppingLinksRepository`, `ShareRepository`, `JobEventRepository`, `DeviceRepository`
+4. **API client / Firebase** — `FirebaseAuthRepository` (email/password + Google + Apple on iOS), Dio + ID-token interceptor, wardrobe/item/upload/outfit/worn-on/recommendation/support/account/AI-profile/shopping-links/share/events/devices Dio repositories, `image_picker` behind `ItemImagePicker`, `in_app_review` behind `AppReviewer`, `url_launcher` behind `ShoppingLinkOpener`, `share_plus` behind `NativeShareSheet`, optional Firebase Messaging behind `PushTokenSource`
 
 ## Auth shell
 
@@ -187,7 +187,7 @@ Authenticated routes nested under a wardrobe:
 
 - `/wardrobes/:wardrobeId/outfits` — list + empty state
 - `/wardrobes/:wardrobeId/outfits/create` — name + pick items into slots
-- `/wardrobes/:wardrobeId/outfits/:outfitId` — detail, delete, Try on, worn-on log
+- `/wardrobes/:wardrobeId/outfits/:outfitId` — detail, delete, Share, Try on, worn-on log
 - `/wardrobes/:wardrobeId/outfits/:outfitId/edit` — rename and change slots
 - `/wardrobes/:wardrobeId/outfits/:outfitId/try-on` — virtual try-on
 - `/wardrobes/:wardrobeId/try-on` — dressing room (pick an outfit)
@@ -232,6 +232,48 @@ empty log so outfit detail stays usable before Backend merge.
 Outfit detail: **Mark worn today** / **Pick a date**, plus unmark on each
 logged day. Wardrobe detail and the outfits header open the month
 calendar (`AppMotion.reduce` skips grid motion).
+
+### Share item / outfit (WARDROBE-128)
+
+Share CTA on item detail and outfit detail (Free / Basic / Premium — not
+entitlement-gated). Creates an owner share token, then opens the native
+share sheet with title + absolute URL + image when a photo is already on
+the model. Flutter never calls the public GET preview
+(Frontend [WARDROBE-127](https://tundetunde000.atlassian.net/browse/WARDROBE-127)).
+
+Consumes Backend
+[WARDROBE-126](https://tundetunde000.atlassian.net/browse/WARDROBE-126)
+([wardrobe-backend#54](https://github.com/tundeblockchain/wardrobe-backend/pull/54)
+SHA `a7a10ab` on Backend **main**). `ShareContract.liveEnabled` is `true` —
+create/revoke go through `DioShareRepository`. A create route that is not
+deployed yet soft-fails with a snackbar (no invented token). Whole-wardrobe
+share is out of scope.
+
+```http
+POST   /wardrobes/{wardrobeId}/items/{itemId}/share
+POST   /wardrobes/{wardrobeId}/outfits/{outfitId}/share
+DELETE /shares/{token}
+```
+
+No request body. Identity is the Firebase Bearer token. Share DTO
+(`201`): `{ token, resourceType, wardrobeId, itemId|outfitId, sharePath,
+expiresAt, createdAt }`. Unused `itemId` / `outfitId` are omitted — never
+JSON `null`. `sharePath` is relative only (`/share/{token}`).
+
+Absolute URL (client-composed, never a hardcoded production host):
+
+```text
+absoluteShareUrl = {SHARE_LANDING_BASE_URL} + sharePath
+```
+
+Set the landing origin with `--dart-define=SHARE_LANDING_BASE_URL=` (or
+`dart_defines.json`). Missing / invalid base, 401, 404 ownership, or an
+undeployed route surfaces a snackbar and does not open the sheet. Revoke
+is `204` even if the token is already gone; Flutter exposes it on the
+repository only (no revoke UI).
+
+`shareRepositoryProvider` returns `DioShareRepository`. Widget tests
+override it with `FakeShareRepository` and `FakeShareSheet`.
 
 ## Recommendations
 
@@ -519,6 +561,7 @@ API base URL (placeholder default `https://api.example.com`):
 
 ```bash
 flutter run --dart-define=API_BASE_URL=https://your-api.example.com
+flutter run --dart-define=SHARE_LANDING_BASE_URL=https://share.example.com
 ```
 
 ## Development

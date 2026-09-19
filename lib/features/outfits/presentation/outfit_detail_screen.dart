@@ -17,6 +17,9 @@ import '../application/outfit_scope.dart';
 import 'widgets/outfit_hero_card.dart';
 import 'widgets/outfit_item_slider.dart';
 import '../../search/presentation/app_search_gloss_bar.dart';
+import '../../share/application/share_controller.dart';
+import '../../share/domain/share_image.dart';
+import '../../share/presentation/widgets/share_action_button.dart';
 import '../../worn_on/presentation/widgets/outfit_worn_on_section.dart';
 
 /// Outfit detail with edit and delete.
@@ -35,6 +38,7 @@ class OutfitDetailScreen extends ConsumerWidget {
   static const tryOnButtonKey = Key('outfit_detail_try_on');
   static const tryOnAppBarKey = Key('outfit_detail_try_on_app_bar');
   static const retryButtonKey = Key('outfit_detail_retry');
+  static const shareButtonKey = Key('outfit_detail_share');
 
   OutfitScope get _scope =>
       OutfitScope(wardrobeId: wardrobeId, outfitId: outfitId);
@@ -57,6 +61,22 @@ class OutfitDetailScreen extends ConsumerWidget {
         title: Text(outfit?.name ?? 'Outfit'),
         actions: [
           if (outfit != null) ...[
+            ShareActionButton(
+              key: shareButtonKey,
+              enabled: !state.isSaving,
+              onShare: (origin) => ref
+                  .read(shareControllerProvider.notifier)
+                  .shareOutfit(
+                    wardrobeId: wardrobeId,
+                    outfitId: outfitId,
+                    title: outfit.name,
+                    imageUrl: ShareImage.outfitUrl(
+                      outfit,
+                      selectedHeroUrl: selectedHeroUrl,
+                    ),
+                    origin: origin,
+                  ),
+            ),
             IconButton(
               key: tryOnAppBarKey,
               tooltip: 'Try on',

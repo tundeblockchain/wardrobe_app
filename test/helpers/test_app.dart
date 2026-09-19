@@ -44,6 +44,7 @@ import 'fake_wardrobe_repository.dart';
 import 'fake_worn_on_repository.dart';
 import 'inbox_test_overrides.dart';
 import 'item_processing_poll_overrides.dart';
+import 'share_test_overrides.dart';
 import 'worn_on_test_overrides.dart';
 
 /// Empty shopping-links so item detail never hits live Dio in tests.
@@ -144,6 +145,7 @@ class TestAppHarness {
           opener: shoppingOpener,
         ),
         ...wornOnTestOverrides(repository: wornOn),
+        ...shareTestOverrides(),
         uploadRepositoryProvider.overrideWithValue(uploads),
         itemImagePickerProvider.overrideWithValue(picker),
         accountRepositoryProvider.overrideWithValue(account),
