@@ -171,3 +171,14 @@ abstract class UpdateItemRequest with _$UpdateItemRequest {
   factory UpdateItemRequest.fromJson(Map<String, dynamic> json) =>
       _$UpdateItemRequestFromJson(json);
 }
+
+/// `POST /wardrobes/{wardrobeId}/items/{itemId}/move|copy` body
+/// (WARDROBE-118 / Flutter WARDROBE-119).
+@freezed
+abstract class TransferItemRequest with _$TransferItemRequest {
+  const factory TransferItemRequest({required String targetWardrobeId}) =
+      _TransferItemRequest;
+
+  factory TransferItemRequest.fromJson(Map<String, dynamic> json) =>
+      _$TransferItemRequestFromJson(json);
+}

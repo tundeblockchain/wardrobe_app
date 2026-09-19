@@ -2,12 +2,18 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wardrobe_app/core/lifecycle/app_lifecycle.dart';
 import 'package:wardrobe_app/core/network/api_exception.dart';
+import 'package:wardrobe_app/features/entitlements/application/pending_paywall.dart';
+import 'package:wardrobe_app/features/entitlements/data/dio_entitlement_repository.dart';
+import 'package:wardrobe_app/features/entitlements/data/paywall_gateway_provider.dart';
+import 'package:wardrobe_app/features/entitlements/domain/paywall_placement.dart';
 import 'package:wardrobe_app/features/items/application/item_detail_controller.dart';
 import 'package:wardrobe_app/features/items/application/item_scope.dart';
 import 'package:wardrobe_app/features/items/application/items_controller.dart';
 import 'package:wardrobe_app/features/items/data/dio_item_repository.dart';
 import 'package:wardrobe_app/features/items/domain/item.dart';
+import 'package:wardrobe_app/features/items/domain/item_transfer.dart';
 
+import '../../../helpers/fake_entitlements.dart';
 import '../../../helpers/fake_item_repository.dart';
 import '../../../helpers/item_processing_poll_overrides.dart';
 
@@ -188,5 +194,165 @@ void main() {
 
     await settle();
     expect(repository.getCalls, 2);
+  });
+
+  test('moveTo relocates the item and updates both list caches', () async {
+    repository.items.add(testItem(id: 'item_keep', wardrobeId: 'wd_other12ab'));
+    container.read(itemsControllerProvider('wd_abc123'));
+    container.read(itemsControllerProvider('wd_other12ab'));
+    container.read(itemDetailControllerProvider(scope));
+    await settle();
+
+    final moved = await container
+        .read(itemDetailControllerProvider(scope).notifier)
+        .moveTo('wd_other12ab');
+
+    expect(moved?.id, 'item_xyz123');
+    expect(moved?.wardrobeId, 'wd_other12ab');
+    expect(repository.moveCalls, 1);
+    expect(repository.lastTargetWardrobeId, 'wd_other12ab');
+    expect(
+      container
+          .read(itemsControllerProvider('wd_abc123'))
+          .items
+          .any((item) => item.id == 'item_xyz123'),
+      isFalse,
+    );
+    expect(
+      container
+          .read(itemsControllerProvider('wd_other12ab'))
+          .items
+          .any((item) => item.id == 'item_xyz123'),
+      isTrue,
+    );
+  });
+
+  test(
+    'moveTo maps a 400 outfit block without dropping the source row',
+    () async {
+      container.read(itemsControllerProvider('wd_abc123'));
+      container.read(itemDetailControllerProvider(scope));
+      await settle();
+      repository.nextFailure = const ApiException(
+        message:
+            'Cannot move an item that is used in an outfit (outfit_friday1). '
+            'Remove it from outfits in the source wardrobe first.',
+        code: 'VALIDATION_ERROR',
+        statusCode: 400,
+      );
+
+      final moved = await container
+          .read(itemDetailControllerProvider(scope).notifier)
+          .moveTo('wd_other12ab');
+
+      expect(moved, isNull);
+      expect(
+        container.read(itemDetailControllerProvider(scope)).errorMessage,
+        ItemTransferMessages.outfitBlockWithId('outfit_friday1'),
+      );
+      expect(
+        container.read(itemsControllerProvider('wd_abc123')).items,
+        hasLength(1),
+      );
+    },
+  );
+
+  test(
+    'copyTo upserts the new item and queues item-limit paywall on 403',
+    () async {
+      final entitlements = FakeEntitlementRepository();
+      final paywall = FakePaywallGateway();
+      container.dispose();
+      container = ProviderContainer.test(
+        overrides: [
+          itemRepositoryProvider.overrideWithValue(repository),
+          entitlementRepositoryProvider.overrideWithValue(entitlements),
+          paywallGatewayProvider.overrideWithValue(paywall),
+          ...itemProcessingPollTestOverrides(),
+        ],
+      );
+      container.read(itemsControllerProvider('wd_abc123'));
+      container.read(itemsControllerProvider('wd_other12ab'));
+      container.read(itemDetailControllerProvider(scope));
+      await settle();
+      repository.nextFailure = const ApiException(
+        message: 'Free includes 5 clothing items.',
+        code: 'ENTITLEMENT_ITEM_LIMIT',
+        statusCode: 403,
+      );
+
+      final copied = await container
+          .read(itemDetailControllerProvider(scope).notifier)
+          .copyTo('wd_other12ab');
+
+      expect(copied, isNull);
+      expect(
+        container.read(itemDetailControllerProvider(scope)).errorMessage,
+        ItemTransferMessages.itemLimitUpgrade,
+      );
+      expect(
+        container.read(pendingPaywallProvider),
+        PaywallPlacement.itemLimit,
+      );
+      expect(
+        container.read(itemsControllerProvider('wd_abc123')).items,
+        hasLength(1),
+      );
+    },
+  );
+
+  test(
+    'copyTo keeps the source item and adds the copy to the target',
+    () async {
+      final entitlements = FakeEntitlementRepository();
+      container.dispose();
+      container = ProviderContainer.test(
+        overrides: [
+          itemRepositoryProvider.overrideWithValue(repository),
+          entitlementRepositoryProvider.overrideWithValue(entitlements),
+          paywallGatewayProvider.overrideWithValue(FakePaywallGateway()),
+          ...itemProcessingPollTestOverrides(),
+        ],
+      );
+      container.read(itemsControllerProvider('wd_abc123'));
+      container.read(itemsControllerProvider('wd_other12ab'));
+      container.read(itemDetailControllerProvider(scope));
+      await settle();
+
+      final copied = await container
+          .read(itemDetailControllerProvider(scope).notifier)
+          .copyTo('wd_other12ab');
+
+      expect(copied?.id, isNot('item_xyz123'));
+      expect(copied?.wardrobeId, 'wd_other12ab');
+      expect(repository.copyCalls, 1);
+      expect(
+        container.read(itemsControllerProvider('wd_abc123')).items.single.id,
+        'item_xyz123',
+      );
+      expect(
+        container
+            .read(itemsControllerProvider('wd_other12ab'))
+            .items
+            .any((item) => item.id == copied?.id),
+        isTrue,
+      );
+    },
+  );
+
+  test('moveTo rejects the source wardrobe without calling the API', () async {
+    container.read(itemDetailControllerProvider(scope));
+    await settle();
+
+    final moved = await container
+        .read(itemDetailControllerProvider(scope).notifier)
+        .moveTo('wd_abc123');
+
+    expect(moved, isNull);
+    expect(repository.moveCalls, 0);
+    expect(
+      container.read(itemDetailControllerProvider(scope)).errorMessage,
+      ItemTransferMessages.sameWardrobe,
+    );
   });
 }

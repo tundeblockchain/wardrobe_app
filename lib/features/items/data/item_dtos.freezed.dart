@@ -1739,4 +1739,267 @@ as String?,
 
 }
 
+
+/// @nodoc
+mixin _$TransferItemRequest {
+
+ String get targetWardrobeId;
+/// Create a copy of TransferItemRequest
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$TransferItemRequestCopyWith<TransferItemRequest> get copyWith => _$TransferItemRequestCopyWithImpl<TransferItemRequest>(this as TransferItemRequest, _$identity);
+
+  /// Serializes this TransferItemRequest to a JSON map.
+  Map<String, dynamic> toJson();
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is TransferItemRequest&&(identical(other.targetWardrobeId, targetWardrobeId) || other.targetWardrobeId == targetWardrobeId));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,targetWardrobeId);
+
+@override
+String toString() {
+  return 'TransferItemRequest(targetWardrobeId: $targetWardrobeId)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $TransferItemRequestCopyWith<$Res>  {
+  factory $TransferItemRequestCopyWith(TransferItemRequest value, $Res Function(TransferItemRequest) _then) = _$TransferItemRequestCopyWithImpl;
+@useResult
+$Res call({
+ String targetWardrobeId
+});
+
+
+
+
+}
+/// @nodoc
+class _$TransferItemRequestCopyWithImpl<$Res>
+    implements $TransferItemRequestCopyWith<$Res> {
+  _$TransferItemRequestCopyWithImpl(this._self, this._then);
+
+  final TransferItemRequest _self;
+  final $Res Function(TransferItemRequest) _then;
+
+/// Create a copy of TransferItemRequest
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? targetWardrobeId = null,}) {
+  return _then(_self.copyWith(
+targetWardrobeId: null == targetWardrobeId ? _self.targetWardrobeId : targetWardrobeId // ignore: cast_nullable_to_non_nullable
+as String,
+  ));
+}
+
+}
+
+
+/// Adds pattern-matching-related methods to [TransferItemRequest].
+extension TransferItemRequestPatterns on TransferItemRequest {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _TransferItemRequest value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _TransferItemRequest() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _TransferItemRequest value)  $default,){
+final _that = this;
+switch (_that) {
+case _TransferItemRequest():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _TransferItemRequest value)?  $default,){
+final _that = this;
+switch (_that) {
+case _TransferItemRequest() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String targetWardrobeId)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _TransferItemRequest() when $default != null:
+return $default(_that.targetWardrobeId);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String targetWardrobeId)  $default,) {final _that = this;
+switch (_that) {
+case _TransferItemRequest():
+return $default(_that.targetWardrobeId);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String targetWardrobeId)?  $default,) {final _that = this;
+switch (_that) {
+case _TransferItemRequest() when $default != null:
+return $default(_that.targetWardrobeId);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+@JsonSerializable()
+
+class _TransferItemRequest implements TransferItemRequest {
+  const _TransferItemRequest({required this.targetWardrobeId});
+  factory _TransferItemRequest.fromJson(Map<String, dynamic> json) => _$TransferItemRequestFromJson(json);
+
+@override final  String targetWardrobeId;
+
+/// Create a copy of TransferItemRequest
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$TransferItemRequestCopyWith<_TransferItemRequest> get copyWith => __$TransferItemRequestCopyWithImpl<_TransferItemRequest>(this, _$identity);
+
+@override
+Map<String, dynamic> toJson() {
+  return _$TransferItemRequestToJson(this, );
+}
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _TransferItemRequest&&(identical(other.targetWardrobeId, targetWardrobeId) || other.targetWardrobeId == targetWardrobeId));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,targetWardrobeId);
+
+@override
+String toString() {
+  return 'TransferItemRequest(targetWardrobeId: $targetWardrobeId)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$TransferItemRequestCopyWith<$Res> implements $TransferItemRequestCopyWith<$Res> {
+  factory _$TransferItemRequestCopyWith(_TransferItemRequest value, $Res Function(_TransferItemRequest) _then) = __$TransferItemRequestCopyWithImpl;
+@override @useResult
+$Res call({
+ String targetWardrobeId
+});
+
+
+
+
+}
+/// @nodoc
+class __$TransferItemRequestCopyWithImpl<$Res>
+    implements _$TransferItemRequestCopyWith<$Res> {
+  __$TransferItemRequestCopyWithImpl(this._self, this._then);
+
+  final _TransferItemRequest _self;
+  final $Res Function(_TransferItemRequest) _then;
+
+/// Create a copy of TransferItemRequest
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? targetWardrobeId = null,}) {
+  return _then(_TransferItemRequest(
+targetWardrobeId: null == targetWardrobeId ? _self.targetWardrobeId : targetWardrobeId // ignore: cast_nullable_to_non_nullable
+as String,
+  ));
+}
+
+
+}
+
 // dart format on

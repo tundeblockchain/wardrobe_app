@@ -114,6 +114,49 @@ class DioItemRepository implements ItemRepository {
     });
   }
 
+  @override
+  Future<Item> moveItem({
+    required String wardrobeId,
+    required String itemId,
+    required String targetWardrobeId,
+  }) {
+    return _transfer(
+      wardrobeId: wardrobeId,
+      itemId: itemId,
+      targetWardrobeId: targetWardrobeId,
+      action: 'move',
+    );
+  }
+
+  @override
+  Future<Item> copyItem({
+    required String wardrobeId,
+    required String itemId,
+    required String targetWardrobeId,
+  }) {
+    return _transfer(
+      wardrobeId: wardrobeId,
+      itemId: itemId,
+      targetWardrobeId: targetWardrobeId,
+      action: 'copy',
+    );
+  }
+
+  Future<Item> _transfer({
+    required String wardrobeId,
+    required String itemId,
+    required String targetWardrobeId,
+    required String action,
+  }) {
+    return _guard(() async {
+      final response = await _dio.post<dynamic>(
+        '${_itemPath(wardrobeId, itemId)}/$action',
+        data: TransferItemRequest(targetWardrobeId: targetWardrobeId).toJson(),
+      );
+      return parseItem(response.data);
+    });
+  }
+
   Future<T> _guard<T>(Future<T> Function() action) async {
     try {
       return await action();

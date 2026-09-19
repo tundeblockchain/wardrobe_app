@@ -1,13 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:wardrobe_app/core/network/api_exception.dart';
+import 'package:wardrobe_app/core/widgets/enlarged_image_popup.dart';
+import 'package:wardrobe_app/features/entitlements/data/dio_entitlement_repository.dart';
+import 'package:wardrobe_app/features/entitlements/data/paywall_gateway_provider.dart';
 import 'package:wardrobe_app/features/items/data/dio_item_repository.dart';
 import 'package:wardrobe_app/features/items/domain/item.dart';
 import 'package:wardrobe_app/features/items/domain/item_detail_meta.dart';
-import 'package:wardrobe_app/core/widgets/enlarged_image_popup.dart';
+import 'package:wardrobe_app/features/items/domain/item_transfer.dart';
 import 'package:wardrobe_app/features/items/presentation/item_detail_screen.dart';
 import 'package:wardrobe_app/features/items/presentation/widgets/item_browse_image.dart';
 import 'package:wardrobe_app/features/items/presentation/widgets/item_detail_meta_block.dart';
+import 'package:wardrobe_app/features/items/presentation/widgets/item_transfer_sheet.dart';
 import 'package:wardrobe_app/features/items/presentation/widgets/processing_status_chip.dart';
 import 'package:wardrobe_app/features/outfits/data/dio_outfit_repository.dart';
 import 'package:wardrobe_app/features/outfits/domain/outfit.dart';
@@ -17,6 +22,7 @@ import 'package:wardrobe_app/features/shopping_links/presentation/widgets/shoppi
 import 'package:wardrobe_app/features/wardrobes/data/dio_wardrobe_repository.dart';
 
 import '../../../helpers/date_stamp_matchers.dart';
+import '../../../helpers/fake_entitlements.dart';
 import '../../../helpers/fake_item_repository.dart';
 import '../../../helpers/fake_outfit_repository.dart';
 import '../../../helpers/fake_shopping_link_opener.dart';
@@ -45,8 +51,18 @@ void main() {
             repository ?? FakeItemRepository(seed: [testItem()]),
           ),
           wardrobeRepositoryProvider.overrideWithValue(
-            wardrobes ?? FakeWardrobeRepository(seed: [testWardrobe()]),
+            wardrobes ??
+                FakeWardrobeRepository(
+                  seed: [
+                    testWardrobe(),
+                    testWardrobe(id: 'wd_other12ab', name: 'Winter'),
+                  ],
+                ),
           ),
+          entitlementRepositoryProvider.overrideWithValue(
+            FakeEntitlementRepository(),
+          ),
+          paywallGatewayProvider.overrideWithValue(FakePaywallGateway()),
           outfitRepositoryProvider.overrideWithValue(
             outfits ?? FakeOutfitRepository(),
           ),
@@ -206,5 +222,105 @@ void main() {
     await tester.tap(find.byKey(ShoppingProductCard.cardKey(link.url)));
     await tester.pump();
     expect(opener.opened, [Uri.parse(link.url)]);
+  });
+
+  testWidgets('overflow Move / Copy opens a picker that hides this wardrobe', (
+    tester,
+  ) async {
+    await pumpDetail(tester);
+
+    expect(find.byKey(ItemDetailScreen.overflowMenuKey), findsOneWidget);
+    await tester.tap(find.byKey(ItemDetailScreen.overflowMenuKey));
+    await tester.pumpAndSettle();
+    expect(find.byKey(ItemDetailScreen.moveMenuKey), findsOneWidget);
+    expect(find.byKey(ItemDetailScreen.copyMenuKey), findsOneWidget);
+
+    await tester.tap(find.byKey(ItemDetailScreen.copyMenuKey));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(ItemTransferSheet.sheetKey), findsOneWidget);
+    expect(find.text('Copy to another wardrobe'), findsOneWidget);
+    expect(find.text('Winter'), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.byKey(ItemTransferSheet.sheetKey),
+        matching: find.text('Summer Clothes'),
+      ),
+      findsNothing,
+    );
+    expect(
+      find.byKey(ItemTransferSheet.destinationKey('wd_abc123')),
+      findsNothing,
+    );
+  });
+
+  testWidgets('copy confirm shows a success snackbar and keeps the item', (
+    tester,
+  ) async {
+    final items = FakeItemRepository(seed: [testItem()]);
+    await pumpDetail(tester, repository: items);
+
+    await tester.tap(find.byKey(ItemDetailScreen.overflowMenuKey));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(ItemDetailScreen.copyMenuKey));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Winter'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(ItemTransferSheet.confirmKey));
+    await tester.pumpAndSettle();
+
+    expect(items.copyCalls, 1);
+    expect(items.lastTargetWardrobeId, 'wd_other12ab');
+    expect(find.text('Copied to Winter.'), findsOneWidget);
+    expect(find.text('Black Nike T-Shirt'), findsWidgets);
+  });
+
+  testWidgets('move while the item is on an outfit shows a clear block', (
+    tester,
+  ) async {
+    await pumpDetail(
+      tester,
+      outfits: FakeOutfitRepository(
+        seed: [
+          testOutfit().copyWith(
+            items: const [
+              OutfitItem(itemId: 'item_xyz123', slot: ItemCategory.top),
+            ],
+          ),
+        ],
+      ),
+    );
+
+    await tester.tap(find.byKey(ItemDetailScreen.overflowMenuKey));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(ItemDetailScreen.moveMenuKey));
+    await tester.pumpAndSettle();
+
+    expect(find.text(ItemTransferMessages.outfitBlock), findsOneWidget);
+    expect(find.byKey(ItemTransferSheet.sheetKey), findsNothing);
+  });
+
+  testWidgets('copy 403 surfaces an upgrade CTA instead of a raw code', (
+    tester,
+  ) async {
+    final items = FakeItemRepository(seed: [testItem()]);
+    await pumpDetail(tester, repository: items);
+    items.nextFailure = const ApiException(
+      message: 'Free includes 5 clothing items.',
+      code: 'ENTITLEMENT_ITEM_LIMIT',
+      statusCode: 403,
+    );
+
+    await tester.tap(find.byKey(ItemDetailScreen.overflowMenuKey));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(ItemDetailScreen.copyMenuKey));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Winter'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(ItemTransferSheet.confirmKey));
+    await tester.pumpAndSettle();
+
+    expect(find.text(ItemTransferMessages.itemLimitUpgrade), findsWidgets);
+    expect(find.textContaining('ENTITLEMENT_ITEM_LIMIT'), findsNothing);
   });
 }
