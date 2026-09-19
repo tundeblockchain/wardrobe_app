@@ -5,6 +5,7 @@ import 'package:wardrobe_app/features/items/domain/item_acquired_at_patch.dart';
 import 'package:wardrobe_app/features/items/domain/item_list_filters.dart';
 import 'package:wardrobe_app/features/items/domain/item_repository.dart';
 import 'package:wardrobe_app/features/items/domain/item_subcategory_patch.dart';
+import 'package:wardrobe_app/features/items/domain/item_transfer.dart';
 
 /// In-memory [ItemRepository] for unit tests.
 class FakeItemRepository implements ItemRepository {
@@ -17,6 +18,10 @@ class FakeItemRepository implements ItemRepository {
   int createCalls = 0;
   int updateCalls = 0;
   int deleteCalls = 0;
+  int moveCalls = 0;
+  int copyCalls = 0;
+  String? lastTargetWardrobeId;
+  ItemTransferKind? lastTransferKind;
   String? lastImageKey;
   String? lastSubcategoryArg;
   ItemSubcategoryPatch lastSubcategoryPatch = const ItemSubcategoryPatch.omit();
@@ -171,6 +176,94 @@ class FakeItemRepository implements ItemRepository {
     items.removeWhere(
       (item) => item.wardrobeId == wardrobeId && item.id == itemId,
     );
+  }
+
+  @override
+  Future<Item> moveItem({
+    required String wardrobeId,
+    required String itemId,
+    required String targetWardrobeId,
+  }) async {
+    moveCalls++;
+    lastTargetWardrobeId = targetWardrobeId;
+    lastTransferKind = ItemTransferKind.move;
+    _maybeFail();
+    if (targetWardrobeId == wardrobeId) {
+      throw const ApiException(
+        message:
+            'targetWardrobeId must be a different wardrobe than the source.',
+        code: 'VALIDATION_ERROR',
+        statusCode: 400,
+      );
+    }
+    final index = items.indexWhere(
+      (item) => item.wardrobeId == wardrobeId && item.id == itemId,
+    );
+    if (index < 0) {
+      throw const ApiException(
+        message: 'Item not found.',
+        code: 'ITEM_NOT_FOUND',
+        statusCode: 404,
+      );
+    }
+    final current = items[index];
+    if (current.processingStatus.isInProgress) {
+      throw const ApiException(
+        message: 'Item is still processing. Wait until READY or FAILED before moving or copying.',
+        code: 'VALIDATION_ERROR',
+        statusCode: 400,
+      );
+    }
+    final moved = current.copyWith(
+      wardrobeId: targetWardrobeId,
+      updatedAt: DateTime.utc(2026, 9, 19, 12),
+    );
+    items[index] = moved;
+    return moved;
+  }
+
+  @override
+  Future<Item> copyItem({
+    required String wardrobeId,
+    required String itemId,
+    required String targetWardrobeId,
+  }) async {
+    copyCalls++;
+    lastTargetWardrobeId = targetWardrobeId;
+    lastTransferKind = ItemTransferKind.copy;
+    _maybeFail();
+    if (targetWardrobeId == wardrobeId) {
+      throw const ApiException(
+        message:
+            'targetWardrobeId must be a different wardrobe than the source.',
+        code: 'VALIDATION_ERROR',
+        statusCode: 400,
+      );
+    }
+    final current = items.firstWhere(
+      (item) => item.wardrobeId == wardrobeId && item.id == itemId,
+      orElse: () => throw const ApiException(
+        message: 'Item not found.',
+        code: 'ITEM_NOT_FOUND',
+        statusCode: 404,
+      ),
+    );
+    if (current.processingStatus.isInProgress) {
+      throw const ApiException(
+        message: 'Item is still processing. Wait until READY or FAILED before moving or copying.',
+        code: 'VALIDATION_ERROR',
+        statusCode: 400,
+      );
+    }
+    final now = DateTime.utc(2026, 9, 19, 12);
+    final copied = current.copyWith(
+      id: 'item_copy_${items.length + 1}',
+      wardrobeId: targetWardrobeId,
+      createdAt: now,
+      updatedAt: now,
+    );
+    items.add(copied);
+    return copied;
   }
 
   bool _matchesFilters(Item item, ItemListFilters filters) {

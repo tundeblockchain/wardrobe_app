@@ -282,5 +282,17 @@ void main() {
         'name': 'Navy Tee',
       });
     });
+
+    test('transfer serializes targetWardrobeId (WARDROBE-118)', () {
+      expect(
+        const TransferItemRequest(targetWardrobeId: 'wd_other12ab').toJson(),
+        {'targetWardrobeId': 'wd_other12ab'},
+      );
+      expect(
+        TransferItemRequest.fromJson({'targetWardrobeId': 'wd_other12ab'})
+            .targetWardrobeId,
+        'wd_other12ab',
+      );
+    });
   });
 }

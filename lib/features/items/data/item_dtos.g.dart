@@ -145,3 +145,10 @@ Map<String, dynamic> _$UpdateItemRequestToJson(_UpdateItemRequest instance) =>
       'brand': ?instance.brand,
       'imageKey': ?instance.imageKey,
     };
+
+_TransferItemRequest _$TransferItemRequestFromJson(Map<String, dynamic> json) =>
+    _TransferItemRequest(targetWardrobeId: json['targetWardrobeId'] as String);
+
+Map<String, dynamic> _$TransferItemRequestToJson(
+  _TransferItemRequest instance,
+) => <String, dynamic>{'targetWardrobeId': instance.targetWardrobeId};

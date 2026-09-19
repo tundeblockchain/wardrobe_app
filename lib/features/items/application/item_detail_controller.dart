@@ -3,10 +3,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/lifecycle/app_lifecycle.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../core/session/session_gate.dart';
+import '../../entitlements/application/entitlements_controller.dart';
+import '../../entitlements/domain/paywall_placement.dart';
 import '../data/dio_item_repository.dart';
 import '../domain/item.dart';
 import '../domain/item_repository.dart';
+import '../domain/item_transfer.dart';
 import 'item_detail_state.dart';
+import 'item_local_preview_cache.dart';
 import 'item_scope.dart';
 import 'items_controller.dart';
 
@@ -114,6 +118,98 @@ class ItemDetailController extends Notifier<ItemDetailState> {
       );
       return false;
     }
+  }
+
+  Future<Item?> moveTo(String targetWardrobeId) {
+    return _transfer(ItemTransferKind.move, targetWardrobeId);
+  }
+
+  Future<Item?> copyTo(String targetWardrobeId) {
+    return _transfer(ItemTransferKind.copy, targetWardrobeId);
+  }
+
+  Future<Item?> _transfer(
+    ItemTransferKind kind,
+    String targetWardrobeId,
+  ) async {
+    final trimmedTarget = targetWardrobeId.trim();
+    if (trimmedTarget.isEmpty || trimmedTarget == scope.wardrobeId) {
+      state = state.copyWith(errorMessage: ItemTransferMessages.sameWardrobe);
+      return null;
+    }
+    final current = state.item;
+    if (current != null && !canTransferItem(current)) {
+      state = state.copyWith(errorMessage: ItemTransferMessages.processing);
+      return null;
+    }
+
+    state = state.copyWith(isSaving: true, clearError: true);
+    try {
+      final item = kind == ItemTransferKind.move
+          ? await _repository.moveItem(
+              wardrobeId: scope.wardrobeId,
+              itemId: scope.itemId,
+              targetWardrobeId: trimmedTarget,
+            )
+          : await _repository.copyItem(
+              wardrobeId: scope.wardrobeId,
+              itemId: scope.itemId,
+              targetWardrobeId: trimmedTarget,
+            );
+      if (!ref.mounted) {
+        return item;
+      }
+      _publishTransfer(kind, item);
+      state = state.copyWith(isSaving: false, clearError: true);
+      return item;
+    } on ApiException catch (error) {
+      if (!ref.mounted) {
+        return null;
+      }
+      if (kind.countsTowardItemLimit) {
+        queueEntitlementPaywall(
+          ref,
+          error,
+          fallback: PaywallPlacement.itemLimit,
+        );
+      }
+      state = state.copyWith(
+        isSaving: false,
+        errorMessage: mapItemTransferError(error, kind: kind),
+      );
+      return null;
+    } catch (_) {
+      if (!ref.mounted) {
+        return null;
+      }
+      state = state.copyWith(
+        isSaving: false,
+        errorMessage: ItemTransferMessages.failed(kind),
+      );
+      return null;
+    }
+  }
+
+  void _publishTransfer(ItemTransferKind kind, Item item) {
+    if (kind == ItemTransferKind.move) {
+      ref
+          .read(itemsControllerProvider(scope.wardrobeId).notifier)
+          .remove(scope.itemId);
+      ref.read(itemsControllerProvider(item.wardrobeId).notifier).upsert(item);
+      return;
+    }
+    ref.read(itemsControllerProvider(item.wardrobeId).notifier).upsert(item);
+    final preview = ref.read(itemLocalPreviewCacheProvider)[scope.itemId];
+    if (preview != null) {
+      ref.read(itemLocalPreviewCacheProvider.notifier).store(item.id, preview);
+    }
+    // Copy counts as a catalog create — refresh GET /me usage.
+    Future<void>.microtask(() {
+      if (!ref.mounted) {
+        return;
+      }
+      ref.read(entitlementsControllerProvider.notifier).refresh();
+    });
   }
 }
 

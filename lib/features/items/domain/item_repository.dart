@@ -36,4 +36,18 @@ abstract interface class ItemRepository {
   });
 
   Future<void> deleteItem({required String wardrobeId, required String itemId});
+
+  /// Relocates the same `itemId` to [targetWardrobeId]. Backend `200`.
+  Future<Item> moveItem({
+    required String wardrobeId,
+    required String itemId,
+    required String targetWardrobeId,
+  });
+
+  /// Creates a new `itemId` in [targetWardrobeId] (shared S3 keys). Backend `201`.
+  Future<Item> copyItem({
+    required String wardrobeId,
+    required String itemId,
+    required String targetWardrobeId,
+  });
 }

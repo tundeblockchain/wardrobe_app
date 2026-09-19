@@ -86,7 +86,22 @@ against that contract and covered with mocked unit tests.
 Authenticated routes nested under a wardrobe:
 
 - `/wardrobes/:wardrobeId/items/create` — camera/gallery + metadata
-- `/wardrobes/:wardrobeId/items/:itemId` — item detail, delete
+- `/wardrobes/:wardrobeId/items/:itemId` — item detail, delete, move / copy
+  to another owned wardrobe
+  ([WARDROBE-119](https://tundetunde000.atlassian.net/browse/WARDROBE-119)).
+  Overflow **Move** / **Copy** opens a destination picker (hides the current
+  wardrobe), then confirm. Consumes Backend
+  [WARDROBE-118](https://tundetunde000.atlassian.net/browse/WARDROBE-118)
+  (`POST /wardrobes/{wardrobeId}/items/{itemId}/move|copy` with
+  `{ "targetWardrobeId" }`, contract tip `8b6a092` / wardrobe-backend#51).
+  Move returns the same `itemId` (`200`) and navigates to the target
+  wardrobe. Copy returns a new `itemId` (`201`, shared S3 keys) and stays
+  on the source item. `PENDING` / `PROCESSING` cannot transfer. Move is
+  blocked while the item is on a source outfit (`400`, message may include
+  `outfitId`). Copy on Free at the 5-item cap returns
+  `403 ENTITLEMENT_ITEM_LIMIT` and queues the existing item-limit paywall
+  (WARDROBE-117 may be parallel). Neither action enqueues
+  `PROCESS_WARDROBE_ITEM`. Lists refresh after success.
 - `/wardrobes/:wardrobeId/items/:itemId/edit` — edit metadata (optional new photo).
   Subcategory is optional. Empty / none is saveable. PATCH follows Backend
   [WARDROBE-87](https://tundetunde000.atlassian.net/browse/WARDROBE-87)

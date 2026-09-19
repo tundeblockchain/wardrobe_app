@@ -418,6 +418,145 @@ void main() {
     expect(adapter.requests.single.method, 'DELETE');
   });
 
+  test('moveItem posts targetWardrobeId and maps 200 ClothingItem', () async {
+    repository = buildRepository([
+      HttpScript(
+        statusCode: 200,
+        body: {...payload, 'wardrobeId': 'wd_other12ab'},
+      ),
+    ]);
+
+    final result = await repository.moveItem(
+      wardrobeId: 'wd_abc123',
+      itemId: 'item_xyz123',
+      targetWardrobeId: 'wd_other12ab',
+    );
+
+    expect(result.id, 'item_xyz123');
+    expect(result.wardrobeId, 'wd_other12ab');
+    expect(adapter.requests.single.method, 'POST');
+    expect(
+      adapter.requests.single.path,
+      '/wardrobes/wd_abc123/items/item_xyz123/move',
+    );
+    expect(_requestBody(adapter.requests.single), {
+      'targetWardrobeId': 'wd_other12ab',
+    });
+  });
+
+  test('copyItem posts targetWardrobeId and maps 201 ClothingItem', () async {
+    repository = buildRepository([
+      HttpScript(
+        statusCode: 201,
+        body: {
+          ...payload,
+          'itemId': 'item_copy12ab',
+          'wardrobeId': 'wd_other12ab',
+        },
+      ),
+    ]);
+
+    final result = await repository.copyItem(
+      wardrobeId: 'wd_abc123',
+      itemId: 'item_xyz123',
+      targetWardrobeId: 'wd_other12ab',
+    );
+
+    expect(result.id, 'item_copy12ab');
+    expect(result.wardrobeId, 'wd_other12ab');
+    expect(adapter.requests.single.method, 'POST');
+    expect(
+      adapter.requests.single.path,
+      '/wardrobes/wd_abc123/items/item_xyz123/copy',
+    );
+    expect(_requestBody(adapter.requests.single), {
+      'targetWardrobeId': 'wd_other12ab',
+    });
+  });
+
+  test('moveItem maps 400 VALIDATION_ERROR for in-flight items', () async {
+    repository = buildRepository([
+      const HttpScript(
+        statusCode: 400,
+        body: {
+          'error': {
+            'code': 'VALIDATION_ERROR',
+            'message': 'Item is still processing. Wait until READY or FAILED before moving or copying.',
+          },
+        },
+      ),
+    ]);
+
+    expect(
+      () => repository.moveItem(
+        wardrobeId: 'wd_abc123',
+        itemId: 'item_xyz123',
+        targetWardrobeId: 'wd_other12ab',
+      ),
+      throwsA(
+        isA<ApiException>()
+            .having((error) => error.code, 'code', 'VALIDATION_ERROR')
+            .having((error) => error.statusCode, 'statusCode', 400),
+      ),
+    );
+  });
+
+  test('copyItem maps 403 ENTITLEMENT_ITEM_LIMIT', () async {
+    repository = buildRepository([
+      const HttpScript(
+        statusCode: 403,
+        body: {
+          'error': {
+            'code': 'ENTITLEMENT_ITEM_LIMIT',
+            'message': 'Free includes 5 clothing items.',
+          },
+        },
+      ),
+    ]);
+
+    expect(
+      () => repository.copyItem(
+        wardrobeId: 'wd_abc123',
+        itemId: 'item_xyz123',
+        targetWardrobeId: 'wd_other12ab',
+      ),
+      throwsA(
+        isA<ApiException>()
+            .having((error) => error.code, 'code', 'ENTITLEMENT_ITEM_LIMIT')
+            .having((error) => error.statusCode, 'statusCode', 403),
+      ),
+    );
+  });
+
+  test('moveItem maps 404 WARDROBE_NOT_FOUND for a missing target', () async {
+    repository = buildRepository([
+      const HttpScript(
+        statusCode: 404,
+        body: {
+          'error': {
+            'code': 'WARDROBE_NOT_FOUND',
+            'message': 'Wardrobe not found.',
+          },
+        },
+      ),
+    ]);
+
+    expect(
+      () => repository.moveItem(
+        wardrobeId: 'wd_abc123',
+        itemId: 'item_xyz123',
+        targetWardrobeId: 'wd_missing',
+      ),
+      throwsA(
+        isA<ApiException>().having(
+          (error) => error.code,
+          'code',
+          'WARDROBE_NOT_FOUND',
+        ),
+      ),
+    );
+  });
+
   test('maps nested backend error envelope to ApiException', () async {
     repository = buildRepository([
       const HttpScript(
