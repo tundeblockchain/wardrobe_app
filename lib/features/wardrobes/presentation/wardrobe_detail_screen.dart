@@ -14,6 +14,8 @@ import '../../entitlements/presentation/entitlement_guard.dart';
 import '../../search/presentation/app_search_gloss_bar.dart';
 import '../../../core/widgets/entity_delete.dart';
 import '../../coaches/domain/coach_screen.dart';
+import '../../coaches/domain/empty_convert_copy.dart';
+import '../../coaches/presentation/empty_convert_coach.dart';
 import '../../coaches/presentation/screen_coach_host.dart';
 import '../../items/application/items_controller.dart';
 import '../../items/application/items_state.dart';
@@ -541,17 +543,25 @@ class _ItemsSection extends ConsumerWidget {
       );
     }
     if (state.isEmpty && state.filters.isEmpty) {
-      return AppEmptyState(
+      return EmptyConvertCoach(
         key: WardrobeDetailScreen.itemsEmptyKey,
         icon: Icons.add_a_photo_outlined,
-        title: 'No items yet',
-        message: 'Add a photo of a clothing item.',
-        actionLabel: 'Add item',
-        onAction: () => pushIfEntitled(
+        title: EmptyConvertCopy.wardrobeTitle,
+        message: EmptyConvertCopy.wardrobeBody,
+        primaryLabel: EmptyConvertCopy.wardrobePrimary,
+        secondaryLabel: EmptyConvertCopy.wardrobeSecondary,
+        onPrimary: () => pushIfEntitled(
           context,
           ref,
           EntitlementAction.createItem,
-          AppRoutes.createItem(wardrobeId),
+          AppRoutes.createItem(wardrobeId, pick: 'gallery'),
+          wardrobeId: wardrobeId,
+        ),
+        onSecondary: () => pushIfEntitled(
+          context,
+          ref,
+          EntitlementAction.createItem,
+          AppRoutes.createItem(wardrobeId, pick: 'camera'),
           wardrobeId: wardrobeId,
         ),
       );

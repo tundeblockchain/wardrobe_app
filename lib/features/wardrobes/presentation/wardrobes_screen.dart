@@ -9,6 +9,8 @@ import '../../../core/widgets/app_empty_state.dart';
 import '../../../core/widgets/app_fade_in.dart';
 import '../../inbox/presentation/widgets/inbox_badge_button.dart';
 import '../../coaches/domain/coach_screen.dart';
+import '../../coaches/domain/empty_convert_copy.dart';
+import '../../coaches/presentation/empty_convert_coach.dart';
 import '../../coaches/presentation/screen_coach_host.dart';
 import '../../entitlements/domain/entitlement_action.dart';
 import '../../entitlements/presentation/entitlement_guard.dart';
@@ -134,13 +136,13 @@ class _WardrobesScreenState extends ConsumerState<WardrobesScreen>
                   onRetry: _refreshList,
                 )
               else if (state.isEmpty)
-                AppEmptyState(
+                EmptyConvertCoach(
                   key: WardrobesScreen.emptyStateKey,
                   icon: Icons.checkroom_outlined,
-                  title: 'No wardrobes yet',
-                  message: 'Create a wardrobe to get started.',
-                  actionLabel: 'Create wardrobe',
-                  onAction: () => pushIfEntitled(
+                  title: EmptyConvertCopy.homeTitle,
+                  message: EmptyConvertCopy.homeBody,
+                  primaryLabel: EmptyConvertCopy.homeAction,
+                  onPrimary: () => pushIfEntitled(
                     context,
                     ref,
                     EntitlementAction.createWardrobe,

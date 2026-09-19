@@ -7,6 +7,7 @@ import 'package:wardrobe_app/features/items/domain/upload_ticket.dart';
 /// In-memory [UploadRepository] for unit tests.
 class FakeUploadRepository implements UploadRepository {
   ApiException? nextFailure;
+  int? failOnCreateCall;
   int createCalls = 0;
   int uploadCalls = 0;
   String? lastContentType;
@@ -19,10 +20,18 @@ class FakeUploadRepository implements UploadRepository {
   }) async {
     createCalls++;
     lastContentType = contentType;
+    if (failOnCreateCall == createCalls) {
+      throw nextFailure ??
+          const ApiException(
+            message: 'Upload ticket failed.',
+            code: 'UPLOAD_INVALID',
+          );
+    }
     _maybeFail();
+    final suffix = createCalls == 1 ? '' : '$createCalls';
     return UploadTicket(
-      uploadUrl: 'https://s3.example.com/uploads/uuid.jpg',
-      objectKey: 'users/uid/uploads/uuid.jpg',
+      uploadUrl: 'https://s3.example.com/uploads/uuid$suffix.jpg',
+      objectKey: 'users/uid/uploads/uuid$suffix.jpg',
       expiresIn: 900,
     );
   }

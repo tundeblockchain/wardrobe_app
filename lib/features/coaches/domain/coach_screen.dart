@@ -18,16 +18,16 @@ class CoachCopy {
   static const home = CoachCopy(
     title: 'Your wardrobes',
     body:
-        'This is home. Open a wardrobe to manage items and outfits, or tap + '
-        'to start a new closet. The carousel shows pieces from every closet.',
+        'This is home. Create a wardrobe to add clothes, then pick photos from '
+        'your gallery. Tap + to start your first closet.',
     icon: Icons.checkroom_outlined,
   );
 
   static const wardrobe = CoachCopy(
     title: 'Inside a wardrobe',
     body:
-        'Swipe clothing cards, filter by type, and jump to outfits, '
-        'suggestions, or the dressing room. Tap + to photograph a new piece.',
+        'Add your first piece from the gallery or camera. Swipe cards, filter '
+        'by type, and jump to outfits or the dressing room.',
     icon: Icons.style_outlined,
   );
 

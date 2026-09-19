@@ -8,18 +8,23 @@ Jira: [WARDROBE-40](https://tundetunde000.atlassian.net/browse/WARDROBE-40)
 
 ## What the user sees
 
-- **Gallery / add-item / replace photo** — Android Photo Picker (one image).
+- **Gallery / add-item** — Android Photo Picker. Add-item uses multi-select
+  (`pickMultiImage`) so several clothing photos can become items in one flow
+  ([WARDROBE-113](https://tundetunde000.atlassian.net/browse/WARDROBE-113)).
+  Replace-photo and other single-image surfaces still pick one image.
   On Android 16+ `image_picker` always uses Photo Picker. On 15 and below the
   client sets `ImagePickerAndroid.useAndroidPhotoPicker = true` before any
   pick.
-- **Camera** — still the platform camera capture flow. `CAMERA` stays in the
-  manifest (`android.hardware.camera` remains optional).
+- **Camera** — still the platform camera capture flow (one photo). `CAMERA`
+  stays in the manifest (`android.hardware.camera` remains optional).
 - **iOS** — unchanged (`NSCameraUsageDescription` /
   `NSPhotoLibraryUsageDescription`). No shared picker API change beyond the
   Android-only Photo Picker flag (a no-op on iOS).
 
 Selected bytes still follow the existing upload path:
-`POST /uploads` → `PUT` to `uploadUrl` → create/update item with `imageKey`.
+`POST /uploads` → `PUT` to `uploadUrl` → create item with `imageKey`.
+A multi-add runs that path once per photo. If one photo fails, earlier
+successes stay in the wardrobe.
 
 ## Play Console
 

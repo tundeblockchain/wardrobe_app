@@ -25,6 +25,12 @@ void main() {
     expect(find.text('Acquired / purchased (optional)'), findsOneWidget);
     expect(find.text('Gallery'), findsOneWidget);
     expect(find.text('Camera'), findsOneWidget);
+    expect(
+      find.text(
+        'Photograph a clothing item or pick several from your gallery.',
+      ),
+      findsOneWidget,
+    );
 
     await tester.tap(find.byKey(AddItemScreen.galleryButtonKey));
     await tester.pumpAndSettle();

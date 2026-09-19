@@ -83,7 +83,8 @@ void main() {
 
     expect(find.byType(WardrobesScreen), findsOneWidget);
     expect(find.byKey(WardrobesScreen.emptyStateKey), findsOneWidget);
-    expect(find.text('No wardrobes yet'), findsOneWidget);
+    expect(find.text('Start your first wardrobe'), findsOneWidget);
+    expect(find.text('Create wardrobe'), findsOneWidget);
     expect(find.byType(WardrobeListCard), findsNothing);
     expect(find.byKey(HomeClothingCarousel.carouselKey), findsNothing);
     expect(find.textContaining('Signed in as'), findsNothing);

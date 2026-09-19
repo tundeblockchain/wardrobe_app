@@ -7,6 +7,7 @@ import '../../features/auth/presentation/forgot_password_screen.dart';
 import '../../features/auth/presentation/login_screen.dart';
 import '../../features/auth/presentation/signup_screen.dart';
 import '../../features/auth/presentation/splash_screen.dart';
+import '../../features/items/domain/add_item_initial_pick.dart';
 import '../../features/items/presentation/add_item_screen.dart';
 import '../../features/items/presentation/edit_item_screen.dart';
 import '../../features/items/presentation/item_detail_screen.dart';
@@ -220,7 +221,12 @@ final routerProvider = Provider<GoRouter>((ref) {
                 path: 'items/create',
                 builder: (context, state) {
                   final wardrobeId = state.pathParameters['wardrobeId']!;
-                  return AddItemScreen(wardrobeId: wardrobeId);
+                  return AddItemScreen(
+                    wardrobeId: wardrobeId,
+                    initialPick: AddItemInitialPick.tryParse(
+                      state.uri.queryParameters['pick'],
+                    ),
+                  );
                 },
               ),
               GoRoute(

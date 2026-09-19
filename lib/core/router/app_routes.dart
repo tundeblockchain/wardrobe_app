@@ -17,8 +17,13 @@ abstract final class AppRoutes {
 
   static String wardrobeDetail(String wardrobeId) => '/wardrobes/$wardrobeId';
 
-  static String createItem(String wardrobeId) =>
-      '/wardrobes/$wardrobeId/items/create';
+  static String createItem(String wardrobeId, {String? pick}) {
+    final path = '/wardrobes/$wardrobeId/items/create';
+    if (pick == null || pick.isEmpty) {
+      return path;
+    }
+    return '$path?pick=$pick';
+  }
 
   static String itemDetail(String wardrobeId, String itemId) =>
       '/wardrobes/$wardrobeId/items/$itemId';

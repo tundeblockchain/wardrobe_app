@@ -85,7 +85,9 @@ void main() {
     await pumpDetail(tester);
 
     expect(find.byKey(WardrobeDetailScreen.itemsEmptyKey), findsOneWidget);
-    expect(find.text('No items yet'), findsOneWidget);
+    expect(find.text('Add your first piece'), findsOneWidget);
+    expect(find.text('Add from gallery'), findsOneWidget);
+    expect(find.text('Take a photo'), findsOneWidget);
     expect(find.byType(ItemSwipeDeck), findsNothing);
     expect(find.byType(ItemFilterBar), findsNothing);
   });
@@ -105,7 +107,7 @@ void main() {
       expect(suggestionsY, lessThan(dressingY));
 
       expect(find.byKey(WardrobeDetailScreen.itemsEmptyKey), findsOneWidget);
-      expect(find.text('No items yet'), findsOneWidget);
+      expect(find.text('Add your first piece'), findsOneWidget);
       expect(
         find.text('Build a look from items in this wardrobe'),
         findsOneWidget,
