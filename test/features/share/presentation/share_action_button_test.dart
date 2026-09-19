@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:wardrobe_app/core/config/app_config.dart';
 import 'package:wardrobe_app/features/share/application/share_controller.dart';
 import 'package:wardrobe_app/features/share/domain/share_errors.dart';
 import 'package:wardrobe_app/features/share/presentation/widgets/share_action_button.dart';
@@ -15,19 +14,17 @@ void main() {
 
   Future<void> pumpButton(
     WidgetTester tester, {
-    List<Override> extra = const [],
     FakeShareRepository? repository,
     FakeShareSheet? sheet,
+    String landingBaseUrl = testShareLandingBaseUrl,
   }) async {
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [
-          ...shareTestOverrides(
-            repository: repository ?? FakeShareRepository(),
-            sheet: sheet ?? FakeShareSheet(),
-          ),
-          ...extra,
-        ],
+        overrides: shareTestOverrides(
+          repository: repository ?? FakeShareRepository(),
+          sheet: sheet ?? FakeShareSheet(),
+          landingBaseUrl: landingBaseUrl,
+        ),
         child: Consumer(
           builder: (context, ref, _) {
             return MaterialApp(
@@ -77,11 +74,7 @@ void main() {
       tester,
       repository: repository,
       sheet: sheet,
-      extra: [
-        appConfigProvider.overrideWithValue(
-          const AppConfig(apiBaseUrl: 'https://api.example.com'),
-        ),
-      ],
+      landingBaseUrl: '',
     );
 
     await tester.tap(find.byKey(buttonKey));
@@ -98,7 +91,7 @@ void main() {
         overrides: shareTestOverrides(),
         child: MediaQuery(
           data: const MediaQueryData(disableAnimations: true),
-          child: const MaterialApp(
+          child: MaterialApp(
             home: Scaffold(
               appBar: AppBar(actions: [ShareActionButton(onShare: _noopShare)]),
             ),

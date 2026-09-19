@@ -1,4 +1,3 @@
-import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wardrobe_app/core/network/api_exception.dart';
 import 'package:wardrobe_app/core/network/dio_client.dart';
