@@ -93,18 +93,20 @@ void main() {
   });
 
   testWidgets(
-    'wardrobe detail sections are items, outfits, suggestions, then dressing room',
+    'wardrobe detail sections are items, outfits, suggestions, worn on, then dressing room',
     (tester) async {
       await pumpDetail(tester);
 
       final itemsY = tester.getTopLeft(find.text('Items')).dy;
       final outfitsY = tester.getTopLeft(find.text('Outfits')).dy;
       final suggestionsY = tester.getTopLeft(find.text('Suggestions')).dy;
+      final wornOnY = tester.getTopLeft(find.text('Worn on')).dy;
       final dressingY = tester.getTopLeft(find.text('Dressing room')).dy;
 
       expect(itemsY, lessThan(outfitsY));
       expect(outfitsY, lessThan(suggestionsY));
-      expect(suggestionsY, lessThan(dressingY));
+      expect(suggestionsY, lessThan(wornOnY));
+      expect(wornOnY, lessThan(dressingY));
 
       expect(find.byKey(WardrobeDetailScreen.itemsEmptyKey), findsOneWidget);
       expect(find.text('Add your first piece'), findsOneWidget);
@@ -113,6 +115,8 @@ void main() {
         findsOneWidget,
       );
       expect(find.text('No suggestions yet'), findsOneWidget);
+      expect(find.byKey(WardrobeDetailScreen.wornOnButtonKey), findsOneWidget);
+      expect(find.text('Calendar'), findsOneWidget);
       expect(find.text('Virtual try-on'), findsOneWidget);
       expect(
         find.byKey(WardrobeDetailScreen.dressingRoomButtonKey),
