@@ -22,6 +22,8 @@ import '../../features/wardrobes/application/wardrobe_cover_provider.dart';
 import '../../features/wardrobes/application/wardrobe_detail_controller.dart';
 import '../../features/wardrobes/application/wardrobe_items_provider.dart';
 import '../../features/wardrobes/application/wardrobes_controller.dart';
+import '../../features/worn_on/application/outfit_worn_on_controller.dart';
+import '../../features/worn_on/application/wardrobe_worn_on_controller.dart';
 import 'session_local_store.dart';
 
 /// Drops every in-memory and on-device cache tied to the previous account.
@@ -63,6 +65,8 @@ void invalidateUserScopedProviders(Ref ref) {
   ref.invalidate(recommendationsControllerProvider);
   ref.invalidate(recommendationDetailControllerProvider);
   ref.invalidate(tryOnControllerProvider);
+  ref.invalidate(outfitWornOnControllerProvider);
+  ref.invalidate(wardrobeWornOnControllerProvider);
   ref.invalidate(personalAiProfilesControllerProvider);
   ref.invalidate(genericModelsControllerProvider);
   ref.invalidate(selectedAiProfileProvider);

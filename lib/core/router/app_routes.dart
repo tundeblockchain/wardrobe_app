@@ -36,6 +36,9 @@ abstract final class AppRoutes {
   static String editOutfit(String wardrobeId, String outfitId) =>
       '/wardrobes/$wardrobeId/outfits/$outfitId/edit';
 
+  static String wardrobeWornOn(String wardrobeId) =>
+      '/wardrobes/$wardrobeId/worn-on';
+
   static String dressingRoom(String wardrobeId) =>
       '/wardrobes/$wardrobeId/try-on';
 

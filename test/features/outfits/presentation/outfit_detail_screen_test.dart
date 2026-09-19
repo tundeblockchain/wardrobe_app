@@ -18,6 +18,7 @@ import '../../../helpers/date_stamp_matchers.dart';
 import '../../../helpers/fake_item_repository.dart';
 import '../../../helpers/fake_outfit_repository.dart';
 import '../../../helpers/test_app.dart';
+import '../../../helpers/worn_on_test_overrides.dart';
 
 void main() {
   Future<void> pumpDetail(WidgetTester tester) async {
@@ -49,6 +50,7 @@ void main() {
               ],
             ),
           ),
+          ...wornOnTestOverrides(),
         ],
         child: const MaterialApp(
           home: OutfitDetailScreen(
@@ -69,6 +71,7 @@ void main() {
     expect(find.byType(OutfitDetailScreen), findsOneWidget);
     expect(find.text('Friday Night'), findsWidgets);
     expect(find.text('Items'), findsOneWidget);
+    expect(find.text('Worn on'), findsOneWidget);
     expect(find.byKey(OutfitHeroCard.cardKey), findsOneWidget);
     expect(find.byKey(OutfitHeroCard.tryOnHintKey), findsOneWidget);
     expect(find.byKey(OutfitItemSlider.sliderKey), findsOneWidget);
@@ -103,6 +106,7 @@ void main() {
             ),
           ),
           itemRepositoryProvider.overrideWithValue(FakeItemRepository()),
+          ...wornOnTestOverrides(),
         ],
         child: const MaterialApp(
           home: OutfitDetailScreen(
@@ -139,6 +143,7 @@ void main() {
             ),
           ),
           itemRepositoryProvider.overrideWithValue(FakeItemRepository()),
+          ...wornOnTestOverrides(),
         ],
         child: const MaterialApp(
           home: OutfitDetailScreen(
@@ -205,6 +210,7 @@ void main() {
         overrides: [
           outfitRepositoryProvider.overrideWithValue(outfits),
           itemRepositoryProvider.overrideWithValue(FakeItemRepository()),
+          ...wornOnTestOverrides(),
         ],
         child: const MaterialApp(
           home: ScaffoldMessenger(

@@ -58,6 +58,7 @@ class WardrobeDetailScreen extends ConsumerStatefulWidget {
     'wardrobe_detail_recommendations',
   );
   static const dressingRoomButtonKey = Key('wardrobe_detail_dressing_room');
+  static const wornOnButtonKey = Key('wardrobe_detail_worn_on');
 
   @override
   ConsumerState<WardrobeDetailScreen> createState() =>
@@ -246,6 +247,20 @@ class _WardrobeDetailScreenState extends ConsumerState<WardrobeDetailScreen>
           _RecommendationsSection(
             wardrobeId: wardrobeId,
             state: recommendationsState,
+          ),
+          const SizedBox(height: 32),
+          Text('Worn on', style: Theme.of(context).textTheme.titleMedium),
+          const SizedBox(height: 12),
+          ListTile(
+            key: WardrobeDetailScreen.wornOnButtonKey,
+            contentPadding: EdgeInsets.zero,
+            leading: const CircleAvatar(
+              child: Icon(Icons.calendar_month_outlined),
+            ),
+            title: const Text('Calendar'),
+            subtitle: const Text('See which outfits you wore this month'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => context.push(AppRoutes.wardrobeWornOn(wardrobeId)),
           ),
           const SizedBox(height: 32),
           Text('Dressing room', style: Theme.of(context).textTheme.titleMedium),

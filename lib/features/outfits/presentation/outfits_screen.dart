@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../core/router/app_routes.dart';
 import '../../../core/theme/app_spacing.dart';
@@ -28,6 +29,7 @@ class OutfitsScreen extends ConsumerWidget {
   static const retryButtonKey = Key('outfits_retry');
   static const recommendationsButtonKey = Key('outfits_recommendations');
   static const dressingRoomButtonKey = Key('outfits_dressing_room');
+  static const wornOnButtonKey = Key('outfits_worn_on');
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -40,6 +42,13 @@ class OutfitsScreen extends ConsumerWidget {
         appBar: AppSearchGlossBar(
           title: const Text('Outfits'),
           actions: [
+            IconButton(
+              key: wornOnButtonKey,
+              tooltip: 'Worn on',
+              onPressed: () =>
+                  context.push(AppRoutes.wardrobeWornOn(wardrobeId)),
+              icon: const Icon(Icons.calendar_month_outlined),
+            ),
             IconButton(
               key: dressingRoomButtonKey,
               tooltip: 'Dressing room',

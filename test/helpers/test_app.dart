@@ -40,7 +40,9 @@ import 'fake_shopping_links_repository.dart';
 import 'fake_support_repository.dart';
 import 'fake_upload_repository.dart';
 import 'fake_wardrobe_repository.dart';
+import 'fake_worn_on_repository.dart';
 import 'item_processing_poll_overrides.dart';
+import 'worn_on_test_overrides.dart';
 
 /// Empty shopping-links so item detail never hits live Dio in tests.
 List<Override> shoppingLinksTestOverrides({
@@ -81,6 +83,7 @@ class TestAppHarness {
     FakeOutfitRepository? outfits,
     FakeAccountRepository? account,
     FakeShoppingLinksRepository? shoppingLinks,
+    FakeWornOnRepository? wornOn,
     Entitlement? entitlement,
     CoachPreferences? coaches,
   }) : auth =
@@ -96,6 +99,7 @@ class TestAppHarness {
        outfits = outfits ?? FakeOutfitRepository(),
        account = account ?? FakeAccountRepository(),
        shoppingLinks = shoppingLinks ?? FakeShoppingLinksRepository(),
+       wornOn = wornOn ?? FakeWornOnRepository(),
        entitlements = FakeEntitlementRepository(
          seed: entitlement ?? Entitlement.premium,
        ),
@@ -108,6 +112,7 @@ class TestAppHarness {
   final FakeOutfitRepository outfits;
   final FakeAccountRepository account;
   final FakeShoppingLinksRepository shoppingLinks;
+  final FakeWornOnRepository wornOn;
   final FakeEntitlementRepository entitlements;
   final CoachPreferences coaches;
   final paywall = FakePaywallGateway();
@@ -133,6 +138,7 @@ class TestAppHarness {
           repository: shoppingLinks,
           opener: shoppingOpener,
         ),
+        ...wornOnTestOverrides(repository: wornOn),
         uploadRepositoryProvider.overrideWithValue(uploads),
         itemImagePickerProvider.overrideWithValue(picker),
         accountRepositoryProvider.overrideWithValue(account),
