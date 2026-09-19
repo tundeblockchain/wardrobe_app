@@ -15,6 +15,7 @@ Firebase Android/iOS apps and store listings must use app id
 ```json
 {
   "API_BASE_URL": "https://your-api.example.com",
+  "SHARE_LANDING_BASE_URL": "https://share.example.com",
   "FIREBASE_API_KEY": "your-firebase-api-key",
   "FIREBASE_APP_ID": "1:000000000000:web:your-app-id",
   "FIREBASE_MESSAGING_SENDER_ID": "000000000000",
@@ -47,6 +48,13 @@ Apple Developer capability, Services ID, and Firebase Apple provider — see
 
 Optional `IOS_APP_STORE_ID` is used when in-app review is unavailable and the
 client opens the App Store listing. It is not a secret.
+
+Optional `SHARE_LANDING_BASE_URL` is the public landing-site origin used
+to turn Backend `sharePath` (`/share/{token}`) into an absolute URL for
+the native share sheet
+([WARDROBE-128](https://tundetunde000.atlassian.net/browse/WARDROBE-128)).
+It is not a secret. Do **not** hardcode a production host in source.
+Missing or invalid values soft-fail with a snackbar.
 
 ## Superwall (WARDROBE-90)
 

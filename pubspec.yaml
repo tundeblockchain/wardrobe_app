@@ -53,6 +53,7 @@ dependencies:
   shared_preferences: ^2.5.5
   superwallkit_flutter: ^2.4.12
   url_launcher: ^6.3.2
+  share_plus: ^12.0.2
 
 dev_dependencies:
   flutter_test:

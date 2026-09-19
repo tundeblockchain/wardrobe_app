@@ -18,6 +18,9 @@ import '../../../helpers/date_stamp_matchers.dart';
 import '../../../helpers/fake_item_repository.dart';
 import '../../../helpers/fake_outfit_repository.dart';
 import '../../../helpers/test_app.dart';
+import '../../../helpers/fake_share_repository.dart';
+import '../../../helpers/fake_share_sheet.dart';
+import '../../../helpers/share_test_overrides.dart';
 import '../../../helpers/worn_on_test_overrides.dart';
 
 void main() {
@@ -51,6 +54,7 @@ void main() {
             ),
           ),
           ...wornOnTestOverrides(),
+          ...shareTestOverrides(),
         ],
         child: const MaterialApp(
           home: OutfitDetailScreen(
@@ -76,6 +80,7 @@ void main() {
     expect(find.byKey(OutfitHeroCard.tryOnHintKey), findsOneWidget);
     expect(find.byKey(OutfitItemSlider.sliderKey), findsOneWidget);
     expect(find.text('Try on'), findsOneWidget);
+    expect(find.byKey(OutfitDetailScreen.shareButtonKey), findsOneWidget);
     expect(find.byKey(OutfitDetailScreen.editButtonKey), findsOneWidget);
     expect(find.byKey(OutfitDetailScreen.deleteButtonKey), findsOneWidget);
     expect(find.text('Processing'), findsNothing);
@@ -107,6 +112,7 @@ void main() {
           ),
           itemRepositoryProvider.overrideWithValue(FakeItemRepository()),
           ...wornOnTestOverrides(),
+          ...shareTestOverrides(),
         ],
         child: const MaterialApp(
           home: OutfitDetailScreen(
@@ -144,6 +150,7 @@ void main() {
           ),
           itemRepositoryProvider.overrideWithValue(FakeItemRepository()),
           ...wornOnTestOverrides(),
+          ...shareTestOverrides(),
         ],
         child: const MaterialApp(
           home: OutfitDetailScreen(
@@ -211,6 +218,7 @@ void main() {
           outfitRepositoryProvider.overrideWithValue(outfits),
           itemRepositoryProvider.overrideWithValue(FakeItemRepository()),
           ...wornOnTestOverrides(),
+          ...shareTestOverrides(),
         ],
         child: const MaterialApp(
           home: ScaffoldMessenger(
@@ -235,5 +243,44 @@ void main() {
 
     expect(find.byType(OutfitDetailScreen), findsOneWidget);
     expect(find.text('Outfit not found.'), findsWidgets);
+  });
+
+  testWidgets('share CTA creates a token and opens the sheet', (tester) async {
+    tester.view.physicalSize = const Size(800, 1600);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final shares = FakeShareRepository();
+    final sheet = FakeShareSheet();
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          outfitRepositoryProvider.overrideWithValue(
+            FakeOutfitRepository(seed: [testOutfit()]),
+          ),
+          itemRepositoryProvider.overrideWithValue(FakeItemRepository()),
+          ...wornOnTestOverrides(),
+          ...shareTestOverrides(repository: shares, sheet: sheet),
+        ],
+        child: const MaterialApp(
+          home: OutfitDetailScreen(
+            wardrobeId: 'wd_abc123',
+            outfitId: 'outfit_123',
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(OutfitDetailScreen.shareButtonKey));
+    await tester.pumpAndSettle();
+
+    expect(shares.createOutfitCalls, 1);
+    expect(sheet.payloads.single.title, 'Friday Night');
+    expect(
+      sheet.payloads.single.url,
+      'https://share.example.com/share/shr_abc123xyz',
+    );
   });
 }
