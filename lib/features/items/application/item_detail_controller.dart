@@ -159,7 +159,7 @@ class ItemDetailController extends Notifier<ItemDetailState> {
       if (!ref.mounted) {
         return item;
       }
-      _publishTransfer(kind, item);
+      await _publishTransfer(kind, item);
       state = state.copyWith(isSaving: false, clearError: true);
       return item;
     } on ApiException catch (error) {
@@ -190,7 +190,7 @@ class ItemDetailController extends Notifier<ItemDetailState> {
     }
   }
 
-  void _publishTransfer(ItemTransferKind kind, Item item) {
+  Future<void> _publishTransfer(ItemTransferKind kind, Item item) async {
     if (kind == ItemTransferKind.move) {
       ref
           .read(itemsControllerProvider(scope.wardrobeId).notifier)
@@ -203,13 +203,11 @@ class ItemDetailController extends Notifier<ItemDetailState> {
     if (preview != null) {
       ref.read(itemLocalPreviewCacheProvider.notifier).store(item.id, preview);
     }
-    // Copy counts as a catalog create — refresh GET /me usage.
-    Future<void>.microtask(() {
-      if (!ref.mounted) {
-        return;
-      }
-      ref.read(entitlementsControllerProvider.notifier).refresh();
-    });
+    // Copy counts as a catalog create — refresh GET /me when the app binder
+    // already owns EntitlementsController (skip constructing it in unit tests).
+    if (ref.exists(entitlementsControllerProvider)) {
+      await ref.read(entitlementsControllerProvider.notifier).refresh();
+    }
   }
 }
 

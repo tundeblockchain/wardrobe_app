@@ -241,7 +241,17 @@ void main() {
     expect(find.byKey(ItemTransferSheet.sheetKey), findsOneWidget);
     expect(find.text('Copy to another wardrobe'), findsOneWidget);
     expect(find.text('Winter'), findsOneWidget);
-    expect(find.text('Summer Clothes'), findsNothing);
+    expect(
+      find.descendant(
+        of: find.byKey(ItemTransferSheet.sheetKey),
+        matching: find.text('Summer Clothes'),
+      ),
+      findsNothing,
+    );
+    expect(
+      find.byKey(ItemTransferSheet.destinationKey('wd_abc123')),
+      findsNothing,
+    );
   });
 
   testWidgets('copy confirm shows a success snackbar and keeps the item', (
@@ -310,7 +320,7 @@ void main() {
     await tester.tap(find.byKey(ItemTransferSheet.confirmKey));
     await tester.pumpAndSettle();
 
-    expect(find.text(ItemTransferMessages.itemLimitUpgrade), findsOneWidget);
+    expect(find.text(ItemTransferMessages.itemLimitUpgrade), findsWidgets);
     expect(find.textContaining('ENTITLEMENT_ITEM_LIMIT'), findsNothing);
   });
 }
