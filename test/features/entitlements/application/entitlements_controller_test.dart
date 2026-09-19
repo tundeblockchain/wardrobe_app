@@ -151,16 +151,15 @@ void main() {
       code: 'ENTITLEMENT_SOMETHING_NEW',
       statusCode: 403,
     );
-    final message = container.read(
-      Provider<String>((ref) => queueEntitlementPaywall(ref, error)),
-    );
+    final placement = PaywallPlacement.fromApiException(error);
+    expect(placement, PaywallPlacement.upgradeBasic);
+    container.read(pendingPaywallProvider.notifier).queue(placement!);
 
     expect(
       container.read(pendingPaywallProvider),
       PaywallPlacement.upgradeBasic,
     );
-    expect(message, PaywallPlacement.upgradeBasic.message);
-    expect(message, isNot(contains('raw backend')));
+    expect(placement.message, isNot(contains('raw backend')));
   });
 
   test('presentPaywall wires restore through the controller', () async {

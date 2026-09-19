@@ -87,6 +87,31 @@ void main() {
     },
   );
 
+  test('unknown ENTITLEMENT_* soft-fails to fallback paywall copy', () async {
+    repository.nextFailure = const ApiException(
+      message: 'raw backend internals',
+      code: 'ENTITLEMENT_UNRELEASED',
+      statusCode: 403,
+    );
+
+    container.read(recommendationsControllerProvider('wd_abc123'));
+    await settle();
+
+    expect(container.read(pendingPaywallProvider), PaywallPlacement.otherAi);
+    expect(
+      container
+          .read(recommendationsControllerProvider('wd_abc123'))
+          .errorMessage,
+      PaywallPlacement.otherAi.message,
+    );
+    expect(
+      container
+          .read(recommendationsControllerProvider('wd_abc123'))
+          .errorMessage,
+      isNot(contains('raw backend')),
+    );
+  });
+
   test('empty list is a successful empty state, not unavailable', () async {
     container.read(recommendationsControllerProvider('wd_abc123'));
     await settle();

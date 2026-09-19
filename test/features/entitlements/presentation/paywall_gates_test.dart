@@ -33,7 +33,7 @@ void main() {
     expect(find.byKey(PaywallSheet.sheetKey), findsOneWidget);
     expect(find.text("You've reached the Free wardrobe limit"), findsOneWidget);
     expect(find.textContaining('Upgrade to Basic'), findsWidgets);
-    expect(find.textContaining('£5/mo'), findsOneWidget);
+    expect(find.textContaining('£5/mo'), findsWidgets);
     expect(find.byKey(PaywallSheet.upgradeButtonKey), findsOneWidget);
     expect(find.byKey(PaywallSheet.seePlansButtonKey), findsOneWidget);
     expect(find.byKey(PaywallSheet.restoreButtonKey), findsOneWidget);
@@ -64,6 +64,12 @@ void main() {
     );
 
     expect(find.byKey(PaywallSheet.plansSectionKey), findsNothing);
+
+    await tester.tap(find.byKey(PaywallSheet.restoreButtonKey));
+    await tester.pumpAndSettle();
+    expect(restores, 1);
+    expect(find.text('Restore is unavailable in this build.'), findsOneWidget);
+
     await tester.tap(find.byKey(PaywallSheet.seePlansButtonKey));
     await tester.pumpAndSettle();
 
@@ -71,11 +77,6 @@ void main() {
     expect(find.text('Free'), findsOneWidget);
     expect(find.text('Basic'), findsWidgets);
     expect(find.text('Premium'), findsOneWidget);
-
-    await tester.tap(find.byKey(PaywallSheet.restoreButtonKey));
-    await tester.pumpAndSettle();
-    expect(restores, 1);
-    expect(find.text('Restore is unavailable in this build.'), findsOneWidget);
   });
 
   testWidgets('Free wardrobe limit presents Superwall toward Basic', (
