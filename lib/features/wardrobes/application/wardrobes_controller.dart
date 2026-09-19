@@ -108,12 +108,14 @@ class CreateWardrobeController extends Notifier<CreateWardrobeState> {
       state = state.copyWith(isSaving: false);
       return wardrobe;
     } on ApiException catch (error) {
-      queueEntitlementPaywall(
-        ref,
-        error,
-        fallback: PaywallPlacement.wardrobeLimit,
+      state = state.copyWith(
+        isSaving: false,
+        errorMessage: queueEntitlementPaywall(
+          ref,
+          error,
+          fallback: PaywallPlacement.wardrobeLimit,
+        ),
       );
-      state = state.copyWith(isSaving: false, errorMessage: error.message);
       return null;
     } catch (_) {
       state = state.copyWith(

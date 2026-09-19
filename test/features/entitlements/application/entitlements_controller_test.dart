@@ -144,4 +144,43 @@ void main() {
 
     expect(container.read(pendingPaywallProvider), PaywallPlacement.itemLimit);
   });
+
+  test('unknown ENTITLEMENT_* queues a generic Basic upgrade', () {
+    const error = ApiException(
+      message: 'raw backend code',
+      code: 'ENTITLEMENT_SOMETHING_NEW',
+      statusCode: 403,
+    );
+    final message = container.read(
+      Provider<String>((ref) => queueEntitlementPaywall(ref, error)),
+    );
+
+    expect(
+      container.read(pendingPaywallProvider),
+      PaywallPlacement.upgradeBasic,
+    );
+    expect(message, PaywallPlacement.upgradeBasic.message);
+    expect(message, isNot(contains('raw backend')));
+  });
+
+  test('presentPaywall wires restore through the controller', () async {
+    container.read(entitlementsControllerProvider);
+    await settle();
+    await settle();
+
+    await container
+        .read(entitlementsControllerProvider.notifier)
+        .presentPaywall(placement: PaywallPlacement.itemLimit);
+
+    expect(paywall.presented, contains(PaywallPlacement.itemLimit));
+    expect(paywall.lastOnRestore, isNotNull);
+
+    repository.current = Entitlement.basic;
+    final result = await paywall.lastOnRestore!();
+    expect(result, RestorePurchasesResult.restored);
+    expect(
+      container.read(entitlementsControllerProvider).current.tier,
+      SubscriptionTier.basic,
+    );
+  });
 }

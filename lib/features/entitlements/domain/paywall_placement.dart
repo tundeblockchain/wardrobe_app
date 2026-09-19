@@ -1,5 +1,6 @@
 import '../../../core/network/api_exception.dart';
 import 'entitlement_error_codes.dart';
+import 'subscription_catalog.dart';
 import 'subscription_tier.dart';
 
 /// Superwall placement IDs. Dashboard campaigns should match these hooks.
@@ -52,11 +53,12 @@ enum PaywallPlacement {
   ///
   /// Catalog limits → Basic. `ENTITLEMENT_AI_REQUIRED` → Premium (try-on /
   /// recommendations / item-processing via [fallback] when it is Premium).
+  /// Unknown `ENTITLEMENT_*` codes soft-fail to [fallback] or [upgradeBasic].
   static PaywallPlacement? fromApiException(
     ApiException error, {
     PaywallPlacement? fallback,
   }) {
-    final code = error.code?.trim().toUpperCase();
+    final code = EntitlementErrorCodes.normalize(error.code);
     if (code == EntitlementErrorCodes.wardrobeLimit) {
       return PaywallPlacement.wardrobeLimit;
     }
@@ -72,6 +74,9 @@ enum PaywallPlacement {
       }
       return PaywallPlacement.otherAi;
     }
+    if (EntitlementErrorCodes.isEntitlementCode(code)) {
+      return fallback ?? PaywallPlacement.upgradeBasic;
+    }
     if (EntitlementErrorCodes.isEntitlementStatus(error.statusCode)) {
       return fallback;
     }
@@ -81,15 +86,15 @@ enum PaywallPlacement {
   String get headline {
     switch (this) {
       case PaywallPlacement.wardrobeLimit:
-        return 'Unlock more wardrobes';
+        return "You've reached the Free wardrobe limit";
       case PaywallPlacement.itemLimit:
-        return 'Unlock more items';
+        return "You've reached the Free item limit";
       case PaywallPlacement.outfitLimit:
-        return 'Unlock more outfits';
+        return "You've reached the Free outfit limit";
       case PaywallPlacement.aiTryOn:
-        return 'Unlock AI try-on';
+        return 'AI try-on is a Premium feature';
       case PaywallPlacement.otherAi:
-        return 'Unlock AI styling';
+        return 'AI styling is a Premium feature';
       case PaywallPlacement.upgradeBasic:
         return 'Upgrade to Basic';
       case PaywallPlacement.upgradePremium:
@@ -98,25 +103,35 @@ enum PaywallPlacement {
   }
 
   String get message {
+    final basicPrice = SubscriptionCatalog.priceSummary(SubscriptionTier.basic);
+    final premiumPrice = SubscriptionCatalog.priceSummary(
+      SubscriptionTier.premium,
+    );
     switch (this) {
       case PaywallPlacement.wardrobeLimit:
-        return 'Free includes 1 wardrobe. Basic unlocks unlimited wardrobes, '
-            'items, and outfits.';
+        return 'Free includes ${SubscriptionCatalog.freeMaxWardrobes} '
+            'wardrobe. Upgrade to Basic ($basicPrice) for unlimited '
+            'wardrobes, items, and outfits.';
       case PaywallPlacement.itemLimit:
-        return 'Free includes 5 items. Basic unlocks unlimited items, '
-            'wardrobes, and outfits.';
+        return 'Free includes ${SubscriptionCatalog.freeMaxItems} items. '
+            'Upgrade to Basic ($basicPrice) for unlimited items, wardrobes, '
+            'and outfits.';
       case PaywallPlacement.outfitLimit:
-        return 'Free includes 5 outfits. Basic unlocks unlimited outfits, '
-            'items, and wardrobes.';
+        return 'Free includes ${SubscriptionCatalog.freeMaxOutfits} outfits. '
+            'Upgrade to Basic ($basicPrice) for unlimited outfits, items, '
+            'and wardrobes.';
       case PaywallPlacement.aiTryOn:
-        return 'Virtual try-on is included with Premium.';
+        return 'Virtual try-on is included with Premium ($premiumPrice). '
+            'Upgrade to try outfits on your photos.';
       case PaywallPlacement.otherAi:
         return 'Outfit suggestions and other AI tools are included with '
-            'Premium.';
+            'Premium ($premiumPrice).';
       case PaywallPlacement.upgradeBasic:
-        return 'Basic unlocks unlimited wardrobes, items, and outfits.';
+        return 'Basic unlocks unlimited wardrobes, items, and outfits for '
+            '$basicPrice.';
       case PaywallPlacement.upgradePremium:
-        return 'Premium adds AI try-on plus suggestions and other AI tools.';
+        return 'Premium adds AI try-on plus suggestions and other AI tools '
+            'for $premiumPrice.';
     }
   }
 }

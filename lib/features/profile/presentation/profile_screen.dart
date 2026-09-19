@@ -15,9 +15,9 @@ import '../../account/presentation/subscription_cancel_follow_up_dialog.dart';
 import '../../auth/application/auth_controller.dart';
 import '../../auth/domain/app_user.dart';
 import '../../entitlements/application/entitlements_controller.dart';
+import '../../entitlements/domain/entitlement_paywall_copy.dart';
 import '../../entitlements/domain/paywall_placement.dart';
 import '../../entitlements/domain/subscription_tier.dart';
-import '../../entitlements/data/paywall_gateway_provider.dart';
 import '../application/rate_app_controller.dart';
 
 /// Account info plus Rate / Contact us / Report a bug / destructive wipes.
@@ -114,24 +114,16 @@ class ProfileScreen extends ConsumerWidget {
                     ? PaywallPlacement.upgradePremium
                     : PaywallPlacement.upgradeBasic;
                 await ref
-                    .read(paywallGatewayProvider)
-                    .present(placement: placement, context: context);
-                if (!context.mounted) {
-                  return;
-                }
-                await ref
                     .read(entitlementsControllerProvider.notifier)
-                    .refresh();
+                    .presentPaywall(placement: placement, context: context);
               },
             ),
             ListTile(
               key: ProfileScreen.restorePurchasesTileKey,
               contentPadding: EdgeInsets.zero,
               leading: const Icon(Icons.restore),
-              title: const Text('Restore purchases'),
-              subtitle: const Text(
-                'Refresh subscription status from the store',
-              ),
+              title: const Text(EntitlementPaywallCopy.restoreTitle),
+              subtitle: const Text(EntitlementPaywallCopy.restoreSubtitle),
               trailing: entitlements.isRestoring
                   ? const SizedBox(
                       width: 20,

@@ -31,6 +31,7 @@ abstract class PaywallGateway {
   Future<PaywallPresentation> present({
     required PaywallPlacement placement,
     BuildContext? context,
+    Future<RestorePurchasesResult> Function()? onRestore,
   });
 
   Future<RestorePurchasesResult> restorePurchases();

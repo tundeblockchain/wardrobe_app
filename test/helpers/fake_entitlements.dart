@@ -18,6 +18,7 @@ class FakePaywallGateway implements PaywallGateway {
   RestorePurchasesResult restoreResult = RestorePurchasesResult.restored;
   CancelSubscriptionResult cancelResult = CancelSubscriptionResult.skipped;
   Object? cancelError;
+  Future<RestorePurchasesResult> Function()? lastOnRestore;
 
   @override
   Future<void> configure() async {
@@ -38,8 +39,12 @@ class FakePaywallGateway implements PaywallGateway {
   Future<PaywallPresentation> present({
     required PaywallPlacement placement,
     BuildContext? context,
+    Future<RestorePurchasesResult> Function()? onRestore,
   }) async {
     presented.add(placement);
+    if (onRestore != null) {
+      lastOnRestore = onRestore;
+    }
     return const PaywallPresentation();
   }
 

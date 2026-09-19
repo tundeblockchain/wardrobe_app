@@ -82,7 +82,7 @@ void main() {
         container
             .read(recommendationsControllerProvider('wd_abc123'))
             .errorMessage,
-        'AI requires Premium',
+        PaywallPlacement.otherAi.message,
       );
     },
   );

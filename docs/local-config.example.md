@@ -83,6 +83,11 @@ is Backend-side.
 `tier` is `FREE` | `BASIC` | `PREMIUM`. Denial `code` + `message` on 403
 map to Superwall (`ENTITLEMENT_WARDROBE_LIMIT` / `ENTITLEMENT_ITEM_LIMIT` /
 `ENTITLEMENT_OUTFIT_LIMIT` → Basic; `ENTITLEMENT_AI_REQUIRED` → Premium).
+Unknown `ENTITLEMENT_*` codes soft-fail to a generic Upgrade / See plans
+CTA ([WARDROBE-117](https://tundetunde000.atlassian.net/browse/WARDROBE-117)).
+The themed fallback sheet and Account **Restore purchases** action call
+the same Superwall / store restore hook, then refresh `GET /me` — use
+this after delete or reinstall. Do not put dashboard secrets in git.
 
 Account delete also calls Superwall cancel when the SDK exposes it
 ([WARDROBE-102](https://tundetunde000.atlassian.net/browse/WARDROBE-102)).

@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/lifecycle/app_lifecycle.dart';
@@ -8,6 +9,7 @@ import '../../../core/session/session_gate.dart';
 import '../data/dio_entitlement_repository.dart';
 import '../data/paywall_gateway_provider.dart';
 import '../domain/entitlement.dart';
+import '../domain/entitlement_paywall_copy.dart';
 import '../domain/entitlement_repository.dart';
 import '../domain/paywall_gateway.dart';
 import '../domain/paywall_placement.dart';
@@ -135,12 +137,12 @@ class EntitlementsController extends Notifier<EntitlementsState> {
         state = state.copyWith(
           isRestoring: false,
           infoMessage: result == RestorePurchasesResult.restored
-              ? 'Purchases restored.'
+              ? EntitlementPaywallCopy.restoreSuccess
               : result == RestorePurchasesResult.unavailable
-              ? 'Restore is unavailable in this build.'
-              : 'Could not restore purchases.',
+              ? EntitlementPaywallCopy.restoreUnavailable
+              : EntitlementPaywallCopy.restoreFailed,
           errorMessage: result == RestorePurchasesResult.failed
-              ? 'Could not restore purchases.'
+              ? EntitlementPaywallCopy.restoreFailed
               : null,
           clearError: result != RestorePurchasesResult.failed,
           clearInfo: false,
@@ -156,13 +158,30 @@ class EntitlementsController extends Notifier<EntitlementsState> {
       if (!silent) {
         state = state.copyWith(
           isRestoring: false,
-          errorMessage: 'Could not restore purchases.',
+          errorMessage: EntitlementPaywallCopy.restoreFailed,
         );
       } else {
         state = state.copyWith(isRestoring: false);
       }
       return RestorePurchasesResult.failed;
     }
+  }
+
+  /// Presentation → controller → Superwall / themed fallback sheet.
+  Future<PaywallPresentation> presentPaywall({
+    required PaywallPlacement placement,
+    BuildContext? context,
+  }) async {
+    final result = await _paywall.present(
+      placement: placement,
+      context: context,
+      onRestore: () => restorePurchases(),
+    );
+    if (!ref.mounted) {
+      return result;
+    }
+    await refresh();
+    return result;
   }
 
   /// After a Superwall purchase, re-read `GET /me`.
@@ -175,7 +194,10 @@ final entitlementsControllerProvider =
     );
 
 /// Queues a paywall from 403 API failures so the app binder can present it.
-void queueEntitlementPaywall(
+///
+/// Returns paywall copy for known / unknown `ENTITLEMENT_*` codes so forms
+/// do not show raw Backend messages. Other errors keep [error.message].
+String queueEntitlementPaywall(
   Ref ref,
   ApiException error, {
   PaywallPlacement? fallback,
@@ -186,5 +208,7 @@ void queueEntitlementPaywall(
   );
   if (placement != null) {
     ref.read(pendingPaywallProvider.notifier).queue(placement);
+    return EntitlementPaywallCopy.forPlacement(placement).formMessage;
   }
+  return error.message;
 }

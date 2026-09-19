@@ -113,11 +113,14 @@ class AddItemController extends Notifier<AddItemState> {
       if (!ref.mounted) {
         return null;
       }
-      queueEntitlementPaywall(ref, error, fallback: PaywallPlacement.itemLimit);
       state = state.copyWith(
         isSubmitting: false,
         phase: AddItemPhase.idle,
-        errorMessage: error.message,
+        errorMessage: queueEntitlementPaywall(
+          ref,
+          error,
+          fallback: PaywallPlacement.itemLimit,
+        ),
       );
       return null;
     } catch (_) {

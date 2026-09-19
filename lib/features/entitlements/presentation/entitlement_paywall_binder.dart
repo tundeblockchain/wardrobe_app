@@ -5,7 +5,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../application/entitlements_controller.dart';
 import '../application/pending_paywall.dart';
-import '../data/paywall_gateway_provider.dart';
 import '../domain/paywall_placement.dart';
 
 /// Presents Superwall when a mutation returns a Backend 403 entitlement
@@ -34,11 +33,7 @@ class EntitlementPaywallBinder extends ConsumerWidget {
     PaywallPlacement placement,
   ) async {
     await ref
-        .read(paywallGatewayProvider)
-        .present(placement: placement, context: context);
-    if (!context.mounted) {
-      return;
-    }
-    await ref.read(entitlementsControllerProvider.notifier).refresh();
+        .read(entitlementsControllerProvider.notifier)
+        .presentPaywall(placement: placement, context: context);
   }
 }

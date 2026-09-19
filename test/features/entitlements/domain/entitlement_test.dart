@@ -239,6 +239,27 @@ void main() {
         ),
         PaywallPlacement.upgradePremium,
       );
+      expect(
+        PaywallPlacement.fromApiException(
+          const ApiException(
+            message: 'raw backend',
+            code: 'ENTITLEMENT_SOMETHING_NEW',
+            statusCode: 403,
+          ),
+        ),
+        PaywallPlacement.upgradeBasic,
+      );
+      expect(
+        PaywallPlacement.fromApiException(
+          const ApiException(
+            message: 'raw backend',
+            code: 'ENTITLEMENT_FUTURE_AI',
+            statusCode: 403,
+          ),
+          fallback: PaywallPlacement.upgradePremium,
+        ),
+        PaywallPlacement.upgradePremium,
+      );
     });
   });
 

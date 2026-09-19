@@ -124,8 +124,14 @@ class TryOnController extends Notifier<TryOnState> {
       if (!ref.mounted) {
         return false;
       }
-      queueEntitlementPaywall(ref, error, fallback: PaywallPlacement.aiTryOn);
-      state = state.copyWith(isSubmitting: false, errorMessage: error.message);
+      state = state.copyWith(
+        isSubmitting: false,
+        errorMessage: queueEntitlementPaywall(
+          ref,
+          error,
+          fallback: PaywallPlacement.aiTryOn,
+        ),
+      );
       return false;
     } catch (_) {
       if (!ref.mounted) {
