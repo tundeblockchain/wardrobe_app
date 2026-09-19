@@ -8,13 +8,15 @@ import '../../entitlements/domain/paywall_placement.dart';
 import '../data/dio_item_repository.dart';
 import '../domain/item.dart';
 import '../domain/item_repository.dart';
+import '../domain/item_reprocess.dart';
 import '../domain/item_transfer.dart';
 import 'item_detail_state.dart';
 import 'item_local_preview_cache.dart';
+import 'item_processing_poll.dart';
 import 'item_scope.dart';
 import 'items_controller.dart';
 
-/// Loads a clothing item and handles delete.
+/// Loads a clothing item and handles delete / reprocess.
 class ItemDetailController extends Notifier<ItemDetailState> {
   ItemDetailController(this.scope);
 
@@ -83,8 +85,152 @@ class ItemDetailController extends Notifier<ItemDetailState> {
     _publishToList(item);
   }
 
+  void clearSnackMessage() {
+    if (state.snackMessage != null) {
+      state = state.copyWith(clearSnack: true);
+    }
+  }
+
   void _publishToList(Item item) {
     ref.read(itemsControllerProvider(scope.wardrobeId).notifier).upsert(item);
+  }
+
+  /// One-tap retry for FAILED image / AI processing (WARDROBE-124).
+  Future<bool> reprocess() async {
+    final current = state.item;
+    if (current == null) {
+      return false;
+    }
+    if (state.isReprocessing || state.isPolling) {
+      return state.isPolling;
+    }
+    if (!current.processingStatus.canReprocess) {
+      return false;
+    }
+
+    state = state.copyWith(
+      isReprocessing: true,
+      clearError: true,
+      clearSnack: true,
+    );
+    try {
+      final item = await _repository.reprocessItem(
+        wardrobeId: scope.wardrobeId,
+        itemId: scope.itemId,
+      );
+      if (!ref.mounted) {
+        return false;
+      }
+      _applyPending(item);
+      await _pollUntilDone();
+      return state.item?.processingStatus.isTerminal == true;
+    } on ApiException catch (error) {
+      if (!ref.mounted) {
+        return false;
+      }
+      if (ItemReprocessErrorCodes.isProcessingInProgress(error)) {
+        state = state.copyWith(isReprocessing: false, isPolling: true);
+        await _refreshThenPoll();
+        return state.item?.processingStatus.isTerminal == true;
+      }
+      queueEntitlementPaywall(ref, error, fallback: PaywallPlacement.otherAi);
+      state = state.copyWith(
+        isReprocessing: false,
+        isPolling: false,
+        snackMessage: ItemReprocessErrorCodes.snackMessage(error),
+      );
+      return false;
+    } catch (_) {
+      if (!ref.mounted) {
+        return false;
+      }
+      state = state.copyWith(
+        isReprocessing: false,
+        isPolling: false,
+        snackMessage: 'Could not retry processing. Please try again.',
+      );
+      return false;
+    }
+  }
+
+  void _applyPending(Item item) {
+    state = state.copyWith(
+      item: item,
+      isReprocessing: false,
+      isPolling: true,
+      clearError: true,
+      clearSnack: true,
+    );
+    _publishToList(item);
+  }
+
+  Future<void> _refreshThenPoll() async {
+    try {
+      final item = await _repository.getItem(
+        wardrobeId: scope.wardrobeId,
+        itemId: scope.itemId,
+      );
+      if (!ref.mounted) {
+        return;
+      }
+      replace(item);
+      if (item.processingStatus.isTerminal) {
+        state = state.copyWith(isPolling: false);
+        return;
+      }
+      await _pollUntilDone();
+    } on ApiException catch (error) {
+      if (!ref.mounted) {
+        return;
+      }
+      state = state.copyWith(isPolling: false, snackMessage: error.message);
+    } catch (_) {
+      if (!ref.mounted) {
+        return;
+      }
+      state = state.copyWith(
+        isPolling: false,
+        snackMessage: 'Could not check processing status. Please try again.',
+      );
+    }
+  }
+
+  Future<void> _pollUntilDone() async {
+    state = state.copyWith(isPolling: true);
+    try {
+      await pollItemProcessing(
+        fetch: () => _repository.getItem(
+          wardrobeId: scope.wardrobeId,
+          itemId: scope.itemId,
+        ),
+        config: ref.read(itemProcessingPollConfigProvider),
+        delay: ref.read(itemProcessingDelayProvider),
+        isMounted: () => ref.mounted,
+        initial: state.item,
+        onUpdate: (item) {
+          if (!ref.mounted) {
+            return;
+          }
+          replace(item);
+        },
+      );
+    } on ApiException catch (error) {
+      if (!ref.mounted) {
+        return;
+      }
+      state = state.copyWith(snackMessage: error.message);
+    } catch (_) {
+      if (!ref.mounted) {
+        return;
+      }
+      state = state.copyWith(
+        snackMessage: 'Could not check processing status. Please try again.',
+      );
+    } finally {
+      if (ref.mounted) {
+        state = state.copyWith(isReprocessing: false, isPolling: false);
+      }
+    }
   }
 
   Future<bool> delete() async {

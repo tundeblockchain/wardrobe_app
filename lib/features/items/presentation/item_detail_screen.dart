@@ -26,6 +26,7 @@ import '../domain/item_transfer.dart';
 import 'widgets/item_browse_image.dart';
 import 'widgets/item_detail_meta_block.dart';
 import 'widgets/item_transfer_sheet.dart';
+import 'widgets/processing_status_chip.dart';
 
 /// Clothing item detail with edit and delete.
 class ItemDetailScreen extends ConsumerStatefulWidget {
@@ -41,6 +42,7 @@ class ItemDetailScreen extends ConsumerStatefulWidget {
   static const editButtonKey = Key('item_detail_edit');
   static const deleteButtonKey = Key('item_detail_delete');
   static const retryButtonKey = Key('item_detail_retry');
+  static const reprocessButtonKey = Key('item_detail_reprocess');
   static const imageTapKey = Key('item_detail_image_tap');
   static const overflowMenuKey = Key('item_detail_overflow');
   static const moveMenuKey = Key('item_detail_move');
@@ -102,6 +104,14 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen>
     ref.listen(itemDetailControllerProvider(_scope), (previous, next) {
       if (next.isDeleted && context.mounted) {
         context.go(AppRoutes.wardrobeDetail(widget.wardrobeId));
+      }
+      final snack = next.snackMessage;
+      if (snack != null && snack != previous?.snackMessage && context.mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(snack)));
+        ref
+            .read(itemDetailControllerProvider(_scope).notifier)
+            .clearSnackMessage();
       }
     });
 
@@ -232,6 +242,20 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen>
         ),
         const SizedBox(height: 16),
         Text(item.name, style: Theme.of(context).textTheme.headlineSmall),
+        if (state.showProcessingBanner) ...[
+          const SizedBox(height: AppSpacing.md),
+          ProcessingStatusBanner(
+            status: item.processingStatus,
+            processingError: item.processingError,
+            onRetry: state.showProcessingRetry
+                ? () => ref
+                      .read(itemDetailControllerProvider(_scope).notifier)
+                      .reprocess()
+                : null,
+            isRetrying: state.isReprocessing || state.isPolling,
+            retryKey: ItemDetailScreen.reprocessButtonKey,
+          ),
+        ],
         const SizedBox(height: 16),
         ItemDetailMetaBlock(
           item: item,

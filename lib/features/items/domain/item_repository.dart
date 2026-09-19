@@ -50,4 +50,12 @@ abstract interface class ItemRepository {
     required String itemId,
     required String targetWardrobeId,
   });
+
+  /// `POST /wardrobes/{wardrobeId}/items/{itemId}/reprocess` (WARDROBE-123).
+  ///
+  /// Success is `202` with `processingStatus: PENDING`. Body is optional.
+  Future<Item> reprocessItem({
+    required String wardrobeId,
+    required String itemId,
+  });
 }

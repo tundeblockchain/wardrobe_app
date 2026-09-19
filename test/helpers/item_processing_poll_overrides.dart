@@ -41,6 +41,12 @@ class ItemProcessingPollTicks {
     ];
   }
 
+  Future<void> wait(Duration duration) {
+    final completer = Completer<void>();
+    _pending.add(completer);
+    return completer.future;
+  }
+
   Future<void> tickAll() async {
     final waiting = [..._pending];
     _pending.clear();

@@ -38,6 +38,7 @@ void main() {
     required List<Item> items,
     ValueChanged<Item>? onOpen,
     ValueChanged<Item>? onDelete,
+    ValueChanged<Item>? onRetry,
   }) async {
     tester.view.physicalSize = const Size(400, 900);
     tester.view.devicePixelRatio = 1;
@@ -57,6 +58,7 @@ void main() {
                   items: items,
                   onOpenItem: onOpen ?? opened.add,
                   onDeleteItem: onDelete,
+                  onRetryItem: onRetry,
                 ),
               ),
             ),
@@ -97,7 +99,7 @@ void main() {
     );
   });
 
-  testWidgets('hides FAILED status and processingError on the card', (
+  testWidgets('shows FAILED processingError and retry on the card', (
     tester,
   ) async {
     final failed = testItem(
@@ -107,19 +109,24 @@ void main() {
       processingError: 'Background removal failed.',
       originalImageUrl: 'https://cdn.example.com/original.jpg',
     );
+    final retried = <Item>[];
 
-    await pumpDeck(tester, items: [failed]);
+    await pumpDeck(tester, items: [failed], onRetry: retried.add);
 
-    expect(find.byType(ProcessingStatusChip), findsNothing);
-    expect(find.text('Failed'), findsNothing);
+    expect(find.text('Failed'), findsOneWidget);
+    expect(find.text('Background removal failed.'), findsOneWidget);
+    expect(find.byKey(ItemSwipeCard.retryKey(failed.id)), findsOneWidget);
     expect(find.text('Processing'), findsNothing);
     expect(find.text('Processed'), findsNothing);
-    expect(find.text('Background removal failed.'), findsNothing);
     expect(
       find.byKey(ItemBrowseImage.sourceKey(failed.originalImageKey!)),
       findsOneWidget,
     );
     expect(find.text('Torn shirt'), findsOneWidget);
+
+    await tester.tap(find.byKey(ItemSwipeCard.retryKey(failed.id)));
+    await tester.pumpAndSettle();
+    expect(retried.single.id, failed.id);
   });
 
   testWidgets('hides processing status chrome on the card', (tester) async {

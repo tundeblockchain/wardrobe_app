@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/theme/app_spacing.dart';
+import '../../../../core/widgets/app_fade_in.dart';
 import '../../domain/item.dart';
 import '../../domain/processing_status_display.dart';
 
@@ -47,18 +49,25 @@ class ProcessingStatusChip extends StatelessWidget {
   }
 }
 
-/// Detail-page status banner with optional failed message.
+/// Detail-page status banner with optional failed message and retry CTA.
 class ProcessingStatusBanner extends StatelessWidget {
   const ProcessingStatusBanner({
     super.key,
     required this.status,
     this.processingError,
+    this.onRetry,
+    this.isRetrying = false,
+    this.retryKey,
   });
 
   static const keyPrefix = Key('item_detail_status');
+  static const retryButtonKey = Key('item_processing_retry');
 
   final ItemProcessingStatus status;
   final String? processingError;
+  final VoidCallback? onRetry;
+  final bool isRetrying;
+  final Key? retryKey;
 
   @override
   Widget build(BuildContext context) {
@@ -68,40 +77,68 @@ class ProcessingStatusBanner extends StatelessWidget {
     );
     final colors = _colorsFor(Theme.of(context).colorScheme, display.tone);
     final isFailed = status == ItemProcessingStatus.failed;
-    return Card(
-      key: keyPrefix,
-      color: colors.background,
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Icon(display.tone._icon, color: colors.foreground),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
+    final showRetry = isFailed && onRetry != null;
+    return AppFadeIn(
+      child: Card(
+        key: keyPrefix,
+        color: colors.background,
+        child: Padding(
+          padding: const EdgeInsets.all(AppSpacing.md),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    display.label,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      color: colors.foreground,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    display.detailMessage,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: isFailed
-                          ? Theme.of(context).colorScheme.error
-                          : colors.foreground,
+                  Icon(display.tone._icon, color: colors.foreground),
+                  const SizedBox(width: AppSpacing.sm + 4),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          display.label,
+                          style: Theme.of(context).textTheme.titleMedium
+                              ?.copyWith(
+                                color: colors.foreground,
+                                fontWeight: FontWeight.w600,
+                              ),
+                        ),
+                        const SizedBox(height: AppSpacing.xs),
+                        Text(
+                          display.detailMessage,
+                          style: Theme.of(context).textTheme.bodyMedium
+                              ?.copyWith(
+                                color: isFailed
+                                    ? Theme.of(context).colorScheme.error
+                                    : colors.foreground,
+                              ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
               ),
-            ),
-          ],
+              if (showRetry) ...[
+                const SizedBox(height: AppSpacing.md),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: FilledButton.icon(
+                    key: retryKey ?? retryButtonKey,
+                    onPressed: isRetrying ? null : onRetry,
+                    icon: isRetrying
+                        ? const SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(Icons.refresh),
+                    label: Text(isRetrying ? 'Retrying…' : 'Retry'),
+                  ),
+                ),
+              ],
+            ],
+          ),
         ),
       ),
     );

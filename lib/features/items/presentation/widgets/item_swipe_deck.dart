@@ -15,11 +15,17 @@ class ItemSwipeDeck extends StatefulWidget {
     required this.items,
     required this.onOpenItem,
     this.onDeleteItem,
+    this.onRetryItem,
+    this.showProcessingProgress,
+    this.isRetrying,
   });
 
   final List<Item> items;
   final ValueChanged<Item> onOpenItem;
   final ValueChanged<Item>? onDeleteItem;
+  final ValueChanged<Item>? onRetryItem;
+  final bool Function(Item item)? showProcessingProgress;
+  final bool Function(Item item)? isRetrying;
 
   static const deckKey = Key('item_swipe_deck');
   static const endKey = Key('item_swipe_end');
@@ -287,6 +293,12 @@ class _ItemSwipeDeckState extends State<ItemSwipeDeck>
         item: _items[_index],
         onTap: _openCurrent,
         onDelete: widget.onDeleteItem == null ? null : _deleteCurrent,
+        onRetry: widget.onRetryItem == null
+            ? null
+            : () => widget.onRetryItem!(_items[_index]),
+        showProcessingProgress:
+            widget.showProcessingProgress?.call(_items[_index]) ?? false,
+        isRetrying: widget.isRetrying?.call(_items[_index]) ?? false,
       );
     }
 
@@ -338,6 +350,14 @@ class _ItemSwipeDeckState extends State<ItemSwipeDeck>
                       onDelete: widget.onDeleteItem == null
                           ? null
                           : _deleteCurrent,
+                      onRetry: widget.onRetryItem == null
+                          ? null
+                          : () => widget.onRetryItem!(_items[_index]),
+                      showProcessingProgress:
+                          widget.showProcessingProgress?.call(_items[_index]) ??
+                          false,
+                      isRetrying:
+                          widget.isRetrying?.call(_items[_index]) ?? false,
                     ),
                   ),
                 ),
