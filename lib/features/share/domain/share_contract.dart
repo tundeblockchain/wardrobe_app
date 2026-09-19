@@ -1,4 +1,4 @@
-/// Locked WARDROBE-126 HTTP contract (wardrobe-backend#54 SHA `3b24174`).
+/// Locked WARDROBE-126 HTTP contract (wardrobe-backend#54 SHA `a7a10ab` on main).
 ///
 /// Create / revoke are authenticated (Firebase Bearer, owner, all tiers — not
 /// entitlement-gated). Flutter never calls the public GET preview.
@@ -15,7 +15,7 @@ abstract final class ShareContract {
   static const landingBaseUrlDefine = 'SHARE_LANDING_BASE_URL';
 
   static const backendPull = 54;
-  static const backendSha = '3b24174';
+  static const backendSha = 'a7a10ab';
 
   static String itemPath({
     required String wardrobeId,

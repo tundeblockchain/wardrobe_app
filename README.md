@@ -244,10 +244,10 @@ the model. Flutter never calls the public GET preview
 Consumes Backend
 [WARDROBE-126](https://tundetunde000.atlassian.net/browse/WARDROBE-126)
 ([wardrobe-backend#54](https://github.com/tundeblockchain/wardrobe-backend/pull/54)
-SHA `3b24174`, not yet on main). `ShareContract.liveEnabled` is `true` —
-create/revoke go through `DioShareRepository`. An undeployed create route
-soft-fails with a snackbar (no invented token). Whole-wardrobe share is
-out of scope.
+SHA `a7a10ab` on Backend **main**). `ShareContract.liveEnabled` is `true` —
+create/revoke go through `DioShareRepository`. A create route that is not
+deployed yet soft-fails with a snackbar (no invented token). Whole-wardrobe
+share is out of scope.
 
 ```http
 POST   /wardrobes/{wardrobeId}/items/{itemId}/share

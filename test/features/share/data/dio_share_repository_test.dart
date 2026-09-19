@@ -157,6 +157,11 @@ void main() {
     expect(adapter.requests, hasLength(1));
   });
 
+  test('liveEnabled is on for wardrobe-backend#54 a7a10ab on main', () {
+    expect(ShareContract.liveEnabled, isTrue);
+    expect(ShareContract.backendSha, 'a7a10ab');
+  });
+
   test('stub never invents a token', () async {
     const stub = StubShareRepository();
     expect(
