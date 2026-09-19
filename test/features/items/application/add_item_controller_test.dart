@@ -355,10 +355,7 @@ void main() {
       container.read(itemsControllerProvider('wd_abc123')).items.single.name,
       'one',
     );
-    expect(
-      container.read(pendingPaywallProvider),
-      PaywallPlacement.itemLimit,
-    );
+    expect(container.read(pendingPaywallProvider), PaywallPlacement.itemLimit);
     expect(
       container
           .read(addItemControllerProvider('wd_abc123'))
@@ -367,9 +364,8 @@ void main() {
           .map((result) => result.errorMessage)
           .toSet(),
       {
-        EntitlementPaywallCopy.forPlacement(
-          PaywallPlacement.itemLimit,
-        ).formMessage,
+        EntitlementPaywallCopy.forPlacement(PaywallPlacement.itemLimit)
+            .formMessage,
       },
     );
   });
