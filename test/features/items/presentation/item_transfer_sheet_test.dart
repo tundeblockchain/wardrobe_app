@@ -98,7 +98,7 @@ void main() {
   testWidgets('canceling confirm does not return a destination', (
     tester,
   ) async {
-    ItemTransferPick? pick = const ItemTransferPick(wardrobe: _placeholder);
+    ItemTransferPick? pick = ItemTransferPick(wardrobe: _placeholder);
     var resolved = false;
     await tester.pumpWidget(
       MaterialApp(
