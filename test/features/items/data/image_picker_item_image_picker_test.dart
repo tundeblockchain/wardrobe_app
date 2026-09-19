@@ -70,11 +70,13 @@ void main() {
         XFile.fromData(
           Uint8List.fromList(const [0xFF, 0xD8, 0xFF]),
           mimeType: 'image/jpeg',
+          path: 'shirt.jpg',
           name: 'shirt.jpg',
         ),
         XFile.fromData(
           Uint8List.fromList(const [1, 2, 3]),
           mimeType: 'image/png',
+          path: 'jeans.png',
           name: 'jeans.png',
         ),
       ],

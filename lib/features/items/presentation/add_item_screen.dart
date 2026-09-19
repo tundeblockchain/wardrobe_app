@@ -215,6 +215,14 @@ class _AddItemScreenState extends ConsumerState<AddItemScreen> {
                           state.pickedImage!.bytes,
                           height: 220,
                           fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return const SizedBox(
+                              height: 220,
+                              child: Center(
+                                child: Icon(Icons.broken_image_outlined),
+                              ),
+                            );
+                          },
                         ),
                       )
                     else
@@ -397,6 +405,13 @@ class _BatchPhotoStrip extends StatelessWidget {
               width: 88,
               height: 88,
               fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) {
+                return const SizedBox(
+                  width: 88,
+                  height: 88,
+                  child: Center(child: Icon(Icons.broken_image_outlined)),
+                );
+              },
             ),
           );
         },

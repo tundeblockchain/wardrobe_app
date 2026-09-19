@@ -19,7 +19,7 @@ void main() {
     final harness = TestAppHarness();
     harness.picker.images = [
       FakeItemImagePicker.sample(fileName: 'shirt.jpg'),
-      FakeItemImagePicker.sample(bytes: const [4, 5, 6], fileName: 'jeans.jpg'),
+      FakeItemImagePicker.sample(fileName: 'jeans.jpg'),
     ];
     addTearDown(harness.dispose);
 
@@ -63,7 +63,7 @@ void main() {
     final harness = TestAppHarness();
     harness.picker.images = [
       FakeItemImagePicker.sample(fileName: 'ok.jpg'),
-      FakeItemImagePicker.sample(bytes: const [9], fileName: 'bad.jpg'),
+      FakeItemImagePicker.sample(fileName: 'bad.jpg'),
     ];
     harness.items.failOnCreateCall = 2;
     addTearDown(harness.dispose);
@@ -105,7 +105,7 @@ void main() {
     final harness = TestAppHarness(items: FakeItemRepository());
     harness.picker.images = [
       FakeItemImagePicker.sample(fileName: 'coat.jpg'),
-      FakeItemImagePicker.sample(bytes: const [7], fileName: 'hat.jpg'),
+      FakeItemImagePicker.sample(fileName: 'hat.jpg'),
     ];
     addTearDown(harness.dispose);
 
