@@ -39,8 +39,10 @@ import 'fake_shopping_link_opener.dart';
 import 'fake_shopping_links_repository.dart';
 import 'fake_support_repository.dart';
 import 'fake_upload_repository.dart';
+import 'fake_job_event_repository.dart';
 import 'fake_wardrobe_repository.dart';
 import 'fake_worn_on_repository.dart';
+import 'inbox_test_overrides.dart';
 import 'item_processing_poll_overrides.dart';
 import 'worn_on_test_overrides.dart';
 
@@ -86,6 +88,7 @@ class TestAppHarness {
     FakeWornOnRepository? wornOn,
     Entitlement? entitlement,
     CoachPreferences? coaches,
+    FakeJobEventRepository? inbox,
   }) : auth =
            auth ??
            FakeAuthRepository(
@@ -104,7 +107,8 @@ class TestAppHarness {
          seed: entitlement ?? Entitlement.premium,
        ),
        coaches =
-           coaches ?? InMemoryCoachPreferences(seen: {...CoachScreen.values});
+           coaches ?? InMemoryCoachPreferences(seen: {...CoachScreen.values}),
+       inbox = inbox ?? FakeJobEventRepository();
 
   final FakeAuthRepository auth;
   final FakeWardrobeRepository wardrobes;
@@ -115,6 +119,7 @@ class TestAppHarness {
   final FakeWornOnRepository wornOn;
   final FakeEntitlementRepository entitlements;
   final CoachPreferences coaches;
+  final FakeJobEventRepository inbox;
   final paywall = FakePaywallGateway();
   final sessionStore = InMemorySessionLocalStore();
   final sessionImages = RecordingSessionImageCache();
@@ -153,6 +158,7 @@ class TestAppHarness {
         paywallGatewayProvider.overrideWithValue(paywall),
         coachPreferencesProvider.overrideWithValue(coaches),
         ...itemProcessingPollTestOverrides(),
+        ...inboxTestOverrides(events: inbox),
       ],
       child: const WardrobeApp(),
     );

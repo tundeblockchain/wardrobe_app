@@ -18,6 +18,8 @@ import '../../entitlements/application/entitlements_controller.dart';
 import '../../entitlements/domain/entitlement_paywall_copy.dart';
 import '../../entitlements/domain/paywall_placement.dart';
 import '../../entitlements/domain/subscription_tier.dart';
+import '../../inbox/application/inbox_controller.dart';
+import '../../inbox/domain/inbox_copy.dart';
 import '../application/rate_app_controller.dart';
 
 /// Account info plus Rate / Contact us / Report a bug / destructive wipes.
@@ -28,6 +30,7 @@ class ProfileScreen extends ConsumerWidget {
   static const themeToggleKey = Key('profile_theme_toggle');
   static const rateTileKey = Key('profile_rate_app');
   static const aiTryOnTileKey = Key('profile_ai_try_on');
+  static const inboxTileKey = Key('profile_inbox');
   static const planTileKey = Key('profile_plan');
   static const restorePurchasesTileKey = Key('profile_restore_purchases');
   static const contactTileKey = Key('profile_contact_us');
@@ -48,6 +51,7 @@ class ProfileScreen extends ConsumerWidget {
     final rate = ref.watch(rateAppControllerProvider);
     final account = ref.watch(accountControllerProvider);
     final entitlements = ref.watch(entitlementsControllerProvider);
+    final inbox = ref.watch(inboxControllerProvider);
     final themeMode = ref.watch(themeControllerProvider);
     final user = auth.user;
     final busy = auth.isBusy || account.isBusy || rate.isBusy;
@@ -156,6 +160,21 @@ class ProfileScreen extends ConsumerWidget {
               subtitle: const Text('Your photos and model looks'),
               trailing: const Icon(Icons.chevron_right),
               onTap: () => context.push(AppRoutes.aiTryOn),
+            ),
+            ListTile(
+              key: inboxTileKey,
+              contentPadding: EdgeInsets.zero,
+              leading: Badge(
+                isLabelVisible: inbox.unreadCount > 0,
+                label: Text(
+                  inbox.unreadCount > 99 ? '99+' : '${inbox.unreadCount}',
+                ),
+                child: const Icon(Icons.notifications_outlined),
+              ),
+              title: const Text(InboxCopy.accountTileTitle),
+              subtitle: Text(InboxCopy.unreadSubtitle(inbox.unreadCount)),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => context.push(AppRoutes.inbox),
             ),
             ListTile(
               key: rateTileKey,

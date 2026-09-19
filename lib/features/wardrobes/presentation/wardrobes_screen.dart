@@ -7,6 +7,7 @@ import '../../../core/router/app_routes.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/app_empty_state.dart';
 import '../../../core/widgets/app_fade_in.dart';
+import '../../inbox/presentation/widgets/inbox_badge_button.dart';
 import '../../coaches/domain/coach_screen.dart';
 import '../../coaches/presentation/screen_coach_host.dart';
 import '../../entitlements/domain/entitlement_action.dart';
@@ -86,6 +87,7 @@ class _WardrobesScreenState extends ConsumerState<WardrobesScreen>
         appBar: AppSearchGlossBar(
           title: const Text('Wardrobes', key: WardrobesScreen.titleKey),
           actions: [
+            const InboxBadgeButton(),
             IconButton(
               key: WardrobesScreen.profileButtonKey,
               tooltip: 'Account',
