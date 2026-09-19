@@ -1,6 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wardrobe_app/core/network/api_exception.dart';
+import 'package:wardrobe_app/features/entitlements/application/pending_paywall.dart';
+import 'package:wardrobe_app/features/entitlements/domain/entitlement_paywall_copy.dart';
+import 'package:wardrobe_app/features/entitlements/domain/paywall_placement.dart';
 import 'package:wardrobe_app/features/items/application/add_item_controller.dart';
 import 'package:wardrobe_app/features/items/application/item_detail_controller.dart';
 import 'package:wardrobe_app/features/items/application/item_local_preview_cache.dart';
@@ -351,6 +354,23 @@ void main() {
     expect(
       container.read(itemsControllerProvider('wd_abc123')).items.single.name,
       'one',
+    );
+    expect(
+      container.read(pendingPaywallProvider),
+      PaywallPlacement.itemLimit,
+    );
+    expect(
+      container
+          .read(addItemControllerProvider('wd_abc123'))
+          .batchResults
+          .where((result) => result.failed)
+          .map((result) => result.errorMessage)
+          .toSet(),
+      {
+        EntitlementPaywallCopy.forPlacement(
+          PaywallPlacement.itemLimit,
+        ).formMessage,
+      },
     );
   });
 
