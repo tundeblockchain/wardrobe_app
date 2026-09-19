@@ -29,8 +29,8 @@ Sign in with Apple on iOS
 
 Layers (dependencies point downward only):
 
-1. **Presentation** — screens (`login`, `signup`, `forgot-password`, splash, wardrobes list / create / detail, add item / item detail / edit item, outfits list / create / detail / edit, dressing room / try-on, profile / contact us / report a bug / AI try-on) plus header search, related shopping links, and first-visit coach marks
-2. **Controller / Provider** — Riverpod auth, wardrobe, item, outfit, try-on, recommendation, support / rate-app, account, AI-profile, header-search, shopping-links, and coach-mark controllers
+1. **Presentation** — screens (`login`, `signup`, `forgot-password`, splash, wardrobes list / create / detail, add item / item detail / edit item, outfits list / create / detail / edit, dressing room / try-on, profile / contact us / report a bug / AI try-on) plus header search, related shopping links, first-visit coach marks, and the Superwall / themed paywall sheet
+2. **Controller / Provider** — Riverpod auth, wardrobe, item, outfit, try-on, recommendation, support / rate-app, account, entitlements / paywall, AI-profile, header-search, shopping-links, and coach-mark controllers
 3. **Repository** — `AuthRepository`, `WardrobeRepository`, `ItemRepository`, `UploadRepository`, `OutfitRepository`, `RecommendationRepository`, `SupportRepository`, `AccountRepository`, `AiProfileRepository`, `ShoppingLinksRepository`
 4. **API client / Firebase** — `FirebaseAuthRepository` (email/password + Google + Apple on iOS), Dio + ID-token interceptor, wardrobe/item/upload/outfit/recommendation/support/account/AI-profile/shopping-links Dio repositories, `image_picker` behind `ItemImagePicker`, `in_app_review` behind `AppReviewer`, `url_launcher` behind `ShoppingLinkOpener`
 
@@ -51,7 +51,7 @@ Layers (dependencies point downward only):
 
 Authenticated routes:
 
-- `/profile` — account info, AI try-on, Rate the app, Contact us, Report a bug, Clear all, Delete account
+- `/profile` — account info, plan / restore purchases, AI try-on, Rate the app, Contact us, Report a bug, Clear all, Delete account
 - `/profile/ai-try-on` — PERSONAL AI profile + GENERIC_MODEL catalog
 - `/profile/contact` — in-app form → `POST /support/contact`
 - `/profile/report-bug` — in-app form → `POST /support/bug` (optional `replyTo` + `meta`)
@@ -333,6 +333,37 @@ mailto.
 
 Rate the app uses `in_app_review` and falls back to the platform store listing
 (`IOS_APP_STORE_ID` dart-define for iOS).
+
+## Entitlements and paywalls (WARDROBE-90 / WARDROBE-117)
+
+`GET /me` is the source of truth for `FREE` | `BASIC` | `PREMIUM`. Soft UI
+gates present Superwall when configured; a burgundy/plum fallback sheet is
+used in CI and when keys are unset. Backend still enforces limits.
+
+403 `{ code, message }` values map in the client (no Backend contract
+change):
+
+| Code | Target | Primary CTA |
+| --- | --- | --- |
+| `ENTITLEMENT_WARDROBE_LIMIT` | Basic | Upgrade to Basic |
+| `ENTITLEMENT_ITEM_LIMIT` | Basic | Upgrade to Basic |
+| `ENTITLEMENT_OUTFIT_LIMIT` | Basic | Upgrade to Basic |
+| `ENTITLEMENT_AI_REQUIRED` | Premium | Upgrade to Premium |
+| Unknown `ENTITLEMENT_*` | Basic (or the caller fallback) | Upgrade / See plans |
+
+Unknown entitlement codes soft-fail to a generic upgrade CTA instead of
+showing raw Backend text. Form errors use the same paywall copy.
+
+Presentation calls `EntitlementsController.presentPaywall` /
+`restorePurchases`, which call the existing Superwall gateway. The
+fallback sheet exposes **Upgrade**, **See plans** (Free / Basic / Premium),
+and **Restore purchases**. Account has the same restore tile for
+reinstall or a new sign-in after delete. Superwall (or the store hook)
+owns the native restore; then the client re-reads `GET /me`.
+
+Motion on the fallback sheet respects `AppMotion.reduce`. Public Superwall
+keys stay in dart-defines — see
+[docs/local-config.example.md](docs/local-config.example.md).
 
 ## Account (clear content / delete)
 

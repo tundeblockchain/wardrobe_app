@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 
 import '../../../core/config/app_config.dart';
+import '../domain/entitlement_paywall_copy.dart';
 import '../domain/paywall_gateway.dart';
 import '../domain/paywall_placement.dart';
 import '../presentation/paywall_sheet.dart';
@@ -65,19 +66,19 @@ class SuperwallPaywallGateway implements PaywallGateway {
   Future<PaywallPresentation> present({
     required PaywallPlacement placement,
     BuildContext? context,
+    Future<RestorePurchasesResult> Function()? onRestore,
   }) async {
     if (_configured) {
       try {
+        final copy = EntitlementPaywallCopy.forPlacement(placement);
         await registerSuperwallPlacement(
           placement.id,
-          params: {
-            'target_tier': placement.targetTier.wireValue,
-            'reason': placement.id,
-            'product_basic_monthly': _config.productIds.basicMonthly,
-            'product_basic_yearly': _config.productIds.basicYearly,
-            'product_premium_monthly': _config.productIds.premiumMonthly,
-            'product_premium_yearly': _config.productIds.premiumYearly,
-          },
+          params: copy.toSuperwallParams(
+            basicMonthly: _config.productIds.basicMonthly,
+            basicYearly: _config.productIds.basicYearly,
+            premiumMonthly: _config.productIds.premiumMonthly,
+            premiumYearly: _config.productIds.premiumYearly,
+          ),
         );
         return const PaywallPresentation();
       } catch (_) {
@@ -90,6 +91,7 @@ class SuperwallPaywallGateway implements PaywallGateway {
     return const FallbackPaywallGateway().present(
       placement: placement,
       context: context,
+      onRestore: onRestore ?? restorePurchases,
     );
   }
 

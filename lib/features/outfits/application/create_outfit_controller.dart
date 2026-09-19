@@ -72,12 +72,14 @@ class CreateOutfitController extends Notifier<CreateOutfitState> {
       if (!ref.mounted) {
         return null;
       }
-      queueEntitlementPaywall(
-        ref,
-        error,
-        fallback: PaywallPlacement.outfitLimit,
+      state = state.copyWith(
+        isSaving: false,
+        errorMessage: queueEntitlementPaywall(
+          ref,
+          error,
+          fallback: PaywallPlacement.outfitLimit,
+        ),
       );
-      state = state.copyWith(isSaving: false, errorMessage: error.message);
       return null;
     } catch (_) {
       if (!ref.mounted) {

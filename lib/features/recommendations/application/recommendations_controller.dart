@@ -43,8 +43,14 @@ class RecommendationsController extends Notifier<RecommendationsState> {
       if (!ref.mounted) {
         return;
       }
-      queueEntitlementPaywall(ref, error, fallback: PaywallPlacement.otherAi);
-      state = state.copyWith(isLoading: false, errorMessage: error.message);
+      state = state.copyWith(
+        isLoading: false,
+        errorMessage: queueEntitlementPaywall(
+          ref,
+          error,
+          fallback: PaywallPlacement.otherAi,
+        ),
+      );
     } catch (_) {
       if (!ref.mounted) {
         return;

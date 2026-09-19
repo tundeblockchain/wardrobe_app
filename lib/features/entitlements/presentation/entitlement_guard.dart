@@ -6,7 +6,6 @@ import '../../items/application/items_controller.dart';
 import '../../outfits/application/outfits_controller.dart';
 import '../../wardrobes/application/wardrobes_controller.dart';
 import '../application/entitlements_controller.dart';
-import '../data/paywall_gateway_provider.dart';
 import '../domain/entitlement_action.dart';
 
 /// Soft-gate: present Superwall when the current entitlement blocks [action].
@@ -28,12 +27,11 @@ Future<bool> ensureEntitled(
     return true;
   }
   await ref
-      .read(paywallGatewayProvider)
-      .present(placement: action.placement, context: context);
+      .read(entitlementsControllerProvider.notifier)
+      .presentPaywall(placement: action.placement, context: context);
   if (!context.mounted) {
     return false;
   }
-  await ref.read(entitlementsControllerProvider.notifier).refresh();
   final next = ref.read(entitlementsControllerProvider).current;
   return action.isAllowed(next, currentCount: count);
 }
