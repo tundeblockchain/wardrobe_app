@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/router/app_router.dart';
 import '../../../core/router/app_routes.dart';
+import '../../../core/theme/app_motion.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/app_empty_state.dart';
 import '../../../core/widgets/app_fade_in.dart';
@@ -42,6 +43,15 @@ class WardrobeDetailScreen extends ConsumerStatefulWidget {
   static const retryButtonKey = Key('wardrobe_detail_retry');
   static const addItemButtonKey = Key('wardrobe_detail_add_item');
   static const itemsEmptyKey = Key('wardrobe_detail_items_empty');
+  static const itemsFilteredEmptyKey = Key(
+    'wardrobe_detail_items_filtered_empty',
+  );
+  static const itemsFilteredEmptyClearKey = Key(
+    'wardrobe_detail_items_filtered_empty_clear',
+  );
+  static const filteredDeckSwitcherKey = Key(
+    'wardrobe_detail_filtered_deck_switcher',
+  );
   static const outfitsButtonKey = Key('wardrobe_detail_outfits');
   static const createOutfitButtonKey = Key('wardrobe_detail_create_outfit');
   static const recommendationsButtonKey = Key(
@@ -541,21 +551,17 @@ class _ItemsSection extends ConsumerWidget {
           },
         ),
         const SizedBox(height: 16),
-        if (state.isEmpty)
-          const AppEmptyState(
-            icon: Icons.filter_alt_off_outlined,
-            title: 'No matches',
-            message: 'No items match these filters.',
-          )
-        else
-          AppFadeIn(
-            child: ItemSwipeDeck(
-              items: state.items,
-              onOpenItem: (item) =>
-                  context.push(AppRoutes.itemDetail(wardrobeId, item.id)),
-              onDeleteItem: (item) => _deleteItem(context, ref, item),
-            ),
-          ),
+        _FilteredItemsDeck(
+          items: state.visibleItems,
+          onOpenItem: (item) =>
+              context.push(AppRoutes.itemDetail(wardrobeId, item.id)),
+          onDeleteItem: (item) => _deleteItem(context, ref, item),
+          onClearFilters: () {
+            ref
+                .read(itemsControllerProvider(wardrobeId).notifier)
+                .setFilters(const ItemListFilters());
+          },
+        ),
       ],
     );
   }
@@ -571,6 +577,54 @@ class _ItemsSection extends ConsumerWidget {
       fallbackError: EntityDelete.itemError,
       errorMessage: () =>
           ref.read(itemsControllerProvider(wardrobeId)).errorMessage,
+    );
+  }
+}
+
+/// Swipe deck or a soft empty message for the current client filters.
+///
+/// Cross-fades when the visible set changes unless [AppMotion.reduce].
+class _FilteredItemsDeck extends StatelessWidget {
+  const _FilteredItemsDeck({
+    required this.items,
+    required this.onOpenItem,
+    required this.onDeleteItem,
+    required this.onClearFilters,
+  });
+
+  final List<Item> items;
+  final ValueChanged<Item> onOpenItem;
+  final ValueChanged<Item> onDeleteItem;
+  final VoidCallback onClearFilters;
+
+  @override
+  Widget build(BuildContext context) {
+    final child = items.isEmpty
+        ? AppEmptyState(
+            key: WardrobeDetailScreen.itemsFilteredEmptyKey,
+            icon: Icons.filter_alt_off_outlined,
+            title: 'No matches',
+            message: 'No items match these filters.',
+            actionLabel: 'Clear filters',
+            actionKey: WardrobeDetailScreen.itemsFilteredEmptyClearKey,
+            onAction: onClearFilters,
+          )
+        : ItemSwipeDeck(
+            key: ValueKey<String>(items.map((item) => item.id).join(',')),
+            items: items,
+            onOpenItem: onOpenItem,
+            onDeleteItem: onDeleteItem,
+          );
+
+    if (AppMotion.reduce(context)) {
+      return child;
+    }
+    return AnimatedSwitcher(
+      key: WardrobeDetailScreen.filteredDeckSwitcherKey,
+      duration: AppMotion.fadeDuration,
+      switchInCurve: AppMotion.fadeCurve,
+      switchOutCurve: AppMotion.fadeCurve,
+      child: child,
     );
   }
 }

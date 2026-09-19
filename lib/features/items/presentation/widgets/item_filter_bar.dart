@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_spacing.dart';
+import '../../../../core/widgets/app_fade_in.dart';
 import '../../domain/item.dart';
 import '../../domain/item_acquired_at.dart';
 import '../../domain/item_list_filters.dart';
 import '../../domain/item_taxonomy.dart';
 import 'item_acquired_at_field.dart';
 
-/// Category / colour / subcategory chips that map to WARDROBE-21 query params.
+/// Category / colour / tag chips over the already-loaded item deck
+/// (WARDROBE-116). Burgundy/plum [FilterChip] tokens come from [ThemeData].
 class ItemFilterBar extends StatelessWidget {
   const ItemFilterBar({
     super.key,
@@ -90,25 +92,27 @@ class ItemFilterBar extends StatelessWidget {
         ),
         if (subcategories.isNotEmpty) ...[
           const SizedBox(height: AppSpacing.sm),
-          _ChipRow(
-            rowKey: subcategoryRowKey,
-            label: 'Subcategory',
-            children: [
-              for (final subcategory in subcategories)
-                FilterChip(
-                  key: subcategoryChipKey(subcategory),
-                  label: Text(subcategory.label),
-                  selected: filters.subcategory == subcategory,
-                  onSelected: (selected) {
-                    onChanged(
-                      filters.copyWith(
-                        subcategory: selected ? subcategory : null,
-                        clearSubcategory: !selected,
-                      ),
-                    );
-                  },
-                ),
-            ],
+          AppFadeIn(
+            child: _ChipRow(
+              rowKey: subcategoryRowKey,
+              label: 'Tag',
+              children: [
+                for (final subcategory in subcategories)
+                  FilterChip(
+                    key: subcategoryChipKey(subcategory),
+                    label: Text(subcategory.label),
+                    selected: filters.subcategory == subcategory,
+                    onSelected: (selected) {
+                      onChanged(
+                        filters.copyWith(
+                          subcategory: selected ? subcategory : null,
+                          clearSubcategory: !selected,
+                        ),
+                      );
+                    },
+                  ),
+              ],
+            ),
           ),
         ],
         const SizedBox(height: AppSpacing.sm),

@@ -2,10 +2,17 @@ import 'item.dart';
 import 'item_acquired_at.dart';
 import 'item_taxonomy.dart';
 
-/// Server-side list filters for `GET /wardrobes/{wardrobeId}/items`.
+/// Client-first list filters over an already-loaded wardrobe item deck
+/// (WARDROBE-116).
 ///
-/// Empty fields are omitted from the query string. Filters AND across
-/// params; matching user OR `ai.*` fields is handled by the backend.
+/// Filters AND across params. Category, colour, and subcategory/tag match
+/// user fields or `ai.*` metadata already on the item DTO. Acquired-date
+/// bounds stay inclusive and exclude items with no `acquiredAt`.
+///
+/// [toQueryParameters] is the extension point for a future Backend GSI
+/// (`GET /wardrobes/{wardrobeId}/items?category=&colour=&subcategory=`).
+/// Do not add a dedicated search API for this story — escalate only if
+/// the loaded list is insufficient.
 class ItemListFilters {
   const ItemListFilters({
     this.category,
@@ -17,6 +24,8 @@ class ItemListFilters {
 
   final ItemCategory? category;
   final ItemColour? colour;
+
+  /// Subcategory chip; treated as the item tag on the wardrobe list.
   final ItemSubcategory? subcategory;
 
   /// Inclusive lower bound (`acquiredAfter=YYYY-MM-DD`). Hides older clothes.
@@ -34,7 +43,13 @@ class ItemListFilters {
 
   bool get hasAcquiredWindow => acquiredAfter != null || acquiredBefore != null;
 
-  /// Wire query parameters accepted by WARDROBE-21 and WARDROBE-92.
+  /// Wire query parameters for a future Backend GSI list (WARDROBE-21 /
+  /// WARDROBE-92). The wardrobe items controller does not send these on
+  /// list/refresh — [apply] filters the loaded deck instead.
+  ///
+  /// TODO(WARDROBE-116): if client filter over the loaded list is
+  /// insufficient (very large wardrobes), pass this map to
+  /// `GET /wardrobes/{wardrobeId}/items`. Do not invent a search API.
   Map<String, String> toQueryParameters() {
     return {
       if (category != null) 'category': category!.wireValue,
@@ -47,7 +62,7 @@ class ItemListFilters {
     };
   }
 
-  /// Inclusive acquired-date window (WARDROBE-92 / live Backend `f8f6ded`).
+  /// Inclusive acquired-date window (WARDROBE-92).
   ///
   /// Items without [Item.acquiredAt] are excluded when either bound is set —
   /// they cannot be proven to fall in range.
@@ -70,19 +85,66 @@ class ItemListFilters {
     return true;
   }
 
-  /// Client-side acquired-date window over an already-loaded list.
-  ///
-  /// List requests send `acquiredAfter` / `acquiredBefore` ([toQueryParameters])
-  /// to live Backend main (`f8f6ded`). This fallback is an idempotent safety
-  /// window over the loaded deck with the same exclusive-missing-date semantics.
-  List<Item> applyLoadedFallback(List<Item> items) {
-    if (!hasAcquiredWindow) {
+  /// Whether [item] satisfies every selected filter (AND).
+  bool matches(Item item) {
+    if (category != null && !_matchesCategory(item, category!)) {
+      return false;
+    }
+    if (colour != null && !_matchesColour(item, colour!)) {
+      return false;
+    }
+    if (subcategory != null && !_matchesSubcategory(item, subcategory!)) {
+      return false;
+    }
+    return matchesAcquired(item);
+  }
+
+  /// Client-side filter over an already-loaded list (WARDROBE-116).
+  List<Item> apply(List<Item> items) {
+    if (isEmpty) {
       return items;
     }
     return [
       for (final item in items)
-        if (matchesAcquired(item)) item,
+        if (matches(item)) item,
     ];
+  }
+
+  /// Alias for [apply] — keeps existing call sites and tests compiling.
+  List<Item> applyLoadedFallback(List<Item> items) => apply(items);
+
+  static bool _matchesCategory(Item item, ItemCategory category) {
+    if (item.category == category) {
+      return true;
+    }
+    return item.ai?.detectedCategory == category;
+  }
+
+  static bool _matchesColour(Item item, ItemColour colour) {
+    if (_colourListContains(item.colours, colour)) {
+      return true;
+    }
+    return _colourListContains(item.ai?.detectedColours ?? const [], colour);
+  }
+
+  static bool _matchesSubcategory(Item item, ItemSubcategory subcategory) {
+    if (_subcategoryEquals(item.subcategory, subcategory)) {
+      return true;
+    }
+    return _subcategoryEquals(item.ai?.detectedSubcategory, subcategory);
+  }
+
+  static bool _colourListContains(Iterable<String> colours, ItemColour colour) {
+    for (final value in colours) {
+      if (ItemColour.tryParse(value) == colour) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  static bool _subcategoryEquals(String? raw, ItemSubcategory subcategory) {
+    return ItemSubcategory.tryParse(raw) == subcategory;
   }
 
   ItemListFilters copyWith({

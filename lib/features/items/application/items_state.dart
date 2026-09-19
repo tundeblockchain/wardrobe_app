@@ -10,12 +10,17 @@ class ItemsState {
     this.errorMessage,
   });
 
+  /// Full wardrobe list from the last repository fetch. Filters never
+  /// mutate this list — [visibleItems] is the client-side projection.
   final List<Item> items;
   final ItemListFilters filters;
   final bool isLoading;
   final String? errorMessage;
 
   bool get isEmpty => items.isEmpty;
+
+  /// Category / colour / tag / acquired window over [items] (WARDROBE-116).
+  List<Item> get visibleItems => filters.apply(items);
 
   ItemsState copyWith({
     List<Item>? items,

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wardrobe_app/core/theme/app_theme.dart';
+import 'package:wardrobe_app/features/items/domain/item.dart';
 import 'package:wardrobe_app/features/items/domain/item_acquired_at.dart';
 import 'package:wardrobe_app/features/items/domain/item_list_filters.dart';
+import 'package:wardrobe_app/features/items/domain/item_taxonomy.dart';
 import 'package:wardrobe_app/features/items/presentation/widgets/item_filter_bar.dart';
 
 void main() {
@@ -30,6 +32,49 @@ void main() {
       ),
     );
   }
+
+  testWidgets('category colour and tag chips update filters', (tester) async {
+    var next = const ItemListFilters();
+    await pumpBar(tester, onChanged: (filters) => next = filters);
+
+    await tester.tap(
+      find.byKey(ItemFilterBar.categoryChipKey(ItemCategory.top)),
+    );
+    await tester.pump();
+    expect(next.category, ItemCategory.top);
+
+    await pumpBar(
+      tester,
+      filters: next,
+      onChanged: (filters) => next = filters,
+    );
+    expect(find.text('Tag'), findsOneWidget);
+
+    await tester.tap(find.byKey(ItemFilterBar.colourChipKey(ItemColour.black)));
+    await tester.pump();
+    expect(next.colour, ItemColour.black);
+
+    await tester.tap(
+      find.byKey(ItemFilterBar.subcategoryChipKey(ItemSubcategory.tshirt)),
+    );
+    await tester.pump();
+    expect(next.subcategory, ItemSubcategory.tshirt);
+  });
+
+  testWidgets('Clear filters is hidden until a chip is selected', (
+    tester,
+  ) async {
+    await pumpBar(tester);
+    expect(find.byKey(ItemFilterBar.clearButtonKey), findsNothing);
+
+    await pumpBar(
+      tester,
+      filters: const ItemListFilters(category: ItemCategory.top),
+    );
+    expect(find.byKey(ItemFilterBar.clearButtonKey), findsOneWidget);
+    expect(find.text('Clear filters'), findsOneWidget);
+    expect(find.text('Tag'), findsOneWidget);
+  });
 
   testWidgets(
     'hide-older control starts empty and does not show Clear filters',
