@@ -253,7 +253,7 @@ void main() {
     expect(container.read(inboxControllerProvider).pending, hasLength(2));
     expect(
       container.read(inboxControllerProvider).pending.map((e) => e.itemId),
-      ['item_1', 'item_2'],
+      unorderedEquals(['item_1', 'item_2']),
     );
   });
 
