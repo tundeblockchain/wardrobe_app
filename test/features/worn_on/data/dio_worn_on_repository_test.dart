@@ -7,7 +7,6 @@ import 'package:wardrobe_app/core/network/dio_client.dart';
 import 'package:wardrobe_app/core/network/id_token_source.dart';
 import 'package:wardrobe_app/features/worn_on/data/dio_worn_on_repository.dart';
 import 'package:wardrobe_app/features/worn_on/data/stub_worn_on_repository.dart';
-import 'package:wardrobe_app/features/worn_on/domain/worn_on_contract.dart';
 import 'package:wardrobe_app/features/worn_on/domain/worn_on_errors.dart';
 
 import '../../../helpers/scripted_http_adapter.dart';

@@ -81,8 +81,7 @@ abstract class WornOnListResponse with _$WornOnListResponse {
       _$WornOnListResponseFromJson(json);
 
   List<WornOnEntry> toDomain() => [
-    for (final entry in entries)
-      if (entry.toDomain() case final mapped?) mapped,
+    for (final entry in entries) ?entry.toDomain(),
   ];
 }
 
@@ -117,8 +116,7 @@ List<WornOnEntry> parseWornOnList(dynamic data) {
   }
   if (data is List) {
     return sortWornOnEntries([
-      for (final item in data)
-        if (parseWornOnEntry(item) case final entry?) entry,
+      for (final item in data) ?parseWornOnEntry(item),
     ]);
   }
   if (data is Map) {
@@ -134,8 +132,7 @@ List<WornOnEntry> parseWornOnList(dynamic data) {
       );
     }
     return sortWornOnEntries([
-      for (final item in nested)
-        if (parseWornOnEntry(item) case final entry?) entry,
+      for (final item in nested) ?parseWornOnEntry(item),
     ]);
   }
   throw const ApiException(

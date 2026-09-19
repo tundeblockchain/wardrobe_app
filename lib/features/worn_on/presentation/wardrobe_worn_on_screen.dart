@@ -42,7 +42,7 @@ class WardrobeWornOnScreen extends ConsumerWidget {
     final names = {for (final outfit in outfits) outfit.id: outfit.name};
 
     return Scaffold(
-      appBar: const AppSearchGlossBar(title: Text('Worn on')),
+      appBar: AppSearchGlossBar(title: const Text('Worn on')),
       body: SafeArea(
         child: RefreshIndicator(
           onRefresh: () => ref

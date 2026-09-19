@@ -3,7 +3,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:wardrobe_app/core/network/api_exception.dart';
 import 'package:wardrobe_app/features/outfits/application/outfit_scope.dart';
 import 'package:wardrobe_app/features/worn_on/application/outfit_worn_on_controller.dart';
-import 'package:wardrobe_app/features/worn_on/data/dio_worn_on_repository.dart';
 import 'package:wardrobe_app/features/worn_on/domain/worn_on_errors.dart';
 
 import '../../../helpers/fake_worn_on_repository.dart';
