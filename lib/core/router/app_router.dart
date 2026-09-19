@@ -16,6 +16,7 @@ import '../../features/outfits/presentation/outfit_detail_screen.dart';
 import '../../features/outfits/presentation/outfits_screen.dart';
 import '../../features/ai_profiles/presentation/ai_profile_body_screen.dart';
 import '../../features/ai_profiles/presentation/ai_try_on_screen.dart';
+import '../../features/inbox/presentation/inbox_screen.dart';
 import '../../features/profile/presentation/contact_us_screen.dart';
 import '../../features/profile/presentation/profile_screen.dart';
 import '../../features/profile/presentation/report_bug_screen.dart';
@@ -84,6 +85,10 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: AppRoutes.profile,
         builder: (context, state) => const ProfileScreen(),
         routes: [
+          GoRoute(
+            path: 'inbox',
+            builder: (context, state) => const InboxScreen(),
+          ),
           GoRoute(
             path: 'contact',
             builder: (context, state) => const ContactUsScreen(),

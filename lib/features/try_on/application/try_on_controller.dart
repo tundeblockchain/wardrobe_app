@@ -5,6 +5,7 @@ import '../../../core/session/session_gate.dart';
 import '../../ai_profiles/application/selected_ai_profile.dart';
 import '../../entitlements/application/entitlements_controller.dart';
 import '../../entitlements/domain/paywall_placement.dart';
+import '../../inbox/application/inbox_controller.dart';
 import '../../ai_profiles/domain/ai_profile.dart';
 import '../../outfits/application/outfit_detail_controller.dart';
 import '../../outfits/application/outfit_hero_selection.dart';
@@ -120,6 +121,16 @@ class TryOnController extends Notifier<TryOnState> {
         clearRender: outfit.render == null,
       );
       _publishOutfit(outfit);
+      final started = outfit.render;
+      if (started != null) {
+        ref
+            .read(inboxControllerProvider.notifier)
+            .trackPendingRender(
+              wardrobeId: scope.wardrobeId,
+              outfitId: scope.outfitId,
+              render: started,
+            );
+      }
     } on ApiException catch (error) {
       if (!ref.mounted) {
         return false;

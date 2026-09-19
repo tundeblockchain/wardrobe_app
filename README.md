@@ -29,10 +29,10 @@ Sign in with Apple on iOS
 
 Layers (dependencies point downward only):
 
-1. **Presentation** — screens (`login`, `signup`, `forgot-password`, splash, wardrobes list / create / detail, add item / item detail / edit item, outfits list / create / detail / edit, worn-on calendar, dressing room / try-on, profile / contact us / report a bug / AI try-on) plus header search, related shopping links, first-visit coach marks, and the Superwall / themed paywall sheet
-2. **Controller / Provider** — Riverpod auth, wardrobe, item, outfit, worn-on, try-on, recommendation, support / rate-app, account, entitlements / paywall, AI-profile, header-search, shopping-links, and coach-mark controllers
-3. **Repository** — `AuthRepository`, `WardrobeRepository`, `ItemRepository`, `UploadRepository`, `OutfitRepository`, `WornOnRepository`, `RecommendationRepository`, `SupportRepository`, `AccountRepository`, `AiProfileRepository`, `ShoppingLinksRepository`
-4. **API client / Firebase** — `FirebaseAuthRepository` (email/password + Google + Apple on iOS), Dio + ID-token interceptor, wardrobe/item/upload/outfit/worn-on/recommendation/support/account/AI-profile/shopping-links Dio repositories, `image_picker` behind `ItemImagePicker`, `in_app_review` behind `AppReviewer`, `url_launcher` behind `ShoppingLinkOpener`
+1. **Presentation** — screens (`login`, `signup`, `forgot-password`, splash, wardrobes list / create / detail, add item / item detail / edit item, outfits list / create / detail / edit, worn-on calendar, dressing room / try-on, profile / processing inbox / contact us / report a bug / AI try-on) plus header search, related shopping links, first-visit coach marks, and the Superwall / themed paywall sheet
+2. **Controller / Provider** — Riverpod auth, wardrobe, item, outfit, worn-on, try-on, inbox, recommendation, support / rate-app, account, entitlements / paywall, AI-profile, header-search, shopping-links, and coach-mark controllers
+3. **Repository** — `AuthRepository`, `WardrobeRepository`, `ItemRepository`, `UploadRepository`, `OutfitRepository`, `WornOnRepository`, `RecommendationRepository`, `SupportRepository`, `AccountRepository`, `AiProfileRepository`, `ShoppingLinksRepository`, `JobEventRepository`, `DeviceRepository`
+4. **API client / Firebase** — `FirebaseAuthRepository` (email/password + Google + Apple on iOS), Dio + ID-token interceptor, wardrobe/item/upload/outfit/worn-on/recommendation/support/account/AI-profile/shopping-links/events/devices Dio repositories, `image_picker` behind `ItemImagePicker`, `in_app_review` behind `AppReviewer`, `url_launcher` behind `ShoppingLinkOpener`, optional Firebase Messaging behind `PushTokenSource`
 
 ## Auth shell
 
@@ -51,7 +51,8 @@ Layers (dependencies point downward only):
 
 Authenticated routes:
 
-- `/profile` — account info, plan / restore purchases, AI try-on, Rate the app, Contact us, Report a bug, Clear all, Delete account
+- `/profile` — account info, plan / restore purchases, AI try-on, Processing inbox, Rate the app, Contact us, Report a bug, Clear all, Delete account
+- `/profile/inbox` — AI job-done inbox ([WARDROBE-115](https://tundetunde000.atlassian.net/browse/WARDROBE-115))
 - `/profile/ai-try-on` — PERSONAL AI profile + GENERIC_MODEL catalog
 - `/profile/contact` — in-app form → `POST /support/contact`
 - `/profile/report-bug` — in-app form → `POST /support/bug` (optional `replyTo` + `meta`)
@@ -327,6 +328,37 @@ No new Backend fields were added. Display uses only existing http(s) URLs:
 | Recommendation get | `name` + `items[{itemId,slot}]` only. No `imageUrl` / `render`. | Suggestion covers use wardrobe item photos only. |
 | Try-on GET `/render` | `imageUrl` when `status` is `READY`. | Same as WARDROBE-51: no URL is invented from `imageKey`. |
 | AI profile get/list | `frontImageUrl` / `front.*` / `referenceImageUrls` / `imageUrl` (WARDROBE-71/73). | PERSONAL get/list still has no GET URL (WARDROBE-43/45); placeholder until WARDROBE-72. |
+
+## AI job inbox (WARDROBE-115)
+
+Home and Account open `/profile/inbox`. The tray lists unread job-done
+events from Backend
+[WARDROBE-114](https://tundetunde000.atlassian.net/browse/WARDROBE-114)
+(`wardrobe-backend#53` SHA `0d75d71`). Inbox works without FCM.
+
+```http
+GET    /me/events?unreadOnly=true&limit=20
+POST   /me/events/{eventId}/ack
+POST   /me/events/ack
+PUT    /me/devices
+DELETE /me/devices/{deviceId}
+```
+
+`EventsApi` / `DevicesApi` sit under `JobEventRepository` and
+`DeviceRepository`. Optional fields are omitted, never `null`. READY
+rows show success copy; FAILED rows show `error`. Tap deep-links item
+jobs to item detail and try-on jobs to
+`/wardrobes/{wardrobeId}/outfits/{outfitId}/try-on`. Open or dismiss
+acks the row. After Premium item create or try-on POST, a local PENDING
+row stays visible until a matching event arrives — Refresh clears the
+empty state; there is no silent dead-end.
+
+`GET /me/events` `404` (Backend not on the live API yet) is an empty
+refreshable inbox. Firebase Messaging token registration is best-effort
+and never blocks the tray. Item / render GET polling remains the
+fallback on those screens.
+
+See [docs/ai-job-inbox.md](docs/ai-job-inbox.md).
 
 ## Virtual try-on (WARDROBE-51)
 

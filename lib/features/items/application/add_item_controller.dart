@@ -4,6 +4,7 @@ import '../../../core/network/api_exception.dart';
 import '../../../core/session/session_gate.dart';
 import '../../entitlements/application/entitlements_controller.dart';
 import '../../entitlements/domain/paywall_placement.dart';
+import '../../inbox/application/inbox_controller.dart';
 import '../data/dio_item_repository.dart';
 import '../data/dio_upload_repository.dart';
 import '../data/image_picker_item_image_picker.dart';
@@ -107,6 +108,7 @@ class AddItemController extends Notifier<AddItemState> {
             ).notifier,
           )
           .replace(item);
+      ref.read(inboxControllerProvider.notifier).trackPendingItem(item);
       state = state.copyWith(isSubmitting: false, phase: AddItemPhase.idle);
       return item;
     } on ApiException catch (error) {

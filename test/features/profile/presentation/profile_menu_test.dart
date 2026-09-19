@@ -16,6 +16,7 @@ import 'package:wardrobe_app/features/profile/data/package_info_device_context.d
 import 'package:wardrobe_app/features/ai_profiles/data/dio_ai_profile_repository.dart';
 import 'package:wardrobe_app/features/ai_profiles/presentation/ai_try_on_screen.dart';
 import 'package:wardrobe_app/features/items/data/image_picker_item_image_picker.dart';
+import 'package:wardrobe_app/features/inbox/presentation/inbox_screen.dart';
 import 'package:wardrobe_app/features/profile/presentation/contact_us_screen.dart';
 import 'package:wardrobe_app/features/profile/presentation/profile_screen.dart';
 import 'package:wardrobe_app/features/profile/presentation/report_bug_screen.dart';
@@ -28,6 +29,7 @@ import '../../../helpers/fake_auth_repository.dart';
 import '../../../helpers/fake_device_context.dart';
 import '../../../helpers/fake_item_image_picker.dart';
 import '../../../helpers/fake_support_repository.dart';
+import '../../../helpers/inbox_test_overrides.dart';
 import '../../../helpers/test_app.dart';
 
 void main() {
@@ -63,6 +65,10 @@ void main() {
           builder: (context, state) => const ProfileScreen(),
           routes: [
             GoRoute(
+              path: 'inbox',
+              builder: (context, state) => const InboxScreen(),
+            ),
+            GoRoute(
               path: 'contact',
               builder: (context, state) => const ContactUsScreen(),
             ),
@@ -92,6 +98,7 @@ void main() {
           itemImagePickerProvider.overrideWithValue(FakeItemImagePicker()),
           deviceContextProvider.overrideWithValue(const FakeDeviceContext()),
           ...entitlementTestOverrides(),
+          ...inboxTestOverrides(),
           if (themePreferences != null)
             themePreferencesProvider.overrideWithValue(themePreferences),
         ],
@@ -120,6 +127,7 @@ void main() {
     expect(find.byKey(ProfileScreen.themeToggleKey), findsOneWidget);
     expect(find.text('Dark theme'), findsOneWidget);
     expect(find.byKey(ProfileScreen.aiTryOnTileKey), findsOneWidget);
+    expect(find.byKey(ProfileScreen.inboxTileKey), findsOneWidget);
     expect(find.byKey(ProfileScreen.planTileKey), findsOneWidget);
     expect(find.byKey(ProfileScreen.restorePurchasesTileKey), findsOneWidget);
     expectNoCreatedUpdatedDateStamps();
@@ -216,6 +224,16 @@ void main() {
 
     expect(find.byType(AiTryOnScreen), findsOneWidget);
     expect(find.text('AI try-on'), findsWidgets);
+  });
+
+  testWidgets('Processing opens the job inbox', (tester) async {
+    await pumpMenu(tester);
+
+    await tapInScrollView(tester, find.byKey(ProfileScreen.inboxTileKey));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(InboxScreen), findsOneWidget);
+    expect(find.text('Processing'), findsWidgets);
   });
 
   testWidgets('Contact us opens the support form', (tester) async {

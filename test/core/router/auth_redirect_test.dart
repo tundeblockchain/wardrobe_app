@@ -121,6 +121,13 @@ void main() {
         expect(
           resolveAuthRedirect(
             status: AuthStatus.unauthenticated,
+            location: AppRoutes.inbox,
+          ),
+          AppRoutes.login,
+        );
+        expect(
+          resolveAuthRedirect(
+            status: AuthStatus.unauthenticated,
             location: AppRoutes.contactUs,
           ),
           AppRoutes.login,
@@ -235,6 +242,13 @@ void main() {
           resolveAuthRedirect(
             status: AuthStatus.authenticated,
             location: AppRoutes.profile,
+          ),
+          isNull,
+        );
+        expect(
+          resolveAuthRedirect(
+            status: AuthStatus.authenticated,
+            location: AppRoutes.inbox,
           ),
           isNull,
         );

@@ -7,6 +7,7 @@ abstract final class AppRoutes {
   static const wardrobes = '/wardrobes';
   static const createWardrobe = '/wardrobes/create';
   static const profile = '/profile';
+  static const inbox = '/profile/inbox';
   static const contactUs = '/profile/contact';
   static const reportBug = '/profile/report-bug';
   static const aiTryOn = '/profile/ai-try-on';

@@ -30,6 +30,7 @@ import 'helpers/fake_recommendation_repository.dart';
 import 'helpers/fake_support_repository.dart';
 import 'helpers/fake_upload_repository.dart';
 import 'helpers/fake_wardrobe_repository.dart';
+import 'helpers/inbox_test_overrides.dart';
 import 'helpers/test_app.dart';
 
 void main() {
@@ -56,6 +57,7 @@ void main() {
           itemImagePickerProvider.overrideWithValue(FakeItemImagePicker()),
           ...entitlementTestOverrides(),
           ...shoppingLinksTestOverrides(),
+          ...inboxTestOverrides(),
           supportRepositoryProvider.overrideWithValue(FakeSupportRepository()),
           appReviewerProvider.overrideWithValue(FakeAppReviewer()),
           deviceContextProvider.overrideWithValue(const FakeDeviceContext()),
@@ -116,6 +118,7 @@ void main() {
           itemImagePickerProvider.overrideWithValue(FakeItemImagePicker()),
           ...entitlementTestOverrides(),
           ...shoppingLinksTestOverrides(),
+          ...inboxTestOverrides(),
           supportRepositoryProvider.overrideWithValue(FakeSupportRepository()),
           appReviewerProvider.overrideWithValue(FakeAppReviewer()),
           deviceContextProvider.overrideWithValue(const FakeDeviceContext()),
@@ -178,6 +181,7 @@ void main() {
           itemImagePickerProvider.overrideWithValue(FakeItemImagePicker()),
           ...entitlementTestOverrides(),
           ...shoppingLinksTestOverrides(),
+          ...inboxTestOverrides(),
         ],
         child: const WardrobeApp(),
       ),
@@ -219,6 +223,7 @@ void main() {
           itemImagePickerProvider.overrideWithValue(FakeItemImagePicker()),
           ...entitlementTestOverrides(),
           ...shoppingLinksTestOverrides(),
+          ...inboxTestOverrides(),
         ],
         child: const WardrobeApp(),
       ),
@@ -265,6 +270,7 @@ void main() {
           itemImagePickerProvider.overrideWithValue(FakeItemImagePicker()),
           ...entitlementTestOverrides(),
           ...shoppingLinksTestOverrides(),
+          ...inboxTestOverrides(),
         ],
         child: const WardrobeApp(),
       ),
@@ -302,6 +308,7 @@ void main() {
           itemImagePickerProvider.overrideWithValue(FakeItemImagePicker()),
           ...entitlementTestOverrides(),
           ...shoppingLinksTestOverrides(),
+          ...inboxTestOverrides(),
         ],
         child: const WardrobeApp(),
       ),
@@ -345,6 +352,7 @@ void main() {
           itemImagePickerProvider.overrideWithValue(FakeItemImagePicker()),
           ...entitlementTestOverrides(),
           ...shoppingLinksTestOverrides(),
+          ...inboxTestOverrides(),
         ],
         child: const WardrobeApp(),
       ),
@@ -388,6 +396,7 @@ void main() {
           itemImagePickerProvider.overrideWithValue(FakeItemImagePicker()),
           ...entitlementTestOverrides(),
           ...shoppingLinksTestOverrides(),
+          ...inboxTestOverrides(),
         ],
         child: const WardrobeApp(),
       ),
@@ -438,6 +447,7 @@ void main() {
           itemImagePickerProvider.overrideWithValue(FakeItemImagePicker()),
           ...entitlementTestOverrides(),
           ...shoppingLinksTestOverrides(),
+          ...inboxTestOverrides(),
         ],
         child: const WardrobeApp(),
       ),
