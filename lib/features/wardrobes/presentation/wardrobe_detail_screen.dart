@@ -49,6 +49,9 @@ class WardrobeDetailScreen extends ConsumerStatefulWidget {
   static const itemsFilteredEmptyClearKey = Key(
     'wardrobe_detail_items_filtered_empty_clear',
   );
+  static const filteredDeckSwitcherKey = Key(
+    'wardrobe_detail_filtered_deck_switcher',
+  );
   static const outfitsButtonKey = Key('wardrobe_detail_outfits');
   static const createOutfitButtonKey = Key('wardrobe_detail_create_outfit');
   static const recommendationsButtonKey = Key(
@@ -617,6 +620,7 @@ class _FilteredItemsDeck extends StatelessWidget {
       return child;
     }
     return AnimatedSwitcher(
+      key: WardrobeDetailScreen.filteredDeckSwitcherKey,
       duration: AppMotion.fadeDuration,
       switchInCurve: AppMotion.fadeCurve,
       switchOutCurve: AppMotion.fadeCurve,

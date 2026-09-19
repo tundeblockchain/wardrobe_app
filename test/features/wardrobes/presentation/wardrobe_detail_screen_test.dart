@@ -256,6 +256,10 @@ void main() {
       find.byKey(WardrobeDetailScreen.itemsFilteredEmptyKey),
       findsOneWidget,
     );
+    expect(
+      find.byKey(WardrobeDetailScreen.filteredDeckSwitcherKey),
+      findsOneWidget,
+    );
     expect(find.text('No matches'), findsOneWidget);
     expect(find.text('No items match these filters.'), findsOneWidget);
     expect(find.byType(ItemSwipeDeck), findsNothing);
@@ -306,7 +310,10 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.byType(AnimatedSwitcher), findsNothing);
+    expect(
+      find.byKey(WardrobeDetailScreen.filteredDeckSwitcherKey),
+      findsNothing,
+    );
     await tester.ensureVisible(
       find.byKey(ItemFilterBar.categoryChipKey(ItemCategory.dress)),
     );
@@ -316,7 +323,10 @@ void main() {
     await tester.pump();
 
     expect(find.text('No matches'), findsOneWidget);
-    expect(find.byType(AnimatedSwitcher), findsNothing);
+    expect(
+      find.byKey(WardrobeDetailScreen.filteredDeckSwitcherKey),
+      findsNothing,
+    );
   });
 
   testWidgets('hide-older-than filter drops clothes acquired before the date', (
